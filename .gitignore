@@ -1,0 +1,12 @@
+.rudder/
+.rudder-workspaces/
+.rudder-worktrees/
+RUDDER.md
+RUDDER_SHARED.md
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
+.vercel/
+.env*
+*.tgz
