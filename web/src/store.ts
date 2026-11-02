@@ -44,8 +44,9 @@ function createStore<T extends object>(initial: T) {
 
 const params = new URLSearchParams(location.search)
 const forcedView = params.get('view')
+// iPadOS Safari usually claims to be a Mac; a touch screen gives it away.
 const looksLikeTablet =
-  navigator.maxTouchPoints > 1 && (/iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && 'ontouchend' in document))
+  /iPad/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1 && 'ontouchend' in document)
 
 let savedCollapsed = false
 try {

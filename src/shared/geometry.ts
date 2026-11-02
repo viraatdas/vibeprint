@@ -88,3 +88,37 @@ export function round(n: number): number {
 export function roundRect(r: Rect): Rect {
   return { x: round(r.x), y: round(r.y), w: round(r.w), h: round(r.h) }
 }
+
+/**
+ * Whether a freehand stroke outlines a closed shape. Pens rarely land exactly on the start:
+ * a stroke counts as closed when its end comes back near its start, or when it passes back
+ * by its start point late in the stroke (an overshoot). The length check keeps U and C
+ * shapes, lines and arrows open.
+ */
+export function strokeIsClosed(pts: Point[], ratio = 0.15): boolean {
+  if (pts.length < 5) return false
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const p of pts) {
+    if (p.x < minX) minX = p.x
+    if (p.y < minY) minY = p.y
+    if (p.x > maxX) maxX = p.x
+    if (p.y > maxY) maxY = p.y
+  }
+  const w = maxX - minX
+  const h = maxY - minY
+  const diag = Math.hypot(w, h)
+  if (diag <= 30) return false
+  const near = ratio * diag
+  const first = pts[0]
+  if (dist(first, pts[pts.length - 1]) < near) return true
+  let length = 0
+  for (let i = 1; i < pts.length; i++) length += dist(pts[i - 1], pts[i])
+  if (length < 1.4 * (w + h)) return false
+  // Walk the last third of the stroke: does it come back by the start?
+  let walked = 0
+  for (let i = 1; i < pts.length; i++) {
+    walked += dist(pts[i - 1], pts[i])
+    if (walked >= length * 0.66 && dist(pts[i], first) < near) return true
+  }
+  return false
+}

@@ -63,7 +63,8 @@ export function addBoxSize(label: string): Size {
 }
 
 export const NOTE_WIDTH = 190
-export const NOTE_CHARS_PER_LINE = 22
+// The hand font averages ~9px a character at 16px; 18 fit inside the note's padding.
+export const NOTE_CHARS_PER_LINE = 18
 export const NOTE_LINE_HEIGHT = 20
 
 export function wrapText(text: string, maxChars = NOTE_CHARS_PER_LINE): string[] {

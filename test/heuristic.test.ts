@@ -137,6 +137,25 @@ describe('interpretHeuristic', () => {
     assert.deepEqual(byLabel(result, 'Box 2').shapeIds, ['shape:outline2'])
   })
 
+  it('reads a circle that overshoots its start as closed, but not a U or a C', () => {
+    // A pen circle: starts at the top-left and keeps going about a sixth of a turn past the start.
+    const ring = Array.from({ length: 48 }, (_, i) => {
+      const a = -2.2 + (i / 40) * Math.PI * 2
+      return { x: 300 + Math.cos(a) * 110, y: 100 + Math.sin(a) * 62 }
+    })
+    const u = [{ x: 0, y: 300 }, { x: 0, y: 420 }, { x: 160, y: 420 }, { x: 160, y: 300 }, { x: 150, y: 300 }]
+    const c = Array.from({ length: 30 }, (_, i) => {
+      const a = 0.9 + (i / 29) * (Math.PI * 2 - 1.8)
+      return { x: 500 + Math.cos(a) * 80, y: 380 + Math.sin(a) * 60 }
+    })
+    const result = interpretHeuristic(
+      input([stroke('shape:ring', ring), text('shape:pg', 260, 90, 'postgres'), stroke('shape:u', u), stroke('shape:c', c)]),
+    )
+    const pg = byLabel(result, 'postgres')
+    assert.deepEqual(pg.shapeIds.sort(), ['shape:pg', 'shape:ring'], 'the circle contains its label')
+    assert.equal(result.nodes.length, 1, 'the U and the C are not components')
+  })
+
   it('numbers unlabeled boxes top-to-bottom, left-to-right', () => {
     const result = interpretHeuristic(
       input([geo('shape:c', 0, 300, 100, 60), geo('shape:b', 300, 10, 100, 60), geo('shape:a', 0, 0, 100, 60)]),

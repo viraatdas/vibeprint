@@ -2,7 +2,7 @@
 // (boxes, arrows, strokes, typed text) and never tries to read handwriting.
 // Used when no Claude API key is configured, and as a fallback.
 
-import { dist, distToRect, jaccard, rectArea, rectCenter, rectContainsPoint, rectContainsRect } from '../shared/geometry.js'
+import { dist, distToRect, jaccard, rectArea, rectCenter, rectContainsPoint, rectContainsRect, strokeIsClosed } from '../shared/geometry.js'
 import type { GraphNode, InterpretInput, InterpretationResult, OpenQuestion, Point, Rect, SketchShape } from '../shared/types.js'
 
 // ---------------------------------------------------------------------------
@@ -340,7 +340,7 @@ function isContainerShape(s: SketchShape): boolean {
   if (s.closed) return true
   const pts = s.points
   if (!pts || pts.length < 3) return false
-  return dist(pts[0], pts[pts.length - 1]) <= CLOSE_RATIO * Math.hypot(w, h)
+  return strokeIsClosed(pts, CLOSE_RATIO)
 }
 
 /** Start/end of an open stroke that is long and thin enough to be a connector. */

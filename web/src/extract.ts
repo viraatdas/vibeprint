@@ -6,6 +6,7 @@ import {
   type TLArrowShape,
   type TLShape,
 } from 'tldraw'
+import { strokeIsClosed } from '@shared/geometry'
 import type { Point, Rect, SketchShape, SketchShapeType } from '@shared/types'
 
 const KNOWN: SketchShapeType[] = ['draw', 'geo', 'text', 'arrow', 'line', 'note', 'frame', 'highlight', 'image']
@@ -60,11 +61,8 @@ export function extractSketch(editor: Editor): SketchShape[] {
       const pts = geom.vertices.map((v) => tf.applyToPoint(v)).map((p) => ({ x: r1(p.x), y: r1(p.y) }))
       if (pts.length) {
         s.points = decimate(pts)
-        const first = pts[0]
-        const last = pts[pts.length - 1]
-        const diag = Math.hypot(bounds.w, bounds.h)
         const isClosedProp = (shape.props as { isClosed?: boolean }).isClosed
-        s.closed = !!isClosedProp || (pts.length > 4 && diag > 30 && Math.hypot(first.x - last.x, first.y - last.y) < diag * 0.15)
+        s.closed = !!isClosedProp || strokeIsClosed(pts)
       }
     }
 
