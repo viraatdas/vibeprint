@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeprint</title>
+<meta name="description" content="Sketch your architecture on an iPad. Claude Code or Codex reads it, proposes changes in its own blue pen, and checks off each part as it gets built.">
+<meta name="theme-color" content="#f3f5f7">
+<meta property="og:title" content="Vibeprint">
+<meta property="og:description" content="The sketch is the spec. Draw your architecture on an iPad; your coding agent marks it up and builds against it.">
+<meta property="og:url" content="https://vibeprint.viraat.dev">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Kalam&family=Shantell+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f3f5f7;
+  --sheet: #fbfcfd;
+  --ink: #1d1d1f;
+  --muted: #5b626e;
+  --rule: #dce1e7;
+  --agent: #2e5bff;
+  --agent-wash: rgba(46, 91, 255, 0.08);
+  --ui: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hand: 'Kalam', 'Comic Sans MS', cursive;
+  --pen: 'Shantell Sans', 'Comic Sans MS', cursive;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--ui); }
+a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--agent); }
+:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: 1040px; margin-inline: auto; padding-inline: 24px; }
+.text { max-width: 640px; }
+
+header { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; padding-bottom: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; text-decoration: none; }
+.brand svg { width: 30px; height: 30px; }
+nav { display: flex; gap: 22px; font-size: 15px; }
+nav a { text-decoration: none; color: var(--muted); }
+nav a:hover { color: var(--ink); }
+
+.hero { padding-top: 40px; }
+h1 { font-size: clamp(42px, 7vw, 76px); line-height: 1; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 22px; text-wrap: balance; }
+.lede { font-size: clamp(18px, 2.2vw, 21px); line-height: 1.5; color: var(--muted); margin: 0; max-width: 34em; text-wrap: pretty; }
+.lede strong { color: var(--ink); font-weight: 500; }
+
+.sheet { margin: 44px 0 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 18px; box-shadow: 0 1px 0 rgba(29, 29, 31, 0.04), 0 18px 40px -28px rgba(29, 29, 31, 0.35); overflow: hidden; }
+.scroller { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sketch { display: block; width: 100%; min-width: 680px; height: auto; padding: 18px 18px 6px; }
+.ink { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.hand { font-family: var(--hand); fill: var(--ink); }
+.pen { fill: none; stroke: var(--agent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.pen.thin { stroke-width: 1.4; }
+.pen.check { stroke-width: 3; }
+.pen.pending { stroke-dasharray: 7 6; opacity: 0.85; }
+.agent { font-family: var(--pen); fill: var(--agent); }
+.agent.tag { opacity: 0.5; }
+.agent.kind { opacity: 0.75; }
+.reveal { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; }
+.badge circle { fill: var(--agent); }
+.badge text { fill: #fff; font: 600 12px var(--ui); }
+.cron, .mark-add, .badge, .pen.pending { transition: opacity 0.5s ease; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .sheet:not(.done) .draw, .sheet:not(.done) .reveal { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.55s ease-in-out var(--d) forwards; }
+  .sheet:not(.done) .write { clip-path: inset(-20% 100% -20% 0); animation: write 0.4s linear var(--d) forwards; }
+  .sheet:not(.done) .badge { opacity: 0; animation: pop 0.25s ease-out var(--d) forwards; }
+  .sheet:not(.done) .strip { opacity: 0; transform: translateY(8px); animation: rise 0.4s ease-out 6.85s forwards; }
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes write { to { clip-path: inset(-20% 0 -20% 0); } }
+@keyframes pop { to { opacity: 1; } }
+@keyframes rise { to { opacity: 1; transform: none; } }
+
+/* Accept all: the proposed box goes solid, the struck shape dims. Reject all: the proposals go away. */
+.sheet.accepted .pen.pending { stroke-dasharray: none; opacity: 1; }
+.sheet.accepted .cron { opacity: 0.22; }
+.sheet.accepted .badge, .sheet.rejected .badge { opacity: 0; }
+.sheet.rejected .mark-add, .sheet.rejected .mark-strike { opacity: 0; }
+
+.strip { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 18px 18px; padding: 10px 10px 10px 16px; border: 1px solid var(--rule); border-radius: 14px; background: #fff; font-size: 15px; }
+.who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+.who::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--agent); }
+.summary { font-family: var(--pen); color: var(--agent); flex: 1; min-width: 12em; }
+.strip button { font: 500 15px var(--ui); padding: 9px 16px; border-radius: 10px; border: 1px solid var(--rule); background: #fff; color: var(--ink); cursor: pointer; }
+.strip button.primary { background: var(--agent); border-color: var(--agent); color: #fff; }
+.strip button:hover { border-color: var(--ink); }
+.strip button.primary:hover { background: #2049e0; }
+.strip .again { border: 0; background: none; color: var(--muted); padding: 9px 6px; text-decoration: underline; text-underline-offset: 3px; }
+.caption { margin: 14px 2px 0; font-size: 14px; color: var(--muted); }
+
+section { padding-top: 88px; }
+h2 { font-size: 28px; line-height: 1.2; letter-spacing: -0.015em; font-weight: 650; margin: 0 0 14px; text-wrap: balance; }
+p { margin: 0 0 14px; }
+.muted { color: var(--muted); }
+
+.install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
+.code { position: relative; background: var(--ink); color: #eef0f3; border-radius: 14px; padding: 18px 20px; font: 15px/1.75 var(--mono); overflow-x: auto; }
+.code pre { margin: 0; }
+.code .c { color: #8d95a3; }
+.copy { position: absolute; top: 10px; right: 10px; font: 500 13px var(--ui); color: #eef0f3; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+.copy:hover { background: rgba(255, 255, 255, 0.16); }
+
+ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+ol.steps li { counter-increment: step; border-top: 2px solid var(--ink); padding-top: 14px; }
+ol.steps li::before { content: counter(step); display: block; font: 500 26px/1 var(--pen); color: var(--agent); margin-bottom: 10px; }
+ol.steps h3 { font-size: 18px; margin: 0 0 6px; font-weight: 600; }
+ol.steps p { font-size: 16px; color: var(--muted); margin: 0; }
+
+.rules { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 40px; margin: 26px 0 0; padding: 0; list-style: none; }
+.rules li { font-size: 16px; color: var(--muted); padding-left: 26px; position: relative; }
+.rules li::before { content: ''; position: absolute; left: 0; top: 8px; width: 13px; height: 9px; border-left: 2.4px solid var(--agent); border-bottom: 2.4px solid var(--agent); transform: rotate(-45deg); border-radius: 1px; }
+.rules strong { color: var(--ink); font-weight: 600; }
+
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+blockquote { margin: 18px 0 0; padding: 16px 20px; border-left: 3px solid var(--agent); background: var(--agent-wash); border-radius: 0 12px 12px 0; font-size: 16px; }
+code { font: 0.9em var(--mono); background: rgba(29, 29, 31, 0.06); padding: 1px 5px; border-radius: 5px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.tools code { background: #fff; border: 1px solid var(--rule); padding: 4px 8px; font-size: 13.5px; }
+
+footer { margin-top: 110px; padding-top: 26px; padding-bottom: 48px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 12px 26px; font-size: 15px; color: var(--muted); }
+footer .grow { flex: 1; min-width: 14em; }
+
+@media (max-width: 860px) {
+  .install, .split { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  ol.steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  .wrap { padding-inline: 16px; }
+  .hero { padding-top: 20px; }
+  ol.steps, .rules { grid-template-columns: minmax(0, 1fr); }
+  section { padding-top: 64px; }
+  nav a.hide-sm { display: none; }
+  .strip { margin: 0 12px 12px; }
+  .sketch { min-width: 0; padding: 10px 8px 2px; }
+}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <a class="brand" href="/" aria-label="Vibeprint home"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#f4f6f8"/><path d="M15 20c6-.6 14-.4 19 .3.6 6 .5 13-.2 19-6 .5-13 .4-18.6-.2-.6-6-.6-13-.2-19.1z" fill="none" stroke="#1d1d1f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M34.5 30c4 .2 7.4.1 11-.3m-3.6-4 4 4.2-4.3 4" fill="none" stroke="#2e5bff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 44.5c5.2 4.8 13.8 5 19.6-.6" fill="none" stroke="#2e5bff" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/><path d="M19.5 29.5l4 4.2 8-9" fill="none" stroke="#2e5bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+vibeprint</a>
+  <nav>
+    <a class="hide-sm" href="#start">Install</a>
+    <a href="https://github.com/viraatdas/vibeprint">GitHub</a>
+    <a href="https://www.npmjs.com/package/vibeprint">npm</a>
+  </nav>
+</header>
+
+<main>
+<div class="wrap hero">
+  <h1>The sketch is the spec.</h1>
+  <p class="lede">Draw your system on an iPad. <strong>Claude Code or Codex reads it, proposes changes in its own blue pen, and checks off each part as it gets built.</strong> Your ink is never touched.</p>
+
+  <figure class="sheet" id="sheet" style="margin-left:0;margin-right:0">
+    <div class="scroller"><svg class="sketch" viewBox="10 32 880 414" role="img" aria-labelledby="sketch-title sketch-desc">
+<title id="sketch-title">A hand-drawn architecture sketch with the agent's blue marks</title>
+<desc id="sketch-desc">Black ink: a web app connected to an api, which connects to postgres and an email worker; a cron box also feeds the worker. Blue agent marks: faint tags under each box, a check on the api because it's built, a proposed redis cache in dashed blue, a strike through cron with the note "the worker can run this on a schedule", and the question "retries with backoff?" beside the email worker.</desc>
+<g class="user">
+<path class="ink" d="M37,71 Q81,72.1 103.1,72.1 Q125.1,72.1 147.1,72.1 Q169.2,72.1 191.2,71.6 L213.2,71"/><path class="ink" d="M210,67.8 Q210.9,116.9 209.9,141.4 L209,165.9"/><path class="ink" d="M213.1,158 Q169.3,159.7 147.4,159.8 Q125.5,160 103.6,159.4 Q81.7,158.8 59.8,157.9 L37.9,157"/><path class="ink" d="M41,159.9 Q39.5,113.6 39.5,90.4 L39.5,67.3"/><text class="hand" x="125" y="122" font-size="25" text-anchor="middle">web app</text>
+<path class="ink" d="M325.4,69.5 Q378,68.3 404.3,68.9 Q430.6,69.6 456.9,70.3 L483.2,71"/><path class="ink" d="M481,67.3 Q481.6,114.2 480.3,137.7 L479,161.1"/><path class="ink" d="M482.9,158 Q430.2,158.8 403.9,158.5 Q377.6,158.2 351.3,157.6 L325,157"/><path class="ink" d="M331,159.8 Q330.3,113.5 330.4,90.3 L330.5,67.1"/><text class="hand" x="405" y="122" font-size="25" text-anchor="middle">api</text>
+<path class="ink" d="M635.7,87.6 Q652.7,73 663.9,67.2 Q675.2,61.4 688.7,57.6 Q702.2,53.9 717,52.6 Q731.8,51.2 746.6,52.3 Q761.5,53.3 775.5,56.6 Q789.5,59.9 801.3,65.5 Q813.2,71.1 822.2,78.4 Q831.2,85.8 835.3,94.5 Q839.4,103.2 839.8,112.3 Q840.2,121.3 835.1,129.8 Q830,138.3 821.8,145.7 Q813.6,153.2 802.8,159.4 Q792,165.7 778.1,169.3 Q764.2,172.9 749.2,174.6 Q734.3,176.2 719.1,175.1 Q703.9,173.9 690.5,169.8 Q677.1,165.6 664.8,160.3 Q652.5,155.1 644.5,147.4 Q636.4,139.8 631.5,131.3 Q626.6,122.8 627.1,113.8 Q627.6,104.8 632.2,96.4 Q636.7,87.9 643.6,79.9 Q650.5,71.9 662.4,66.3 L674.3,60.6"/><text class="hand" x="733" y="122" font-size="25" text-anchor="middle">postgres</text>
+<path class="ink" d="M316.1,293.5 Q365.3,292.2 389.9,292.1 Q414.6,291.9 439.2,291.7 Q463.8,291.5 488.4,292.3 L513,293"/><path class="ink" d="M510.5,289.2 Q510.2,336 509.6,359.5 L509,382.9"/><path class="ink" d="M513.3,380 Q463.8,380.8 439.1,380.3 Q414.4,379.8 389.7,379.8 Q364.9,379.8 340.2,379.4 L315.5,379"/><path class="ink" d="M321,381.4 Q319.9,335.5 319.9,312.6 L320,289.7"/><text class="hand" x="415" y="344" font-size="25" text-anchor="middle">email worker</text>
+<g class="cron"><path class="ink" d="M34.5,300 Q87.3,299.6 113.7,299.9 Q140,300.2 166.4,300.6 L192.8,301"/><path class="ink" d="M191.5,297.7 Q191.1,339.3 190,360 L189,380.8"/><path class="ink" d="M193.4,376 Q141.9,376.7 116.1,376.8 Q90.4,376.9 64.7,376 L38.9,375"/><path class="ink" d="M41,378.2 Q41.6,337.9 41.3,317.8 L41,297.6"/><text class="hand" x="115" y="347" font-size="25" text-anchor="middle">cron</text></g>
+<path class="ink" d="M214,114 Q241.5,113.6 255.3,113.4 Q269,113.2 282.8,113.4 Q296.5,113.5 310.3,113.8 L324,114"/><path class="ink" d="M312.4,107.7 L324.4,114.4 L312.2,119.9"/><path class="ink" d="M484,114 Q511.2,114.3 524.8,114.4 Q538.4,114.6 552,114.6 Q565.6,114.5 579.2,114.5 Q592.8,114.4 606.4,114.2 L620,114"/><path class="ink" d="M606,106.3 L619.9,114.2 L606.2,122.2"/><path class="ink" d="M405,162 Q409.4,192.9 410.1,208.4 Q410.8,223.9 411.4,239.4 Q412,254.9 411.5,270.4 L411,286"/><path class="ink" d="M418.1,272.9 L410.7,286 L404.8,272.5"/><path class="ink" d="M194,338 Q224,337.2 239,336.4 Q254,335.5 269,335.3 Q284,335 299,335.5 L314,336"/><path class="ink" d="M301.5,328.9 L313.6,335.8 L301,342.3"/>
+</g>
+<g class="agent-ink">
+<g class="tags"><text class="agent write tag" x="44" y="180" font-size="14" text-anchor="start" style="--d:1.10s">frontend</text><text class="agent write tag" x="334" y="180" font-size="14" text-anchor="start" style="--d:1.10s">service</text><text class="agent write tag" x="676" y="196" font-size="14" text-anchor="start" style="--d:1.10s">database</text><text class="agent write tag" x="324" y="402" font-size="14" text-anchor="start" style="--d:1.10s">worker</text></g>
+<g class="mark-status"><path class="pen draw check" pathLength="1" d="M461,64 Q466.9,71 469.9,73.5 Q472.8,76 477.3,69 Q481.7,62 487.1,55.1 L492.5,48.1" style="--d:6.15s"/></g>
+<g class="mark-add"><mask id="m1" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" style="--d:1.80s"/></mask><path class="pen pending" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" mask="url(#m1)"/><text class="agent write" x="730" y="339" font-size="21" text-anchor="middle" style="--d:2.50s">redis cache</text><text class="agent write kind" x="642" y="283" font-size="13" text-anchor="start" style="--d:2.80s">cache</text><mask id="m2" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" style="--d:3.05s"/></mask><path class="pen pending" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" mask="url(#m2)"/><mask id="m3" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M628.5,297 L633.6,312.2 L618.6,307.7" style="--d:3.45s"/></mask><path class="pen pending" d="M628.5,297 L633.6,312.2 L618.6,307.7" mask="url(#m3)"/><g class="badge" style="--d:3.70s"><circle cx="822" cy="290" r="11"/><text x="822" y="294.5" text-anchor="middle">1</text></g></g>
+<g class="mark-strike"><path class="pen draw" pathLength="1" d="M32.7,382.3 Q73.2,361.5 93,350.3 Q112.9,339.1 132.9,328.3 Q152.9,317.4 173.1,306.9 L193.3,296.5" style="--d:3.85s"/><text class="agent write" x="40" y="410" font-size="16" text-anchor="start" style="--d:4.30s">the worker can run</text><text class="agent write" x="40" y="429" font-size="16" text-anchor="start" style="--d:4.55s">this on a schedule</text><g class="badge" style="--d:4.95s"><circle cx="194" cy="296" r="11"/><text x="194" y="300.5" text-anchor="middle">2</text></g></g>
+<g class="mark-note"><path class="pen draw thin" pathLength="1" d="M504,384 C516,394 522,400 532,402" style="--d:5.10s"/><text class="agent write" x="538" y="410" font-size="16" text-anchor="start" style="--d:5.35s">retries with</text><text class="agent write" x="538" y="429" font-size="16" text-anchor="start" style="--d:5.60s">backoff?</text><g class="badge" style="--d:6.00s"><circle cx="660" cy="402" r="11"/><text x="660" y="406.5" text-anchor="middle">?</text></g></g>
+</g>
+</svg></div>
+    <div class="strip" role="group" aria-label="Proposed changes from the agent">
+      <span class="who">claude</span>
+      <span class="summary" id="summary" aria-live="polite">1 add, 1 strike, 1 question</span>
+      <button type="button" id="reject">Reject all</button>
+      <button type="button" class="primary" id="accept">Accept all</button>
+      <button type="button" class="again" id="again" hidden>Draw it again</button>
+    </div>
+  </figure>
+  <p class="caption">Black is yours. Blue is the agent's, and dashed blue is waiting on you.</p>
+</div>
+
+<section class="wrap install" id="start">
+  <div>
+    <h2>Start in your repo</h2>
+    <p class="muted">Vibeprint runs on your laptop next to your code. The iPad joins over Wi-Fi by scanning the QR code it prints. There's no account and nothing hosted.</p>
+    <p class="muted">Needs Node 20 or newer. <code>init</code> adds the agent rule to <code>AGENTS.md</code> and connects Claude Code. For Codex, run <code>codex mcp add vibeprint -- vibeprint mcp</code>.</p>
+  </div>
+  <div class="code">
+    <button class="copy" type="button" id="copy" aria-label="Copy install commands">Copy</button>
+<pre id="cmds"><span class="c"># once</span>
+npm install -g vibeprint
+
+<span class="c"># in your project</span>
+vibeprint init
+vibeprint</pre>
+  </div>
+</section>
+
+<section class="wrap">
+  <h2>How a session goes</h2>
+  <ol class="steps">
+    <li><h3>Sketch, then submit</h3><p>Boxes, arrows and words with the Pencil. Tap Submit when it says what you mean.</p></li>
+    <li><h3>The agent reads it</h3><p>Faint tags show what it understood. If one is wrong, scribble a correction and submit again.</p></li>
+    <li><h3>It proposes, you decide</h3><p>Changes arrive as small batches of marks. Accept them all with one tap, or go through them one by one.</p></li>
+    <li><h3>The build shows up</h3><p>As code lands, the agent marks each part building, done or blocked, right on your boxes.</p></li>
+  </ol>
+</section>
+
+<section class="wrap">
+  <h2>How the agent draws</h2>
+  <p class="muted text">Every agent action is a mark with an author and a status, kept apart from your ink.</p>
+  <ul class="rules">
+    <li><strong>Always in its own color.</strong> You can tell its ink from yours at a glance, and hide all of it with one button.</li>
+    <li><strong>Never on your strokes.</strong> It adds beside, strikes through, or writes a correction next to yours. An accepted strike dims your shape and doesn't delete it.</li>
+    <li><strong>Waits for your pen.</strong> Marks only appear after you've paused, one at a time, drawn on like a second pen.</li>
+    <li><strong>A few at a time.</strong> Proposals come in short batches with a one-line summary, never a wall of edits.</li>
+    <li><strong>Asks in the margin.</strong> Questions are notes pinned beside a shape. Answer by writing next to them.</li>
+    <li><strong>Quiet by default.</strong> Tags stay faint, and progress marks are a dashed outline turning solid with a check.</li>
+  </ul>
+</section>
+
+<section class="wrap split">
+  <div>
+    <h2>Works with the agent you already use</h2>
+    <p class="muted">One MCP server serves Claude Code and Codex alike. <code>init</code> puts this rule where both of them read it:</p>
+    <blockquote>Read the architecture through the Vibeprint tools before starting work. If the build needs a structural change, propose it as a mark and wait for approval. Never deviate silently.</blockquote>
+    <div class="tools" aria-label="MCP tools">
+      <code>get_architecture</code><code>get_node</code><code>get_sketch</code><code>add</code><code>strike</code><code>rewrite</code><code>annotate</code><code>set_status</code><code>propose</code><code>wait_for_user</code>
+    </div>
+  </div>
+  <div>
+    <h2>Lives in your repo</h2>
+    <p class="muted">The graph, the marks and your drawing are plain JSON in <code>.vibeprint/</code>, committed alongside your code. The spec has history, shows up in diffs, and travels with every clone.</p>
+    <p class="muted">Handwriting is read by Claude when <code>ANTHROPIC_API_KEY</code> is set. Without it, your coding agent does the reading through the same tools, with whatever model it runs on.</p>
+  </div>
+</section>
+</main>
+
+<footer class="wrap">
+  <span class="grow">Vibeprint is MIT licensed. The canvas is built on <a href="https://tldraw.dev">tldraw</a>.</span>
+  <a href="https://github.com/viraatdas/vibeprint">Source on GitHub</a>
+  <a href="https://www.npmjs.com/package/vibeprint">vibeprint on npm</a>
+</footer>
+
+<script>
+(() => {
+  const sheet = document.getElementById('sheet')
+  const summary = document.getElementById('summary')
+  const accept = document.getElementById('accept')
+  const reject = document.getElementById('reject')
+  const again = document.getElementById('again')
+  const settle = (cls, text) => {
+    sheet.classList.add('done', cls)
+    summary.textContent = text
+    accept.hidden = reject.hidden = true
+    again.hidden = false
+    again.focus()
+  }
+  accept.addEventListener('click', () => settle('accepted', 'Accepted. Redis is in the architecture, cron is out.'))
+  reject.addEventListener('click', () => settle('rejected', 'Rejected. The agent keeps building what you drew.'))
+  again.addEventListener('click', () => {
+    // Dropping .done re-applies the draw-on animations, so they play from the start.
+    sheet.classList.remove('accepted', 'rejected', 'done')
+    summary.textContent = '1 add, 1 strike, 1 question'
+    accept.hidden = reject.hidden = false
+    again.hidden = true
+  })
+  const copy = document.getElementById('copy')
+  copy.addEventListener('click', async () => {
+    const text = document.getElementById('cmds').innerText.split('\n').filter((l) => l && !l.startsWith('#')).join('\n')
+    try {
+      await navigator.clipboard.writeText(text)
+      copy.textContent = 'Copied'
+    } catch {
+      copy.textContent = 'Select and copy'
+    }
+    setTimeout(() => (copy.textContent = 'Copy'), 1600)
+  })
+})()
+</script>
+</body>
+</html>

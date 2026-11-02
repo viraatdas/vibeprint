@@ -1,0 +1,222 @@
+import { useEffect, useState } from 'react'
+import { useEditor, useValue, type TLShapeId } from 'tldraw'
+import { batchIsPending, marksOfBatch, summarizeMarks } from '@shared/marks'
+import { api } from '../api'
+import { extractSketch, exportSketchPng } from '../extract'
+import { setCollapsed, toast, ui, useUi } from '../store'
+import { computeLayout } from '../agent/layout'
+import { useFocusMark } from './MarkPopover'
+
+const I = {
+  draw: <path d="M4 20c2.5-.4 4-1.6 5.6-3.4L19 7.2a2 2 0 0 0-2.8-2.8l-9.4 9.4C5 15.6 4.4 17.2 4 20z M14.5 6l3 3" />,
+  arrow: <path d="M5 19 19 5M10 5h9v9" />,
+  text: <path d="M6 6h12M12 6v13M9 19h6" />,
+  eraser: <path d="M8.5 19.5h11M4.8 14.8l9-9a2 2 0 0 1 2.8 0l2.4 2.4a2 2 0 0 1 0 2.8l-7.6 7.6a3 3 0 0 1-4.2 0l-2.4-1a2 2 0 0 1 0-2.8zM9.5 9l6 6" />,
+  select: <path d="M6 4l12 7.5-5.4 1.2L10 18.5z" />,
+  hand: <path d="M8 11V6.5a1.5 1.5 0 0 1 3 0V11m0-5.5V5a1.5 1.5 0 0 1 3 0v6m0-4.5a1.5 1.5 0 0 1 3 0V13c0 4-2.5 7-6 7-2.6 0-4.2-1.3-5.6-3.5L4 13.3a1.5 1.5 0 0 1 2.5-1.6L8 13.5" />,
+  undo: <path d="M9 7 5 11l4 4M5 11h9a5 5 0 0 1 0 10h-2" />,
+  redo: <path d="m15 7 4 4-4 4M19 11h-9a5 5 0 0 0 0 10h2" />,
+  eye: <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
+  eyeOff: <path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.3-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />,
+  panel: <path d="M4 5h16v14H4zM15 5v14" />,
+}
+
+function Icon({ name }: { name: keyof typeof I }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {I[name]}
+    </svg>
+  )
+}
+
+const TOOLS: Array<{ id: string; icon: keyof typeof I; label: string; key: string }> = [
+  { id: 'draw', icon: 'draw', label: 'Pen', key: 'd' },
+  { id: 'arrow', icon: 'arrow', label: 'Arrow', key: 'a' },
+  { id: 'text', icon: 'text', label: 'Text', key: 't' },
+  { id: 'eraser', icon: 'eraser', label: 'Eraser', key: 'e' },
+  { id: 'select', icon: 'select', label: 'Select', key: 'v' },
+  { id: 'hand', icon: 'hand', label: 'Pan', key: 'h' },
+]
+
+export function Toolbar() {
+  const editor = useEditor()
+  const current = useValue('tool', () => editor.getCurrentToolId(), [editor])
+  const canUndo = useValue('undo', () => editor.getCanUndo(), [editor])
+  const canRedo = useValue('redo', () => editor.getCanRedo(), [editor])
+  return (
+    <nav className="vp-tools" aria-label="Drawing tools" onPointerDown={(e) => e.stopPropagation()}>
+      {TOOLS.map((t) => (
+        <button
+          key={t.id}
+          className={`vp-tool${current === t.id ? ' is-on' : ''}`}
+          onClick={() => editor.setCurrentTool(t.id)}
+          aria-pressed={current === t.id}
+          title={`${t.label} (${t.key})`}
+          aria-label={t.label}
+        >
+          <Icon name={t.icon} />
+        </button>
+      ))}
+      <span className="vp-tools-gap" />
+      <button className="vp-tool" onClick={() => editor.undo()} disabled={!canUndo} title="Undo" aria-label="Undo">
+        <Icon name="undo" />
+      </button>
+      <button className="vp-tool" onClick={() => editor.redo()} disabled={!canRedo} title="Redo" aria-label="Redo">
+        <Icon name="redo" />
+      </button>
+    </nav>
+  )
+}
+
+export function SubmitButton() {
+  const editor = useEditor()
+  const submitting = useUi((s) => s.submitting)
+  const reading = useUi((s) => !!s.vp?.interpreter.active)
+  const empty = useValue('empty', () => editor.getCurrentPageShapeIds().size === 0, [editor])
+  const seq = useUi((s) => s.vp?.sketch.seq ?? 0)
+  const interpretedSeq = useUi((s) => s.vp?.graph.sketchSeq ?? 0)
+
+  const submit = async () => {
+    if (ui.get().submitting) return
+    ui.set({ submitting: true })
+    try {
+      editor.complete()
+      const shapes = extractSketch(editor)
+      if (!shapes.length) {
+        toast('Draw something first, then submit.')
+        return
+      }
+      const image = await exportSketchPng(editor)
+      const res = await api.submit({ shapes, image })
+      toast(`Sent sketch #${res.seq} to your agent.`)
+    } catch (err) {
+      toast(`Couldn't submit: ${(err as Error).message}`)
+    } finally {
+      ui.set({ submitting: false })
+    }
+  }
+
+  const label = submitting ? 'Sending…' : reading ? 'Reading sketch…' : 'Submit'
+  return (
+    <div className="vp-submit-wrap" onPointerDown={(e) => e.stopPropagation()}>
+      {seq > 0 && !reading && !submitting && (
+        <span className="vp-submit-meta">{interpretedSeq >= seq ? `Sketch #${seq} read` : `Sketch #${seq} sent`}</span>
+      )}
+      <button className={`vp-submit${reading ? ' is-reading' : ''}`} onClick={submit} disabled={submitting || empty}>
+        {label}
+      </button>
+    </div>
+  )
+}
+
+export function TopBar() {
+  const vp = useUi((s) => s.vp)
+  const collapsed = useUi((s) => s.collapsed)
+  const view = useUi((s) => s.view)
+  const connection = useUi((s) => (s.vp ? 'live' : 'connecting'))
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 30_000)
+    return () => clearInterval(t)
+  }, [])
+  const agents = Object.entries(vp?.agents ?? {}).filter(([name, at]) => name !== 'vibeprint' && now - Date.parse(at) < 15 * 60_000)
+
+  return (
+    <header className="vp-top" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="vp-top-left">
+        <span className={`vp-conn vp-conn-${connection}`} title={connection === 'live' ? 'Connected' : 'Connecting'} />
+        <span className="vp-project">{vp?.project.name ?? 'vibeprint'}</span>
+      </div>
+      <div className="vp-top-right">
+        {agents.map(([name]) => (
+          <span key={name} className="vp-agent-chip" title={`${name} is connected through MCP`}>
+            <span className="vp-dot" />
+            {name}
+          </span>
+        ))}
+        <button className={`vp-pill${collapsed ? '' : ' is-on'}`} onClick={() => setCollapsed(!collapsed)} aria-pressed={!collapsed} title="Show or hide everything the agent drew">
+          <Icon name={collapsed ? 'eyeOff' : 'eye'} />
+          <span>{collapsed ? 'Agent ink hidden' : 'Agent ink'}</span>
+        </button>
+        <button className="vp-pill vp-icon-only" onClick={() => ui.set({ view: view === 'desk' ? 'pad' : 'desk' })} title={view === 'desk' ? 'Hide chat' : 'Show chat'} aria-label="Toggle chat panel">
+          <Icon name="panel" />
+        </button>
+      </div>
+    </header>
+  )
+}
+
+/** One line per pending batch: what the agent wants, and one tap to take it. */
+export function BatchStrip() {
+  const editor = useEditor()
+  const vp = useUi((s) => s.vp)
+  const revealed = useUi((s) => s.revealed)
+  const collapsed = useUi((s) => s.collapsed)
+  const focus = useFocusMark()
+  const [busy, setBusy] = useState(false)
+  if (!vp || collapsed) return null
+  const batches = vp.batches.filter(
+    (b) => b.kind === 'proposal' && batchIsPending(b, vp.marks) && b.markIds.some((id) => revealed.has(id)),
+  )
+  if (!batches.length) return null
+  const b = batches[0]
+  const pendingMarks = marksOfBatch(b, vp.marks).filter((m) => m.status === 'pending')
+  const allRevealed = b.markIds.every((id) => revealed.has(id) || vp.marks.find((m) => m.id === id)?.status !== 'pending')
+
+  const decideAll = async (decision: 'accept' | 'reject') => {
+    setBusy(true)
+    try {
+      await api.decideBatch(b.id, decision)
+      ui.set({ selected: null, review: null })
+    } catch (err) {
+      toast((err as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+  const review = () => {
+    const first = pendingMarks[0]
+    if (!first) return
+    ui.set({ review: { batchId: b.id, index: 0 }, selected: first.id })
+    const layout = computeLayout(vp, (id) => {
+      const r = editor.getShapePageBounds(id as TLShapeId)
+      return r ? { x: r.x, y: r.y, w: r.w, h: r.h } : undefined
+    })
+    focus(layout.marks.find((m) => m.mark.id === first.id))
+  }
+
+  return (
+    <section className="vp-strip" aria-label="Agent proposals" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="vp-strip-text">
+        <span className="vp-strip-who">
+          <span className="vp-dot" />
+          {b.author}
+          {batches.length > 1 && <span className="vp-strip-more"> · {batches.length - 1} more waiting</span>}
+        </span>
+        <span className="vp-strip-summary">{summarizeMarks(pendingMarks)}</span>
+        {b.message && <span className="vp-strip-msg">{b.message}</span>}
+      </div>
+      <div className="vp-strip-actions">
+        <button className="vp-btn" onClick={review} disabled={busy}>
+          Review
+        </button>
+        <button className="vp-btn" onClick={() => decideAll('reject')} disabled={busy}>
+          Reject all
+        </button>
+        <button className="vp-btn vp-btn-agent" onClick={() => decideAll('accept')} disabled={busy || !allRevealed}>
+          Accept all
+        </button>
+      </div>
+    </section>
+  )
+}
+
+export function Toast() {
+  const message = useUi((s) => s.toast)
+  if (!message) return null
+  return (
+    <div className="vp-toast" role="status">
+      {message}
+    </div>
+  )
+}
