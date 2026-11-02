@@ -24,3 +24,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Live-test the Claude API path and a real iPad + Pencil — still unverified
 - **By:** worker · 2026-11-02T22:41:29.318Z
 
+## worker: Merged release PR #1 into main (the user asked
+- **Did:** Merged release PR #1 into main (the user asked for no PRs going forward), then fixed the landing page 404: the merge had triggered Vercel's Git integration with Root Directory '.', so the project now builds from site/ and https://vibeprint-woad.vercel.app is 200 again. Recorded a clean end-to-end demo (iPad layout, real MCP server as Claude Code: sketch, submit, 1 add/1 strike/1 question drawn on, Accept all, done/building marks, laptop Spec tab) and sent it to the user. Three product fixes found while recording, committed to main as 41b37f7: freehand circles that overshoot their start now count as closed (before, the node was bound to its label); margin-note text wraps at 18 characters so it stays inside the note; an iPad user agent alone selects the pad layout. Tests 67/67, typecheck and build clean. Still blocked on the user: the Netlify approval for the vibeprint.viraat.dev DNS record (viraat.dev is registered at Name.com via Netlify, not Namecheap; a watcher adds the CNAME on approval) and npm publish (npm browser login expires in about 5 minutes, so it needs the user present).
+- **Interfaces:** Vercel project 'vibeprint' rootDirectory=site (no build) | git push to main deploys the site | shared/geometry strokeIsClosed(points) used by web extract + heuristic
+- **Delivery:** blocked; release; target=npm:vibeprint@0.1.0 + https://vibeprint.viraat.dev; revision=41b37f7; verifiedAt=2026-11-02T23:16:38Z; checks=5
+- **Follow-ups:**
+  - Publish to npm with the user present (`! npm login`, then npm publish) — npm browser sessions expire in ~5 minutes
+  - After the Netlify approval: confirm `vercel domains verify vibeprint.viraat.dev` and HTTPS — the DNS record depends on that approval
+  - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — so handwriting is read on Submit with the user's existing agent login
+- **By:** worker · 2026-11-02T23:16:39.549Z
+
