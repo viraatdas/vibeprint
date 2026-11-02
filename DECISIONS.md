@@ -12,3 +12,15 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Free root disk space (other projects' /tmp data fills it) [out of lane] — not ours to delete; it may block future builds/tests on this machine
 - **By:** worker · 2026-11-02T02:06:51.273Z
 
+## worker: Publish pass for Vibeprint 0.1.0. Committed the work on
+- **Did:** Publish pass for Vibeprint 0.1.0. Committed the work on branch release-0.1.0 (d0523fe) and opened PR https://github.com/viraatdas/vibeprint/pull/1 into main. Made the package npm-ready: metadata, a LICENSE (MIT, with a note that tldraw has its own license), a prepublishOnly gate, and `init` writing `npx -y vibeprint mcp` when it runs through npx. Verified the packed tarball in a clean install (init, serve, canvas page and assets, 15 MCP tools, canvas still visible past tldraw's 5s license check). Built and deployed a static landing page (site/) to the Vercel project 'vibeprint': https://vibeprint-woad.vercel.app returns 200, and vibeprint.viraat.dev is attached to the project. Blocked on user auth: npm publish (the npm token here returns 401) and the DNS record for vibeprint.viraat.dev (DNS is on Netlify, whose token here returns 401). Answered the API-key question: the key is optional, and without it the coding agent does the interpretation through MCP.
+- **Interfaces:** npm package 'vibeprint' (bin vibeprint, files dist/) | site/index.html static page on Vercel project 'vibeprint' | DNS needed: CNAME vibeprint.viraat.dev -> cname.vercel-dns.com (Netlify DNS zone viraat.dev)
+- **Delivery:** blocked; release; target=npm:vibeprint@0.1.0 + https://vibeprint.viraat.dev; revision=d0523fe; verifiedAt=2026-11-02T22:41:28Z; checks=7
+- **Follow-ups:**
+  - npm publish once the user logs in (`npm login`) — the npm token on this machine returns 401
+  - Add CNAME vibeprint -> cname.vercel-dns.com in Netlify DNS for viraat.dev, then `vercel domains verify vibeprint.viraat.dev` — the Netlify token here returns 401
+  - Merge PR #1 into main — the default-branch rule meant committing on a branch
+  - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — so handwriting is read on Submit using the user's existing agent login
+  - Live-test the Claude API path and a real iPad + Pencil — still unverified
+- **By:** worker · 2026-11-02T22:41:29.318Z
+
