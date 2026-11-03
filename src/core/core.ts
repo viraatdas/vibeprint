@@ -49,6 +49,8 @@ export const FILES = {
   canvas: 'canvas.json',
   runtime: 'runtime',
   daemon: 'runtime/daemon.json',
+  relay: 'runtime/relay.json',
+  token: 'runtime/token',
   assets: 'assets',
 } as const
 

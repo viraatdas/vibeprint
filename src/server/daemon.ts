@@ -12,6 +12,7 @@ import { describeMark } from '../shared/marks.js'
 import type { InterpretationResult, MarkStatus, SketchShape } from '../shared/types.js'
 import { CanvasRoom } from './sync.js'
 import { GitCheckpointer } from './git.js'
+import { connectRelay, type RelayClient } from './relay.js'
 import { interpretHeuristic } from '../interpret/heuristic.js'
 import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/claude.js'
 
@@ -29,6 +30,8 @@ export interface DaemonOptions {
   quiet?: boolean
   /** Override the Claude client/config (tests). */
   claude?: { available: boolean; model: string }
+  /** Hosted relay base URL (e.g. https://live.vibeprint.viraat.dev) so the iPad works on any network. Off when unset. */
+  relay?: string | null
 }
 
 export interface Daemon {
@@ -38,6 +41,10 @@ export interface Daemon {
   canvas: CanvasRoom
   git: GitCheckpointer
   urls: string[]
+  /** LAN links (with the access token) for an iPad on the same network. */
+  lanUrls: string[]
+  /** Tunnel to the hosted relay, when enabled. */
+  relay: RelayClient | null
   close(): Promise<void>
 }
 
@@ -155,8 +162,17 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   const claude = opts.claude ?? claudeConfig()
   core.setInterpreter(claude.available ? { mode: 'claude-api', model: claude.model, active: false } : { mode: 'heuristic', active: false })
 
-  // Keep the token across restarts so the iPad stays signed in.
-  const token = existing?.token ?? crypto.randomBytes(12).toString('base64url')
+  // Keep the token across restarts (clean ones too) so the iPad, and its home-screen icon,
+  // stay signed in. It lives in runtime/, which is gitignored.
+  const tokenFile = core.file(FILES.token)
+  let token = ''
+  try {
+    token = fs.readFileSync(tokenFile, 'utf8').trim()
+  } catch {}
+  if (!/^[\w-]{16,}$/.test(token)) {
+    token = existing?.token ?? crypto.randomBytes(12).toString('base64url')
+    fs.writeFileSync(tokenFile, token + '\n', { mode: 0o600 })
+  }
   const canvas = new CanvasRoom(core, log)
   const gitCp = new GitCheckpointer(root, VIBEPRINT_DIR, {
     enabled: opts.commit !== false,
@@ -307,6 +323,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   }
 
   const assetsDir = core.file(FILES.assets)
+  let relay: RelayClient | null = null
 
   // ---- auth -------------------------------------------------------------------
   // Same-machine callers (the laptop browser, MCP servers) skip the token, but
@@ -378,8 +395,11 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     const route = `${method} ${p}`
     let m: RegExpMatchArray | null
     switch (route) {
-      case 'GET /api/config':
-        return send(res, 200, clientConfig)
+      case 'GET /api/config': {
+        // Through the relay the page lives on the relay's domain, so it needs the relay's tldraw key.
+        const viaRelay = relay?.host && String(req.headers.host ?? '').toLowerCase() === relay.host
+        return send(res, 200, viaRelay ? { ...clientConfig, tldrawLicenseKey: relay!.licenseKey ?? undefined } : clientConfig)
+      }
       case 'GET /api/state':
         return send(res, 200, core.getState())
       case 'GET /api/events': {
@@ -536,11 +556,18 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   })
 
   const lan = host === '0.0.0.0' || host === '::' ? lanAddresses() : host === '127.0.0.1' || host === 'localhost' ? [] : [host]
-  const urls = [...lan.map((a) => `http://${a}:${port}/?t=${token}`), `http://localhost:${port}/`]
+  const lanUrls = lan.map((a) => `http://${a}:${port}/?t=${token}`)
+  const urls = [...lanUrls, `http://localhost:${port}/`]
   const info: DaemonInfo = { pid: process.pid, port, host, token, startedAt: new Date().toISOString(), root, urls }
-  core.writeFileAtomic(FILES.daemon, JSON.stringify(info, null, 2))
+  const writeInfo = () => {
+    info.urls = [...(relay?.url ? [`${relay.url}?t=${token}`] : []), ...urls]
+    core.writeFileAtomic(FILES.daemon, JSON.stringify(info, null, 2))
+  }
+  relay = opts.relay ? connectRelay({ relay: opts.relay, port, identityFile: core.file(FILES.relay), log, onChange: writeInfo }) : null
+  writeInfo()
 
   const close = async () => {
+    relay?.close()
     clearInterval(heartbeat)
     for (const w of waiters) w.done({ events: [], cursor: cursor(), timedOut: true })
     for (const s of streams) s.end()
@@ -555,7 +582,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     if (cur?.pid === process.pid) fs.rmSync(core.file(FILES.daemon), { force: true })
   }
 
-  return { port, token, core, canvas, git: gitCp, urls, close }
+  return { port, token, core, canvas, git: gitCp, urls, lanUrls, relay, close }
 }
 
 export async function runDaemon(opts: DaemonOptions): Promise<void> {
@@ -565,17 +592,30 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
   out()
   out(`  vibeprint · ${path.basename(d.core.root)}`)
   out()
-  const lanUrl = d.urls.find((u) => !u.includes('localhost'))
+  const lanUrl = d.lanUrls[0]
+  // The relay link only becomes the main one once the relay has a tldraw license for its
+  // domain; without one tldraw hides the canvas after 5 seconds on a public https site.
+  const relayBase = d.relay ? await d.relay.waitReady(5000) : null
+  const relayUrl = relayBase ? `${relayBase}?t=${d.token}` : null
+  const relayFirst = !!(relayUrl && d.relay?.licenseKey)
+  const ipadUrl = relayFirst ? relayUrl : (lanUrl ?? relayUrl)
   if (opts.dev) out(`  dev UI      http://localhost:5173/   (vite, proxies to :${d.port})`)
   out(`  laptop      http://localhost:${d.port}/`)
-  if (lanUrl) out(`  iPad        ${lanUrl}`)
+  if (relayFirst) {
+    out(`  iPad        ${relayUrl}   (any network)`)
+    if (lanUrl) out(`  same Wi-Fi  ${lanUrl}`)
+  } else {
+    if (lanUrl) out(`  iPad        ${lanUrl}   (same network)`)
+    if (relayUrl) out(`  anywhere    ${relayUrl}   (relay has no tldraw license yet; the canvas closes after 5s there)`)
+    else if (d.relay) out(`  anywhere    relay unreachable (${opts.relay}); retrying in the background`)
+  }
   out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
   out(`  state       ${path.join(VIBEPRINT_DIR)}/ ${d.git.enabled ? '(committed at checkpoints)' : '(not committed)'}`)
   out()
-  if (lanUrl) {
+  if (ipadUrl) {
     try {
       const qr = (await import('qrcode-terminal')).default
-      qr.generate(lanUrl, { small: true }, (code: string) => out(code.split('\n').map((l) => '  ' + l).join('\n')))
+      qr.generate(ipadUrl, { small: true }, (code: string) => out(code.split('\n').map((l) => '  ' + l).join('\n')))
       out('  scan with the iPad camera, then Share → Add to Home Screen for full-screen')
       out()
     } catch {}

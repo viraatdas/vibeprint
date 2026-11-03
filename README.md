@@ -25,7 +25,11 @@ vibeprint             # starts the canvas; prints a laptop URL, an iPad URL and 
 
 Or without installing: `npx vibeprint init`, then `npx vibeprint`.
 
-Scan the QR code with the iPad (same Wi-Fi), then **Share → Add to Home Screen** for a full-screen canvas. The iPad link carries an access token; the laptop link at `localhost` doesn't need one.
+Scan the QR code with the iPad, then **Share → Add to Home Screen** for a full-screen canvas. The iPad link carries an access token; the laptop link at `localhost` doesn't need one. The token and the link stay the same across restarts, so the home-screen icon keeps working.
+
+### iPad on a different network
+
+`vibeprint` also connects out to a hosted relay, so the iPad can reach it from any network: a cloud VM, office Wi-Fi with client isolation, or a phone hotspot. The banner prints a second link, `https://<id>.live.vibeprint.viraat.dev/?t=…`. Each repo gets its own subdomain, so sessions can't see each other's cookies or API. The relay keeps nothing; it forwards requests to your machine, and your machine still checks the access token on every one. `--no-relay` (or `VIBEPRINT_RELAY=off`) keeps everything on your network. The relay's source is in [`relay/`](relay/server.mjs).
 
 ### Connect your agents
 
@@ -83,7 +87,7 @@ Batches hold at most 6 marks, and an agent can have at most 12 waiting for revie
 | `marks.json` | Every agent mark (`author`, `batchId`, `type`, `target`, `status`) and the batches they came in. |
 | `chat.json` | The chat panel history. |
 | `assets/` | Images pasted onto the canvas. |
-| `runtime/` | Port and access token of the running canvas. Git-ignored. |
+| `runtime/` | Port, access token and relay address of the canvas. Git-ignored. |
 
 The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpretation, and each round of decisions. Anything else you have staged stays staged. It skips commits during a merge or rebase; turn it off with `vibeprint serve --no-commit`.
 
@@ -93,6 +97,7 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | --- | --- |
 | `vibeprint serve --port 4747 --host 0.0.0.0` | Where the canvas listens. Use `--host 127.0.0.1` to keep it off the network. |
 | `--no-commit` | Write `.vibeprint/` but never commit. |
+| `--no-relay`, `VIBEPRINT_RELAY` | Turn off the hosted relay, or point it at your own (`VIBEPRINT_RELAY=https://relay.example.com`). |
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |
 | `VIBEPRINT_AUTHOR` | Override the author name an MCP client's marks carry (default: detected `claude` / `codex`). |

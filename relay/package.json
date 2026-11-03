@@ -1,0 +1,9 @@
+{
+  "name": "vibeprint-relay",
+  "private": true,
+  "description": "Relay that lets an iPad on any network reach a running vibeprint (deployed to Fly as vibeprint-relay).",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": { "start": "node server.mjs" },
+  "dependencies": { "ws": "8.18.3" }
+}
