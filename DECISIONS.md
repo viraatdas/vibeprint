@@ -62,3 +62,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — handwriting would be read on Submit using the user's existing agent login
 - **By:** worker · 2026-11-03T21:16:21.977Z
 
+## worker: Added a hosted relay so the iPad reaches vibeprint
+- **Did:** Added a hosted relay so the iPad reaches vibeprint from any network, including when vibeprint runs on a cloud VM. vibeprint keeps one outbound WebSocket to the relay and replays its requests (streamed HTTP + the canvas WebSocket) against the local server. The relay runs on Fly as vibeprint-relay (exla org, one always-on shared-cpu machine, sjc); each session gets https://<id>.live.vibeprint.viraat.dev. DNS: live, *.live and _acme-challenge.live CNAMEs added in the Netlify viraat.dev zone; both Fly certs issued. Relayed requests are marked forwarded so the access token is always required. The token now survives clean restarts, and the relay id is kept per repo. Verified: 76/76 tests (9 new relay tests), and an emulated iPad loaded the canvas through the live relay; a stroke drawn there synced to the laptop view. Blocked: tldraw removes the canvas 5s after mount on the relay domain until there's a license, so the relay link isn't the default yet and npm 0.2.0 isn't published.
+- **Interfaces:** vibeprint serve [--no-relay] / VIBEPRINT_RELAY (default https://live.vibeprint.viraat.dev) | relay protocol v1 in relay/server.mjs | .vibeprint/runtime/token, runtime/relay.json | Fly app vibeprint-relay (org exla), secret TLDRAW_LICENSE_KEY turns on the relay link as the main iPad link
+- **Delivery:** blocked; web; target=https://live.vibeprint.viraat.dev + npm:vibeprint@0.2.0; revision=fd7ba03; verifiedAt=2026-11-03T21:48:18Z; checks=6
+- **Follow-ups:**
+  - Get a tldraw hobby license for *.live.vibeprint.viraat.dev and set it on Fly — without it tldraw hides the canvas after 5s on the relay domain; fly secrets set TLDRAW_LICENSE_KEY=... -a vibeprint-relay
+  - Publish vibeprint 0.2.0 with the relay — npm users only get the relay with a new version; needs one security-key approval
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines, forcing re-approvals
+- **By:** worker · 2026-11-03T21:48:18.904Z
+
