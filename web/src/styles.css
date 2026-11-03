@@ -716,6 +716,23 @@ button:disabled {
 .vp-pill:disabled {
   color: var(--vp-muted);
 }
+.vp-pill.is-reading {
+  color: var(--vp-agent-ink);
+  border-color: color-mix(in srgb, var(--vp-agent) 45%, white);
+}
+.vp-pill.is-reading svg {
+  animation: vp-breathe 1.4s ease-in-out infinite;
+}
+@keyframes vp-breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vp-pill.is-reading svg {
+    animation: none;
+  }
+}
 @media (max-width: 560px) {
   .vp-pill-label {
     display: none;

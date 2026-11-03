@@ -17,6 +17,7 @@ import type {
   MarkType,
   OpenQuestion,
   Point,
+  RepoMap,
   SketchShape,
 } from '../shared/types.js'
 
@@ -178,6 +179,28 @@ export async function interpretWithClaude(
     opts.signal ? { signal: opts.signal } : undefined,
   )
   return validateInterpretation(readJson(response, 'interpretation'), input)
+}
+
+/**
+ * Map a repository from a digest of its code (tree, manifests, README, entry points).
+ * `prompt` carries the instructions, the quick scan and the digest.
+ */
+export async function mapRepoWithClaude(
+  prompt: string,
+  schema: object,
+  opts: { client?: AnthropicLike; model?: string; signal?: AbortSignal } = {},
+): Promise<RepoMap> {
+  const client = opts.client ?? defaultClient()
+  const response = await client.beta.messages.create(
+    {
+      ...COMMON,
+      model: opts.model ?? claudeConfig().model,
+      output_config: { effort: 'medium', format: { type: 'json_schema', schema: schema as Record<string, unknown> } },
+      messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
+    },
+    opts.signal ? { signal: opts.signal } : undefined,
+  )
+  return readJson(response, 'map') as RepoMap
 }
 
 /** The user-turn text: shape listing, previous graph, open questions. */

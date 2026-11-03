@@ -18,6 +18,7 @@ import {
   type GraphNode,
   type InterpretationResult,
   type InterpreterInfo,
+  MapperInfo,
   type Mark,
   type MarkData,
   type MarkInput,
@@ -86,6 +87,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   chat: ChatMessage[] = []
   sketch: Sketch | null = null
   interpreter: InterpreterInfo = { mode: 'heuristic', active: false }
+  mapper: MapperInfo = { mode: 'none', active: false }
   agents: Record<string, string> = {}
 
   private autosave: boolean
@@ -190,6 +192,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
         hasImage: !!this.sketch?.hasImage,
       },
       interpreter: this.interpreter,
+      mapper: this.mapper,
       agents: this.agents,
     }
   }
@@ -249,6 +252,13 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       openQuestions: this.openQuestions().map((q) => ({ markId: q.markId, text: q.text, target: targetName(g, q.target) })),
       recentDecisions: decided.map((m) => ({ markId: m.id, author: m.author, status: m.status, describe: describeMark(m, g), decidedAt: m.decidedAt })),
       rule: AGENT_RULE,
+      ...(this.sketch?.source === 'map' && g.interpretedBy === 'vibeprint'
+        ? {
+            mapNote: this.mapper.active
+              ? `This map is a quick scan of folders and imports; ${this.mapper.label} is reading the code and will redraw it in a minute.`
+              : 'This map came from a quick scan of folder names and imports, not from reading the code. If it is wrong, read the code and redraw it with map_architecture.',
+          }
+        : {}),
     }
   }
 
@@ -745,6 +755,11 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   touchAgent(author: string): void {
     this.agents[author] = isoNow()
     this.changed('agents')
+  }
+
+  setMapper(info: Partial<MapperInfo>): void {
+    this.mapper = { ...this.mapper, ...info }
+    this.changed('interpreter')
   }
 
   setInterpreter(info: Partial<InterpreterInfo>): void {

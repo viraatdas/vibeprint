@@ -41,6 +41,8 @@ export interface MapResult {
   /** Whether it replaced an earlier map nobody had edited. */
   replaced: boolean
   shapeIds: string[]
+  /** Set when a model is now reading the code to redraw this quick map ("Claude Code"). */
+  reading?: string
 }
 
 export interface DecideBody {

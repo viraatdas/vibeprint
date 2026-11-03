@@ -324,6 +324,20 @@ export interface InterpreterInfo {
   lastError?: string
 }
 
+/** Reading the code to redraw a quick map accurately. */
+export interface MapperInfo {
+  /** What reads the code on this machine; 'none' leaves the quick scan as the map. */
+  mode: 'api' | 'claude-code' | 'codex' | 'none'
+  /** "Claude", "Claude Code", "Codex". */
+  label?: string
+  active: boolean
+  startedAt?: string
+  finishedAt?: string
+  /** How the last reading ended: redrawn, kept (the user had edited the map), or failed. */
+  outcome?: 'redrawn' | 'kept' | 'failed'
+  lastError?: string
+}
+
 export interface VibeprintState {
   project: { name: string; root: string }
   graph: Graph
@@ -332,6 +346,7 @@ export interface VibeprintState {
   chat: ChatMessage[]
   sketch: { seq: number; createdAt: string | null; shapeCount: number; hasImage: boolean }
   interpreter: InterpreterInfo
+  mapper: MapperInfo
   /** Agents seen through MCP recently (author -> last seen ISO time). */
   agents: Record<string, string>
 }
@@ -359,6 +374,8 @@ export interface ArchitectureView {
   openQuestions: Array<{ markId: string; text: string; target: string }>
   recentDecisions: Array<{ markId: string; author: string; status: MarkStatus; describe: string; decidedAt?: string }>
   rule: string
+  /** Set when the map came from the quick scan and nothing has read the code since. */
+  mapNote?: string
 }
 
 export const AGENT_RULE =

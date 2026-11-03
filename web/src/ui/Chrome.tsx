@@ -148,7 +148,9 @@ export function useMapRepo() {
         setTimeout(stop, 4000)
       }
       const things = `${res.nodes} component${res.nodes === 1 ? '' : 's'} and ${res.edges} connection${res.edges === 1 ? '' : 's'}`
-      toast(res.replaced ? `Redrew the map: ${things}.` : `Mapped ${things} from the code. Move, erase or sketch over them.`)
+      if (res.reading && !res.nodes) toast(`${res.reading} is reading the code to map it…`)
+      else if (res.reading) toast(`Drew a quick map: ${things}. ${res.reading} is reading the code to redraw it properly…`)
+      else toast(res.replaced ? `Redrew the map: ${things}.` : `Mapped ${things} from the code. Move, erase or sketch over them.`)
     } catch (err) {
       toast(`Couldn't map the repo: ${(err as Error).message}`)
     } finally {
@@ -164,7 +166,8 @@ export function EmptyStart() {
   const hasGraph = useUi((s) => !!s.vp?.graph.nodes.length)
   const live = useUi((s) => !!s.vp)
   const { mapping, run } = useMapRepo()
-  if (!empty || hasGraph || !live) return null
+  const reading = useUi((s) => !!s.vp?.mapper?.active)
+  if (!empty || hasGraph || !live || reading) return null
   return (
     <div className="vp-start">
       <div className="vp-start-card" onPointerDown={(e) => e.stopPropagation()}>
@@ -193,6 +196,18 @@ export function TopBar() {
   }, [])
   const agents = Object.entries(vp?.agents ?? {}).filter(([name, at]) => name !== 'vibeprint' && now - Date.parse(at) < 15 * 60_000)
   const { mapping, run: mapRepo } = useMapRepo()
+  const reader = vp?.mapper
+  const reading = !!reader?.active
+  // Say how the reading ended, once.
+  const [wasReading, setWasReading] = useState(false)
+  useEffect(() => {
+    if (reading) return setWasReading(true)
+    if (!wasReading || !reader) return
+    setWasReading(false)
+    if (reader.outcome === 'redrawn') toast(`${reader.label} read the code and redrew the map.`)
+    else if (reader.outcome === 'kept') toast(`${reader.label} finished reading the code. You'd edited the map, so it stays; tap Map this repo to redraw it.`)
+    else if (reader.outcome === 'failed') toast(`Couldn't read the code with ${reader.label}: ${reader.lastError ?? 'it failed'}. The quick map stays.`)
+  }, [reading, wasReading, reader])
 
   return (
     <header className="vp-top" onPointerDown={(e) => e.stopPropagation()}>
@@ -207,9 +222,14 @@ export function TopBar() {
             {name}
           </span>
         ))}
-        <button className="vp-pill" onClick={mapRepo} disabled={mapping} title="Draw the components this repo already has, and how they connect">
+        <button
+          className={`vp-pill${reading ? ' is-reading' : ''}`}
+          onClick={mapRepo}
+          disabled={mapping || reading}
+          title={reading ? `${reader?.label} is reading the code to redraw the map` : 'Draw the components this repo already has, and how they connect'}
+        >
           <Icon name="map" />
-          <span className="vp-pill-label">{mapping ? 'Mapping…' : 'Map this repo'}</span>
+          <span className="vp-pill-label">{mapping ? 'Mapping…' : reading ? 'Reading the code…' : 'Map this repo'}</span>
         </button>
         <button className={`vp-pill${collapsed ? '' : ' is-on'}`} onClick={() => setCollapsed(!collapsed)} aria-pressed={!collapsed} title="Show or hide everything the agent drew">
           <Icon name={collapsed ? 'eyeOff' : 'eye'} />

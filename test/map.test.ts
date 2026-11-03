@@ -221,7 +221,7 @@ describe('drawing a map', () => {
 describe('mapping through the daemon and the files', () => {
   test('POST /api/map scans the repo and every open canvas gets the drawing', async () => {
     const root = fixtureRepo()
-    const d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, relay: null })
+    const d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, relay: null, mapper: null })
     try {
       const ws = new WebSocket(`ws://127.0.0.1:${d.port}/api/canvas`)
       const messages: any[] = []

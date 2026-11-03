@@ -409,3 +409,61 @@ export function scanRepo(root: string): RepoMap {
   }
   return { nodes: [...nodes, ...systems.values()], edges }
 }
+
+const DIGEST_MANIFESTS = /^(package\.json|pyproject\.toml|requirements\.txt|go\.mod|Cargo\.toml|Gemfile|pom\.xml|build\.gradle(\.kts)?|composer\.json|mix\.exs|Dockerfile|docker-compose\.ya?ml|compose\.ya?ml|fly\.toml|vercel\.json|netlify\.toml|wrangler\.toml|Procfile|serverless\.ya?ml|app\.yaml)$/
+const ENTRY = /^(index|main|server|app|cli|worker|api|mod|lib|__main__|manage)\.\w+$/
+const DIGEST_MAX = 120_000
+
+/**
+ * What a model needs to map the repo without opening files itself: the folder tree with code
+ * counts, the manifests and deploy configs, the README, and the top of each entry point.
+ */
+export function repoDigest(root: string): string {
+  const files = listFiles(root)
+  const tree = buildTree(files)
+  const out: string[] = []
+  let size = 0
+  const add = (s: string) => {
+    if (size + s.length > DIGEST_MAX) return false
+    out.push(s)
+    size += s.length
+    return true
+  }
+  const read = (f: string, max: number) => {
+    try {
+      const text = fs.readFileSync(path.join(root, f), 'utf8')
+      return text.length > max ? text.slice(0, max) + '\n…' : text
+    } catch {
+      return null
+    }
+  }
+  const lines: string[] = []
+  const walk = (d: Dir, depth: number) => {
+    for (const c of [...d.children.values()].sort((a, b) => b.code - a.code)) {
+      if (lines.length >= 250) return
+      lines.push(`${'  '.repeat(depth)}${c.name}/ (${c.code} code files)`)
+      if (depth < 3) walk(c, depth + 1)
+    }
+  }
+  walk(tree, 0)
+  add(`Folders:\n${lines.join('\n')}\nTop-level files: ${tree.files.slice(0, 60).join(', ')}`)
+  const readme = files.find((f) => /^readme(\.\w+)?$/i.test(f))
+  if (readme) add(`\n--- ${readme} ---\n${read(readme, 6000) ?? ''}`)
+  const kept = (f: string) => !f.split('/').slice(0, -1).some((p) => SKIP_DIRS.has(p.toLowerCase()) || p.startsWith('.'))
+  for (const f of files.filter((f) => kept(f) && DIGEST_MANIFESTS.test(path.posix.basename(f))).slice(0, 40)) {
+    let text = read(f, 4000)
+    if (text && path.posix.basename(f) === 'package.json') {
+      try {
+        const pj = JSON.parse(text)
+        text = JSON.stringify({ name: pj.name, bin: pj.bin, main: pj.main, scripts: pj.scripts, dependencies: Object.keys(pj.dependencies ?? {}), workspaces: pj.workspaces }, null, 1)
+      } catch {}
+    }
+    if (text && !add(`\n--- ${f} ---\n${text}`)) break
+  }
+  const entries = files.filter((f) => kept(f) && CODE.test(f) && ENTRY.test(path.posix.basename(f)) && f.split('/').length <= 4)
+  for (const f of entries.sort((a, b) => a.split('/').length - b.split('/').length).slice(0, 24)) {
+    const text = read(f, 3500)
+    if (text && !add(`\n--- ${f} (start) ---\n${text}`)) break
+  }
+  return out.join('\n')
+}

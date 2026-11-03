@@ -23,7 +23,7 @@ import {
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.4.0'
+const VERSION = '0.5.0'
 
 export interface McpServerOptions {
   root: string
@@ -214,6 +214,7 @@ export function formatArchitecture(a: ArchitectureView, ctx: { mode: Backend['mo
         `An interpreter may be on it; if not, call get_sketch and then interpret.`,
     )
   }
+  if (a.mapNote) L.push(`Note: ${a.mapNote}`)
   if (!a.nodes.length) {
     L.push(
       latest

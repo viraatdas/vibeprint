@@ -8,7 +8,7 @@ Draw your architecture on an iPad. Your coding agent reads it, marks it up in it
 - **Your ink is never touched.** The agent draws beside your shapes, strikes through them, or writes a corrected label next to yours. An accepted strike dims the shape instead of deleting it. One button hides all agent ink.
 - **The build shows up on the sketch.** As code lands, agents flip node statuses and boxes go from dashed to solid with a check.
 - **It lives in the repo.** The graph, marks and canvas are plain JSON in `.vibeprint/`, committed to git at each checkpoint, so the spec travels with the code and has history.
-- **Start from the code you already have.** **Map this repo** draws the project's existing architecture (apps, services, workers, databases, third-party APIs, and how they connect) as boxes and arrows you can edit like your own, all marked as built. Sketch the changes on top; your agent checks the map against the code.
+- **Start from the code you already have.** **Map this repo** draws the project's existing architecture (apps, services, workers, databases, third-party APIs, and how they connect) as boxes and arrows you can edit like your own, all marked as built, then has Claude Code, Codex or the Claude API read the code and redraw it accurately. Sketch the changes on top.
 - **One MCP server, any agent.** Claude Code and Codex both talk to it; no custom integration.
 
 ## Quick start
@@ -57,9 +57,12 @@ The MCP server works with or without the canvas running. With `vibeprint serve` 
 
 ### Starting from an existing codebase
 
-Tap **Map this repo** (top bar, or the card on an empty canvas). Vibeprint reads the repo without any model, in well under a second: components come from the folder layout and package manifests (a Next.js or Vite app at the root is one component; a folder with its own `package.json` is another), connections from the imports between them, and databases, queues and third-party APIs from the packages each component uses. The map lands as ordinary ink beside anything you've drawn, laid out with callers above what they call, and becomes the architecture with every component marked done.
+Tap **Map this repo** (top bar, or the card on an empty canvas). It happens in two steps:
 
-It's a first draft. Connected agents hear about it, and they can correct it with marks or redraw it properly with `map_architecture` after reading the code. You can also ask your agent to map the project from the start. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Boxes you draw afterwards come in as planned work next to what's built.
+1. **A quick map, at once.** Without any model, in well under a second: components from the folder layout and package manifests (a Next.js or Vite app at the root is one component; a folder with its own `package.json` is another), connections from the imports between them, and databases, queues and third-party APIs from the packages each component uses.
+2. **The real map, about a minute later.** A model reads the code and redraws the map in place: the Claude API if `ANTHROPIC_API_KEY` is set, otherwise the Claude Code or Codex you already have installed, run headless and read-only in the repo (Claude Code gets only its Read, Grep and Glob tools; Codex runs in its read-only sandbox). The top bar shows **Reading the code…** meanwhile. If you edit the quick map before it finishes, your edits win and the reading is dropped.
+
+The map lands as ordinary ink beside anything you've drawn, laid out with callers above what they call, and becomes the architecture with every component marked done. Boxes you draw afterwards come in as planned work next to what's built. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Connected agents hear about the map and can correct it with marks, or redraw it with `map_architecture`.
 
 ### Drawing
 
@@ -112,6 +115,7 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | `--no-relay`, `VIBEPRINT_RELAY` | Turn off the hosted relay, or point it at your own (`VIBEPRINT_RELAY=https://relay.example.com`). |
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |
+| `VIBEPRINT_MAPPER` | What reads the code for **Map this repo**: `api`, `claude`, `codex`, or `off` for the quick map only (default: the first available, in that order). |
 | `VIBEPRINT_AUTHOR` | Override the author name an MCP client's marks carry (default: detected `claude` / `codex`). |
 
 ## Development

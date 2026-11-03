@@ -10,7 +10,8 @@ import { readDaemonInfo } from '../core/daemon-client.js'
 import { DEFAULT_PORT, TOKEN_COOKIE, TOKEN_HEADER, type ActivityEvent, type ClientConfig, type DaemonInfo, type WaitResult } from '../shared/api.js'
 import { describeMark } from '../shared/marks.js'
 import type { InterpretationResult, MarkStatus, RepoMap, SketchShape } from '../shared/types.js'
-import { mapCode } from '../core/map.js'
+import { mapCode, mapState } from '../core/map.js'
+import { detectMapper, mapWithModel, type Mapper } from '../interpret/code-map.js'
 import { scanRepo } from '../core/repo-scan.js'
 import { CanvasRoom } from './canvas.js'
 import { GitCheckpointer } from './git.js'
@@ -20,7 +21,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.4.0'
+const VERSION = '0.5.0'
 
 export interface DaemonOptions {
   root: string
@@ -32,6 +33,8 @@ export interface DaemonOptions {
   quiet?: boolean
   /** Override the Claude client/config (tests). */
   claude?: { available: boolean; model: string }
+  /** What reads the code to redraw a quick map. Detected when unset; null turns it off (tests). */
+  mapper?: Mapper | null
   /** Hosted relay base URL (e.g. https://live.vibeprint.viraat.dev) so the iPad works on any network. Off when unset. */
   relay?: string | null
 }
@@ -278,6 +281,54 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     core.applyInterpretation(result, by)
   }
 
+  // ---- mapping the code ---------------------------------------------------------
+  const mapper = opts.mapper === undefined ? detectMapper() : opts.mapper
+  core.setMapper({ mode: mapper?.kind ?? 'none', label: mapper?.label })
+  let reading: AbortController | null = null
+  const drawMap = (map: RepoMap, author: string, chat?: string) => {
+    const plan = mapCode(core, canvas.list(), map, author, chat ? { chat } : {})
+    canvas.apply(plan.put, plan.del)
+    pushActivity({ type: 'map', at: new Date().toISOString(), seq: core.sketch!.seq, author, nodes: plan.nodes, edges: plan.edges }, undefined, author)
+    return plan
+  }
+  const stopReading = () => {
+    if (!reading) return
+    reading.abort()
+    reading = null
+    core.setMapper({ active: false })
+  }
+  /** Have a model read the code, then redraw the quick map in place if nobody has edited it. */
+  const readCode = async (scan: RepoMap) => {
+    if (!mapper) return
+    reading?.abort()
+    const ctrl = new AbortController()
+    reading = ctrl
+    const now = () => new Date().toISOString()
+    core.setMapper({ active: true, startedAt: now(), finishedAt: undefined, outcome: undefined, lastError: undefined })
+    try {
+      const map = await mapWithModel(root, scan, mapper, { signal: ctrl.signal, model: claude.model })
+      if (ctrl.signal.aborted) return
+      if (mapState(core, canvas.list()) === 'edited') {
+        core.addChat('system', 'vibeprint', `${mapper.label} finished reading the code, but the map was edited in the meantime, so it stays as it is. Tap Map this repo to redraw it.`)
+        core.setMapper({ outcome: 'kept' })
+        return
+      }
+      drawMap(map, mapper.author, `${mapper.label} read the code and redrew the map`)
+      core.setMapper({ outcome: 'redrawn' })
+    } catch (err) {
+      if (ctrl.signal.aborted) return
+      const msg = ((err as Error).message ?? String(err)).slice(0, 300)
+      log(`map: ${mapper.label} could not read the code: ${msg}`)
+      core.setMapper({ outcome: 'failed', lastError: msg })
+      core.addChat('system', 'vibeprint', `Couldn't read the code with ${mapper.label} (${msg}). The quick map stays; your coding agent can redraw it with map_architecture.`)
+    } finally {
+      if (reading === ctrl) {
+        reading = null
+        core.setMapper({ active: false, finishedAt: now() })
+      }
+    }
+  }
+
   // ---- chat assistant (only with an API key) --------------------------------
   const chatReply = async (text: string) => {
     if (!claude.available) return
@@ -436,20 +487,34 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         return send(res, 200, { seq: sketch.seq, interpreter: core.interpreter.mode })
       }
       case 'POST /api/map': {
-        // Draw the code's architecture: scanned here, or sent by a coding agent that read the code.
+        // Draw the code's architecture: sent by a coding agent that read the code, or a quick
+        // scan drawn at once and then redrawn from a model's reading of the code.
         const body = await readJson<{ author?: string; map?: RepoMap }>(req)
         const author = (body.author ?? 'vibeprint').toLowerCase()
         if (body.author) core.touchAgent(author)
         running?.abort()
         running = null
         core.setInterpreter({ active: false })
-        const map = body.map ?? scanRepo(root)
-        if (!map.nodes?.length) throw new VibeprintError(body.map ? 'The map has no components.' : 'Found no source code to map in this repo. Ask your coding agent to map it with map_architecture, or sketch it yourself.', 422)
-        const plan = mapCode(core, canvas.list(), map, author)
-        canvas.apply(plan.put, plan.del)
-        const seq = core.sketch!.seq
-        pushActivity({ type: 'map', at: new Date().toISOString(), seq, author, nodes: plan.nodes, edges: plan.edges }, undefined, author)
-        return send(res, 200, { seq, nodes: plan.nodes, edges: plan.edges, replaced: plan.replaced, shapeIds: plan.put.map((s) => s.id) })
+        if (body.map) {
+          stopReading()
+          if (!body.map.nodes?.length) throw new VibeprintError('The map has no components.')
+          const plan = drawMap(body.map, author)
+          return send(res, 200, { seq: core.sketch!.seq, nodes: plan.nodes, edges: plan.edges, replaced: plan.replaced, shapeIds: plan.put.map((s) => s.id) })
+        }
+        const scan = scanRepo(root)
+        if (!scan.nodes.length && !mapper) {
+          throw new VibeprintError('Found no source code to map in this repo. Ask your coding agent to map it with map_architecture, or sketch it yourself.', 422)
+        }
+        const plan = scan.nodes.length ? drawMap(scan, author) : null
+        if (mapper) void readCode(scan)
+        return send(res, 200, {
+          seq: core.sketch?.seq ?? 0,
+          nodes: plan?.nodes ?? 0,
+          edges: plan?.edges ?? 0,
+          replaced: plan?.replaced ?? false,
+          shapeIds: plan?.put.map((s) => s.id) ?? [],
+          ...(mapper ? { reading: mapper.label } : {}),
+        })
       }
       case 'POST /api/interpretation': {
         const body = await readJson<{ author?: string; result: InterpretationResult }>(req)
@@ -590,6 +655,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     for (const w of waiters) w.done({ events: [], cursor: cursor(), timedOut: true })
     for (const s of streams) s.end()
     running?.abort()
+    stopReading()
     core.flush()
     canvas.close()
     await gitCp.commitNow().catch(() => null)
@@ -623,6 +689,8 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
     if (lanUrl) out(`  iPad        ${lanUrl}   (same network)`)
     if (d.relay) out(`  anywhere    relay unreachable (${opts.relay}); retrying in the background`)
   }
+  const m = d.core.mapper
+  out(`  map         ${m.mode === 'none' ? 'quick scan (install Claude Code or Codex, or set ANTHROPIC_API_KEY, to have the code read)' : `quick scan, then ${m.label} reads the code`}`)
   out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
   out(`  state       ${path.join(VIBEPRINT_DIR)}/ ${d.git.enabled ? '(committed at checkpoints)' : '(not committed)'}`)
   out()
