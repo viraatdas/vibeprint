@@ -34,3 +34,12 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — so handwriting is read on Submit with the user's existing agent login
 - **By:** worker · 2026-11-02T23:16:39.549Z
 
+## worker: vibeprint.viraat.dev is live. After the user approved a Netlify
+- **Did:** vibeprint.viraat.dev is live. After the user approved a Netlify login ticket, added CNAME vibeprint.viraat.dev -> cname.vercel-dns.com in the viraat.dev Netlify DNS zone (HTTP 201). Vercel verified the domain and issued a Let's Encrypt certificate (CN vibeprint.viraat.dev, valid to 2027-01-31), and https://vibeprint.viraat.dev returns 200 with the landing page. npm publish still needs the user at the keyboard (`npm login`).
+- **Interfaces:** https://vibeprint.viraat.dev -> Vercel project 'vibeprint' (root site/) | Netlify DNS zone viraat.dev: CNAME vibeprint -> cname.vercel-dns.com
+- **Delivery:** verified; web; target=https://vibeprint.viraat.dev; revision=bc22be2; verifiedAt=2026-11-03T00:20:16Z; checks=4
+- **Follow-ups:**
+  - Publish vibeprint@0.1.0 to npm once the user runs `npm login` — npm browser sessions expire in ~5 minutes, so it needs the user present
+  - Refresh NETLIFY_AUTH_TOKEN in the Rudder cloud secrets vault — the vault copy is revoked (401); this machine now uses a fresh CLI login in ~/.config/netlify
+- **By:** worker · 2026-11-03T00:20:17.575Z
+
