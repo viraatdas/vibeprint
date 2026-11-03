@@ -72,3 +72,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines, forcing re-approvals
 - **By:** worker · 2026-11-03T21:48:18.904Z
 
+
+## worker: Released vibeprint@0.2.0 with the relay link as the default
+- **Did:** Released vibeprint@0.2.0 with the relay link as the default iPad link, and set up automatic npm releases. The user's tldraw trial key (expires 2026-11-17) is set on the relay as a Fly secret, so tldraw stays up there; the relay health check reports licensed:true. Releases need no approvals now: .github/workflows/publish.yml publishes through npm trusted publishing (OIDC) whenever main has a version that isn't on npm yet. Verified from the registry with an empty home and cache: npx -y vibeprint@0.2.0 printed iPad https://<id>.live.vibeprint.viraat.dev/?t=… (any network). From the public internet, that link returned 401 without the token, 302 plus a cookie with it, then 200 on /api/state with the license present in /api/config. The test server stopped cleanly, and the relay dropped the session.
+- **Interfaces:** npm vibeprint@0.2.0 (latest) | .github/workflows/publish.yml: push to main touching package.json -> npm publish via trusted publishing (trust id 5c94212d) | Fly secret TLDRAW_LICENSE_KEY on vibeprint-relay (trial, expires 2026-11-17)
+- **Delivery:** verified; release; target=npm:vibeprint@0.2.0; revision=576b3f9; verifiedAt=2026-11-03T22:06:57Z; checks=5
+- **Follow-ups:**
+  - Replace tldraw with vibeprint's own canvas before 2026-11-17 — the trial key on the relay expires then and tldraw would hide the canvas on the relay domain again; the user wants no tldraw license or dependency
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines, forcing re-approvals
+  - Try it on a real iPad with Apple Pencil — testing so far used an emulated iPad in headless Chromium
+- **By:** worker · 2026-11-03T22:06:57Z
