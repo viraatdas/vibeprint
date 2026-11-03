@@ -1,4 +1,6 @@
-# Publishes vibeprint to npm whenever main has a version that isn't on npm yet.
+# Publishes vibeprint to npm whenever main has a version that isn't on npm yet, and puts the
+# same tarball on a GitHub release. npm takes a few minutes before installs see a new version;
+# the release link installs the moment this run finishes.
 # Uses npm trusted publishing (OIDC): no token, no 2FA prompt, and npm records provenance.
 # Set up once with: npm trust github vibeprint --file publish.yml --repo viraatdas/vibeprint --allow-publish
 name: Publish to npm
@@ -6,11 +8,11 @@ name: Publish to npm
 on:
   push:
     branches: [main]
-    paths: [package.json]
+    paths: [package.json, .github/workflows/publish.yml]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write # the GitHub release
   id-token: write
 
 concurrency:
@@ -30,12 +32,30 @@ jobs:
       - run: npm install -g npm@11
       - run: npm ci
       - name: Publish if this version is new
+        id: publish
         run: |
           version=$(node -p "require('./package.json').version")
-          if npm view "vibeprint@$version" version >/dev/null 2>&1; then
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # The version document updates as soon as npm accepts a publish; `npm view` lags minutes.
+          if [ "$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/vibeprint/$version")" = "200" ]; then
             echo "vibeprint@$version is already on npm; nothing to do."
             exit 0
           fi
           git config --global user.email "ci@vibeprint.dev"
           git config --global user.name "vibeprint CI"
           npm publish --access public
+      - name: Attach the tarball to a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.publish.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "Release v$VERSION already exists."
+            exit 0
+          fi
+          [ -f dist/cli.js ] || npm run build
+          npm pack --ignore-scripts
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/v$VERSION/vibeprint-$VERSION.tgz"
+          gh release create "v$VERSION" "vibeprint-$VERSION.tgz" --target "$GITHUB_SHA" --title "vibeprint $VERSION" \
+            --notes "Install now, before npm lists it (a few minutes): \`npm install -g $url\` or \`npx -y $url\`"
+          echo "Installable now: npx -y $url"
