@@ -1,6 +1,6 @@
 {
   "name": "vibeprint",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Draw your architecture on an iPad; your coding agent reads it, marks it up, and tracks the build against it.",
   "type": "module",
   "license": "MIT",

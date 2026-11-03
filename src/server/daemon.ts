@@ -18,7 +18,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.1.0'
+const VERSION = '0.2.0'
 
 export interface DaemonOptions {
   root: string
