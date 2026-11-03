@@ -59,7 +59,6 @@ export interface WaitResult {
 /** Runtime config the daemon injects into the web page. */
 export interface ClientConfig {
   project: string
-  tldrawLicenseKey?: string
   agentColor: string
   inkColor: string
 }

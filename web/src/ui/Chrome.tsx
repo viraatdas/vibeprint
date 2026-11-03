@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useEditor, useValue, type TLShapeId } from 'tldraw'
+import { extractSketch } from '@shared/canvas'
 import { batchIsPending, marksOfBatch, summarizeMarks } from '@shared/marks'
 import { api } from '../api'
-import { extractSketch, exportSketchPng } from '../extract'
+import { useEditor, useEditorValue } from '../canvas/Board'
+import type { ToolId } from '../canvas/editor'
+import { exportSketchPng } from '../canvas/png'
 import { setCollapsed, toast, ui, useUi } from '../store'
 import { computeLayout } from '../agent/layout'
 import { useFocusMark } from './MarkPopover'
@@ -19,6 +21,7 @@ const I = {
   eye: <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />,
   eyeOff: <path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.3-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />,
   panel: <path d="M4 5h16v14H4zM15 5v14" />,
+  trash: <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5" />,
 }
 
 function Icon({ name }: { name: keyof typeof I }) {
@@ -29,7 +32,7 @@ function Icon({ name }: { name: keyof typeof I }) {
   )
 }
 
-const TOOLS: Array<{ id: string; icon: keyof typeof I; label: string; key: string }> = [
+const TOOLS: Array<{ id: ToolId; icon: keyof typeof I; label: string; key: string }> = [
   { id: 'draw', icon: 'draw', label: 'Pen', key: 'd' },
   { id: 'arrow', icon: 'arrow', label: 'Arrow', key: 'a' },
   { id: 'text', icon: 'text', label: 'Text', key: 't' },
@@ -40,16 +43,17 @@ const TOOLS: Array<{ id: string; icon: keyof typeof I; label: string; key: strin
 
 export function Toolbar() {
   const editor = useEditor()
-  const current = useValue('tool', () => editor.getCurrentToolId(), [editor])
-  const canUndo = useValue('undo', () => editor.getCanUndo(), [editor])
-  const canRedo = useValue('redo', () => editor.getCanRedo(), [editor])
+  const current = useEditorValue((e) => e.tool)
+  const canUndo = useEditorValue((e) => e.canUndo())
+  const canRedo = useEditorValue((e) => e.canRedo())
+  const selected = useEditorValue((e) => e.selection.size)
   return (
     <nav className="vp-tools" aria-label="Drawing tools" onPointerDown={(e) => e.stopPropagation()}>
       {TOOLS.map((t) => (
         <button
           key={t.id}
           className={`vp-tool${current === t.id ? ' is-on' : ''}`}
-          onClick={() => editor.setCurrentTool(t.id)}
+          onClick={() => editor.setTool(t.id)}
           aria-pressed={current === t.id}
           title={`${t.label} (${t.key})`}
           aria-label={t.label}
@@ -57,6 +61,11 @@ export function Toolbar() {
           <Icon name={t.icon} />
         </button>
       ))}
+      {selected > 0 && (
+        <button className="vp-tool" onClick={() => editor.deleteSelection()} title="Delete (⌫)" aria-label="Delete selection">
+          <Icon name="trash" />
+        </button>
+      )}
       <span className="vp-tools-gap" />
       <button className="vp-tool" onClick={() => editor.undo()} disabled={!canUndo} title="Undo" aria-label="Undo">
         <Icon name="undo" />
@@ -72,7 +81,7 @@ export function SubmitButton() {
   const editor = useEditor()
   const submitting = useUi((s) => s.submitting)
   const reading = useUi((s) => !!s.vp?.interpreter.active)
-  const empty = useValue('empty', () => editor.getCurrentPageShapeIds().size === 0, [editor])
+  const empty = useEditorValue((e) => e.isEmpty())
   const seq = useUi((s) => s.vp?.sketch.seq ?? 0)
   const interpretedSeq = useUi((s) => s.vp?.graph.sketchSeq ?? 0)
 
@@ -81,12 +90,13 @@ export function SubmitButton() {
     ui.set({ submitting: true })
     try {
       editor.complete()
-      const shapes = extractSketch(editor)
+      const shapes = extractSketch(editor.doc)
       if (!shapes.length) {
         toast('Draw something first, then submit.')
         return
       }
-      const image = await exportSketchPng(editor)
+      const ink = getComputedStyle(document.documentElement).getPropertyValue('--vp-ink').trim() || '#1d1d1f'
+      const image = await exportSketchPng(editor.doc, ink)
       const res = await api.submit({ shapes, image })
       toast(`Sent sketch #${res.seq} to your agent.`)
     } catch (err) {
@@ -113,7 +123,9 @@ export function TopBar() {
   const vp = useUi((s) => s.vp)
   const collapsed = useUi((s) => s.collapsed)
   const view = useUi((s) => s.view)
-  const connection = useUi((s) => (s.vp ? 'live' : 'connecting'))
+  const live = useUi((s) => !!s.vp)
+  const canvasStatus = useEditorValue((e) => e.status)
+  const connection = live && canvasStatus === 'live' ? 'live' : 'connecting'
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 30_000)
@@ -178,10 +190,7 @@ export function BatchStrip() {
     const first = pendingMarks[0]
     if (!first) return
     ui.set({ review: { batchId: b.id, index: 0 }, selected: first.id })
-    const layout = computeLayout(vp, (id) => {
-      const r = editor.getShapePageBounds(id as TLShapeId)
-      return r ? { x: r.x, y: r.y, w: r.w, h: r.h } : undefined
-    })
+    const layout = computeLayout(vp, (id) => editor.getShapePageBounds(id))
     focus(layout.marks.find((m) => m.mark.id === first.id))
   }
 

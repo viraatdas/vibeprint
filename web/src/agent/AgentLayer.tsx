@@ -1,5 +1,5 @@
 import { memo, useMemo, type CSSProperties, type ReactNode } from 'react'
-import { useEditor, useValue, type TLShapeId } from 'tldraw'
+import { useEditor, useEditorValue } from '../canvas/Board'
 import { nodeLabel } from '@shared/graph'
 import type { Rect } from '@shared/types'
 import { useUi } from '../store'
@@ -19,22 +19,14 @@ export function AgentLayer() {
   const animating = useUi((s) => s.animating)
   const shownTags = useUi((s) => s.shownTags)
   const selected = useUi((s) => s.selected)
-  const cam = useValue('camera', () => editor.getCamera(), [editor])
-  const layout = useValue(
-    'vp-layout',
-    () =>
-      vp
-        ? computeLayout(vp, (id) => {
-            const b = editor.getShapePageBounds(id as TLShapeId)
-            return b ? { x: b.x, y: b.y, w: b.w, h: b.h } : undefined
-          })
-        : null,
-    [editor, vp],
-  )
+  const cam = useEditorValue((e) => e.camera)
+  // Marks follow the user's shapes, so the layout reruns whenever the document changes.
+  const docVersion = useEditorValue((e) => e.docVersion)
+  const layout = useMemo(() => (vp ? computeLayout(vp, (id) => editor.getShapePageBounds(id)) : null), [editor, vp, docVersion])
 
   const dimCss = useMemo(() => {
     if (!layout || collapsed || !layout.dimmed.length) return ''
-    return layout.dimmed.map((id) => `.tl-shape[data-shape-id="${CSS.escape(id)}"]`).join(',\n') + ' { opacity: 0.22 !important; transition: opacity .4s; }'
+    return layout.dimmed.map((id) => `.vp-shape[data-shape-id="${CSS.escape(id)}"]`).join(',\n') + ' { opacity: 0.22 !important; transition: opacity .4s; }'
   }, [layout, collapsed])
 
   if (!vp || !layout || collapsed) return null

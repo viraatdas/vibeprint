@@ -20,8 +20,6 @@ export interface RelayClient {
   readonly url: string | null
   /** Host the relay serves us on, for matching incoming requests. */
   readonly host: string | null
-  /** tldraw license key the relay holds for its domain (null until the operator sets one). */
-  readonly licenseKey: string | null
   readonly connected: boolean
   /** Resolves with the URL on the first successful connect, or null after `timeoutMs`. */
   waitReady(timeoutMs: number): Promise<string | null>
@@ -70,7 +68,6 @@ export function connectRelay(opts: { relay: string; port: number; identityFile: 
   let ident = loadIdentity(opts.identityFile, opts.relay)
   let ws: WebSocket | null = null
   let url: string | null = null
-  let licenseKey: string | null = null
   let closed = false
   let backoff = 1000
   let retry: NodeJS.Timeout | null = null
@@ -103,7 +100,6 @@ export function connectRelay(opts: { relay: string; port: number; identityFile: 
     switch (f.t) {
       case 'ready':
         url = String(f.url)
-        licenseKey = typeof f.license === 'string' && f.license ? f.license : null
         backoff = 1000
         log(`relay: ${url}`)
         for (const w of readyWaiters) w(url)
@@ -220,9 +216,6 @@ export function connectRelay(opts: { relay: string; port: number; identityFile: 
     },
     get host() {
       return url ? new URL(url).host.toLowerCase() : null
-    },
-    get licenseKey() {
-      return licenseKey
     },
     get connected() {
       return url !== null

@@ -10,7 +10,7 @@ import { readDaemonInfo } from '../core/daemon-client.js'
 import { DEFAULT_PORT, TOKEN_COOKIE, TOKEN_HEADER, type ActivityEvent, type ClientConfig, type DaemonInfo, type WaitResult } from '../shared/api.js'
 import { describeMark } from '../shared/marks.js'
 import type { InterpretationResult, MarkStatus, SketchShape } from '../shared/types.js'
-import { CanvasRoom } from './sync.js'
+import { CanvasRoom } from './canvas.js'
 import { GitCheckpointer } from './git.js'
 import { connectRelay, type RelayClient } from './relay.js'
 import { interpretHeuristic } from '../interpret/heuristic.js'
@@ -18,7 +18,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.2.0'
+const VERSION = '0.3.0'
 
 export interface DaemonOptions {
   root: string
@@ -301,7 +301,6 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   const webDir = path.join(packageRoot(), 'dist', 'web')
   const clientConfig: ClientConfig = {
     project: path.basename(root),
-    tldrawLicenseKey: process.env.TLDRAW_LICENSE_KEY || undefined,
     agentColor: AGENT_COLOR,
     inkColor: INK_COLOR,
   }
@@ -395,11 +394,8 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     const route = `${method} ${p}`
     let m: RegExpMatchArray | null
     switch (route) {
-      case 'GET /api/config': {
-        // Through the relay the page lives on the relay's domain, so it needs the relay's tldraw key.
-        const viaRelay = relay?.host && String(req.headers.host ?? '').toLowerCase() === relay.host
-        return send(res, 200, viaRelay ? { ...clientConfig, tldrawLicenseKey: relay!.licenseKey ?? undefined } : clientConfig)
-      }
+      case 'GET /api/config':
+        return send(res, 200, clientConfig)
       case 'GET /api/state':
         return send(res, 200, core.getState())
       case 'GET /api/events': {
@@ -525,17 +521,16 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     })
   })
 
-  // ---- tldraw sync over websockets ----------------------------------------------
+  // ---- canvas sync over websockets -----------------------------------------------
   const wss = new WebSocketServer({ noServer: true, maxPayload: 32 * 1024 * 1024 })
   server.on('upgrade', (req, socket, head) => {
     const url = new URL(req.url ?? '/', 'http://local')
-    if (url.pathname !== '/api/sync') return socket.destroy()
+    if (url.pathname !== '/api/canvas') return socket.destroy()
     if (!authorized(req, url)) {
       socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
       return socket.destroy()
     }
-    const sessionId = url.searchParams.get('sessionId') ?? crypto.randomUUID()
-    wss.handleUpgrade(req, socket, head, (ws) => canvas.connect(ws, sessionId))
+    wss.handleUpgrade(req, socket, head, (ws) => canvas.connect(ws))
   })
 
   // ---- listen ---------------------------------------------------------------------
@@ -593,21 +588,17 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
   out(`  vibeprint · ${path.basename(d.core.root)}`)
   out()
   const lanUrl = d.lanUrls[0]
-  // The relay link only becomes the main one once the relay has a tldraw license for its
-  // domain; without one tldraw hides the canvas after 5 seconds on a public https site.
   const relayBase = d.relay ? await d.relay.waitReady(5000) : null
   const relayUrl = relayBase ? `${relayBase}?t=${d.token}` : null
-  const relayFirst = !!(relayUrl && d.relay?.licenseKey)
-  const ipadUrl = relayFirst ? relayUrl : (lanUrl ?? relayUrl)
+  const ipadUrl = relayUrl ?? lanUrl
   if (opts.dev) out(`  dev UI      http://localhost:5173/   (vite, proxies to :${d.port})`)
   out(`  laptop      http://localhost:${d.port}/`)
-  if (relayFirst) {
+  if (relayUrl) {
     out(`  iPad        ${relayUrl}   (any network)`)
     if (lanUrl) out(`  same Wi-Fi  ${lanUrl}`)
   } else {
     if (lanUrl) out(`  iPad        ${lanUrl}   (same network)`)
-    if (relayUrl) out(`  anywhere    ${relayUrl}   (relay has no tldraw license yet; the canvas closes after 5s there)`)
-    else if (d.relay) out(`  anywhere    relay unreachable (${opts.relay}); retrying in the background`)
+    if (d.relay) out(`  anywhere    relay unreachable (${opts.relay}); retrying in the background`)
   }
   out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
   out(`  state       ${path.join(VIBEPRINT_DIR)}/ ${d.git.enabled ? '(committed at checkpoints)' : '(not committed)'}`)

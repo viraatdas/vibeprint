@@ -16,7 +16,6 @@ Usage:
 Environment:
   ANTHROPIC_API_KEY        Use Claude directly for the first interpretation pass and the chat panel.
   VIBEPRINT_MODEL          Model for interpretation and chat (default: claude-opus-5-5).
-  TLDRAW_LICENSE_KEY       Only needed when serving the canvas over https on a public domain.
   VIBEPRINT_RELAY          Relay base URL (default https://live.vibeprint.viraat.dev), or "off".
 `
 

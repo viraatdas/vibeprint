@@ -9,7 +9,7 @@
   --vp-agent-ink: #1f3fd1;
   --vp-ok: #2a9d62;
   --vp-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --vp-hand: 'VP Hand', 'tldraw_draw', 'Comic Sans MS', cursive;
+  --vp-hand: 'VP Hand', 'Comic Sans MS', cursive;
   --vp-safe-b: env(safe-area-inset-bottom, 0px);
   --vp-safe-t: env(safe-area-inset-top, 0px);
   color-scheme: light;
@@ -62,8 +62,120 @@ button:disabled {
   min-width: 0;
   overflow: hidden;
 }
-.vp-canvas .tl-theme__light {
-  --tl-color-background: var(--vp-paper);
+
+/* ---------- board: your ink ---------- */
+.vp-board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--vp-paper);
+}
+.vp-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: crosshair;
+}
+.vp-stage[data-tool='select'] {
+  cursor: default;
+}
+.vp-stage[data-tool='text'] {
+  cursor: text;
+}
+.vp-stage[data-tool='eraser'] {
+  cursor: cell;
+}
+.vp-stage[data-tool='hand'],
+.vp-stage[data-space] {
+  cursor: grab;
+}
+.vp-stage[data-panning] {
+  cursor: grabbing;
+}
+.vp-ink-layer,
+.vp-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.vp-ink {
+  fill: var(--vp-ink);
+  stroke: none;
+}
+.vp-arrow path {
+  fill: none;
+  stroke: var(--vp-ink);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.vp-shape.is-erasing {
+  opacity: 0.25;
+}
+.vp-text-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+.vp-text-shape,
+.vp-text-input {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  font-family: var(--vp-hand);
+  line-height: 1.35;
+  white-space: pre;
+  color: var(--vp-ink);
+}
+.vp-text-mirror {
+  left: 0;
+  top: 0;
+  visibility: hidden;
+}
+.vp-text-input {
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  caret-color: var(--vp-agent);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.vp-text-input.is-on {
+  opacity: 1;
+  pointer-events: auto;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--vp-agent) 7%, transparent);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--vp-agent) 7%, transparent);
+}
+.vp-sel {
+  fill: none;
+  stroke: var(--vp-agent);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.vp-marquee {
+  fill: color-mix(in srgb, var(--vp-agent) 8%, transparent);
+  stroke: var(--vp-agent);
+  stroke-width: 1;
 }
 
 /* ---------- gate / loading ---------- */
@@ -214,10 +326,6 @@ button:disabled {
   flex-direction: column;
   align-items: flex-end;
   gap: 6px;
-}
-/* Leave room for tldraw's license watermark in the corner. */
-.tl-container:has(.tl-watermark_SEE-LICENSE) .vp-submit-wrap {
-  bottom: calc(58px + var(--vp-safe-b));
 }
 .vp-submit-meta {
   font-size: 12.5px;

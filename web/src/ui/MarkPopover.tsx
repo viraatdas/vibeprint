@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useContainer, useEditor } from 'tldraw'
+import { useContainer, useEditor } from '../canvas/Board'
 import { describeMark, marksOfBatch } from '@shared/marks'
 import type { Decision, Mark } from '@shared/types'
 import { api } from '../api'
@@ -39,7 +39,7 @@ export function MarkBadges({ marks, cam }: { marks: MarkGeom[]; cam: Cam }) {
           </button>
         )
       })}
-      {sel && createPortal(<MarkCard geom={sel} cam={cam} />, container)}
+      {sel && container && createPortal(<MarkCard geom={sel} cam={cam} />, container)}
     </div>
   )
 }
@@ -126,6 +126,6 @@ export function useFocusMark() {
     const vb = editor.getViewportPageBounds()
     const b = geom.bounds
     const inside = b.x >= vb.x && b.y >= vb.y && b.x + b.w <= vb.x + vb.w && b.y + b.h <= vb.y + vb.h
-    if (!inside) editor.centerOnPoint({ x: b.x + b.w / 2, y: b.y + b.h / 2 }, { animation: { duration: 320 } })
+    if (!inside) editor.centerOnPoint({ x: b.x + b.w / 2, y: b.y + b.h / 2 }, { animate: true })
   }
 }

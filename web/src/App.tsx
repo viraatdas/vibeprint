@@ -1,79 +1,52 @@
-import { useEffect, useMemo, useState } from 'react'
-import {
-  DefaultColorStyle,
-  DefaultDashStyle,
-  DefaultFontStyle,
-  DefaultSizeStyle,
-  Tldraw,
-  uniqueId,
-  type Editor,
-  type TLAssetStore,
-  type TLComponents,
-} from 'tldraw'
-import { useSync } from '@tldraw/sync'
-import { getAssetUrlsByImport } from '@tldraw/assets/imports.vite'
-import 'tldraw/tldraw.css'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ClientConfig } from '@shared/api'
 import { api, ApiError, useVibeprintState } from './api'
-import { ui, useUi } from './store'
+import { toast, ui, useUi } from './store'
+import { Board, useEditorValue } from './canvas/Board'
+import { Editor } from './canvas/editor'
+import { CanvasSync } from './canvas/sync'
 import { AgentLayer } from './agent/AgentLayer'
 import { PacingDriver } from './agent/pacing'
 import { BatchStrip, SubmitButton, Toast, Toolbar, TopBar } from './ui/Chrome'
 import { SidePanel } from './ui/SidePanel'
 
-const assetUrls = getAssetUrlsByImport()
-
-const assets: TLAssetStore = {
-  async upload(_asset, file) {
-    const ext = (file.name.split('.').pop() ?? 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'bin'
-    const name = `${uniqueId()}.${ext}`
-    const res = await fetch(`/files/${name}`, { method: 'PUT', body: file, credentials: 'same-origin' })
-    if (!res.ok) throw new Error(`Upload failed (${res.status})`)
-    return { src: `/files/${name}` }
-  },
-  resolve(asset) {
-    return asset.props.src
-  },
-}
-
-const components: TLComponents = {
-  InFrontOfTheCanvas: AgentLayer,
-}
-
-function syncUri() {
-  return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/sync`
-}
-
-function onMount(editor: Editor) {
-  // Your ink is always one color and one pen.
-  editor.setStyleForNextShapes(DefaultColorStyle, 'black')
-  editor.setStyleForNextShapes(DefaultSizeStyle, 'm')
-  editor.setStyleForNextShapes(DefaultDashStyle, 'draw')
-  editor.setStyleForNextShapes(DefaultFontStyle, 'draw')
-  editor.user.updateUserPreferences({ colorScheme: 'light' })
-  editor.setCurrentTool('draw')
-  ;(window as unknown as { editor: Editor }).editor = editor
+function canvasUri() {
+  return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/canvas`
 }
 
 function Canvas({ config }: { config: ClientConfig }) {
-  const store = useSync({ uri: syncUri, assets })
-  if (store.status === 'error') {
+  const editor = useMemo(() => new Editor(), [])
+  const [sync, setSync] = useState<CanvasSync | null>(null)
+  useEffect(() => {
+    const s = new CanvasSync(editor, canvasUri())
+    setSync(s)
+    ;(window as unknown as { editor: Editor }).editor = editor
+    return () => s.close()
+  }, [editor])
+  const loaded = useEditorValue((e) => e.loaded, editor)
+  const status = useEditorValue((e) => e.status, editor)
+  const onError = useCallback((msg: string) => toast(msg), [])
+
+  if (!loaded && status === 'offline' && (sync?.failures ?? 0) >= 3) {
     return (
       <div className="vp-gate">
-        <p>Lost the connection to the canvas. Check that <code>vibeprint serve</code> is still running, then reload.</p>
+        <p>
+          Can't open the canvas. Check that <code>vibeprint serve</code> is still running, then reload.
+        </p>
       </div>
     )
   }
-  if (store.status === 'loading') return <div className="vp-gate vp-gate-quiet">Opening canvas…</div>
+  if (!loaded) return <div className="vp-gate vp-gate-quiet">Opening canvas…</div>
   return (
-    <Tldraw store={store.store} hideUi components={components} onMount={onMount} assetUrls={assetUrls} licenseKey={config.tldrawLicenseKey}>
+    <Board editor={editor} project={config.project} onError={onError}>
+      <AgentLayer />
       <PacingDriver />
       <TopBar />
       <Toolbar />
       <BatchStrip />
       <SubmitButton />
       <Toast />
-    </Tldraw>
+    </Board>
   )
 }
 
@@ -86,6 +59,7 @@ export function App() {
       .then((c) => {
         ui.set({ config: c })
         document.documentElement.style.setProperty('--vp-agent', c.agentColor)
+        document.documentElement.style.setProperty('--vp-ink', c.inkColor)
         document.title = `${c.project} · Vibeprint`
         setConfig(c)
       })

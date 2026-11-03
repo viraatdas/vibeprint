@@ -11,7 +11,7 @@
 // access token on every request.
 //
 // Frames, relay -> daemon:
-//   {t:'ready', url, license}            session claimed; license = tldraw key for this domain
+//   {t:'ready', url, license}            session claimed; license = tldraw key, only read by vibeprint 0.2.0
 //   {t:'taken'}                          id belongs to another secret; pick a new id
 //   {t:'req', r, m, p, h} {t:'body', r, d} {t:'end', r} {t:'abort', r}
 //   {t:'ws', r, p, h} {t:'wsm', r, d, b} {t:'wsc', r, c, x}

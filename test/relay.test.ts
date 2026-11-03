@@ -67,13 +67,11 @@ test('signing in through the relay sets a cookie for the session host', async ()
   assert.ok(JSON.parse(state.body.toString()).graph)
 })
 
-test('the page served through the relay gets the relay\'s tldraw license', async () => {
+test('the page config comes through the relay unchanged', async () => {
   const r = await viaRelay('GET', '/api/config', { headers: { cookie } })
   assert.equal(r.status, 200)
-  assert.equal(JSON.parse(r.body.toString()).tldrawLicenseKey, 'relay-license')
-  // Locally the daemon's own key (none here) still applies.
-  const local = (await (await fetch(`http://127.0.0.1:${d.port}/api/config`)).json()) as { tldrawLicenseKey?: string }
-  assert.equal(local.tldrawLicenseKey, undefined)
+  const local = (await (await fetch(`http://127.0.0.1:${d.port}/api/config`)).json()) as Record<string, unknown>
+  assert.deepEqual(JSON.parse(r.body.toString()), local)
 })
 
 test('binary bodies survive the trip both ways', async () => {
@@ -107,23 +105,31 @@ test('server-sent events stream through the relay', async () => {
   assert.ok(d.core.getState().chat.some((m) => m.text === 'hello from the iPad'))
 })
 
-test('the canvas websocket connects through the relay, and only with the token', async () => {
+test('the canvas websocket syncs through the relay, and only with the token', async () => {
   const open = (headers: Record<string, string>) =>
-    new Promise<{ ok: boolean; status?: number; ws?: WebSocket }>((resolve) => {
-      const ws = new WebSocket(`ws://127.0.0.1:${relayPort}/api/sync?sessionId=test`, { headers: { host, ...headers } })
-      ws.on('open', () => resolve({ ok: true, ws }))
+    new Promise<{ ok: boolean; status?: number; ws?: WebSocket; first?: Promise<any> }>((resolve) => {
+      const ws = new WebSocket(`ws://127.0.0.1:${relayPort}/api/canvas`, { headers: { host, ...headers } })
+      const first = new Promise((r) => ws.once('message', (m) => r(JSON.parse(m.toString()))))
+      ws.on('open', () => resolve({ ok: true, ws, first }))
       ws.on('unexpected-response', (_q, res) => resolve({ ok: false, status: res.statusCode }))
       ws.on('error', () => {})
     })
   const denied = await open({})
   assert.deepEqual([denied.ok, denied.status], [false, 401])
-  const allowed = await open({ cookie })
-  assert.ok(allowed.ok)
-  // A connect from a client too old for tldraw's sync server: the message has to reach the
-  // server through the relay, and the server's close code has to make it back.
-  const closed = new Promise<[number, string]>((resolve) => allowed.ws!.once('close', (c, r) => resolve([c, r.toString()])))
-  allowed.ws!.send(JSON.stringify({ type: 'connect', connectRequestId: 'x', lastServerClock: 0, protocolVersion: 1, schema: { schemaVersion: 2, sequences: {} } }))
-  assert.deepEqual(await closed, [4099, 'CLIENT_TOO_OLD'])
+  const ipad = await open({ cookie })
+  assert.ok(ipad.ok)
+  assert.equal((await ipad.first).t, 'snapshot')
+  // A laptop tab on the daemon directly sees the stroke the iPad sends through the relay.
+  const laptop = new WebSocket(`ws://127.0.0.1:${d.port}/api/canvas`, { headers: { origin: `http://127.0.0.1:${d.port}` } })
+  const seen = new Promise<any>((resolve) => laptop.on('message', (m) => { const msg = JSON.parse(m.toString()); if (msg.t === 'ops') resolve(msg) }))
+  await new Promise((r) => laptop.once('message', r))
+  const stroke = { id: 'shape:viarelay', z: 1, type: 'draw', points: [[0, 0, 0.5], [40, 10, 0.6]], pen: true }
+  const ack = new Promise<any>((resolve) => ipad.ws!.on('message', (m) => { const msg = JSON.parse(m.toString()); if (msg.t === 'ack') resolve(msg) }))
+  ipad.ws!.send(JSON.stringify({ t: 'ops', n: 7, put: [stroke] }))
+  assert.deepEqual(await ack, { t: 'ack', n: 7 })
+  assert.deepEqual((await seen).put, [stroke])
+  ipad.ws!.close()
+  laptop.close()
 })
 
 test('unknown and offline sessions get a clear page, not a hang', async () => {

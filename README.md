@@ -54,6 +54,10 @@ The MCP server works with or without the canvas running. With `vibeprint serve` 
 5. Accept or reject from the iPad (tap a numbered badge, or **Review** / **Accept all** on the batch strip) or from the laptop's chat panel. The agent sees the outcome through `list_marks` or `wait_for_user`.
 6. Questions arrive as margin notes pinned near a shape. Answer by writing beside them and submitting again.
 
+### Drawing
+
+Tools: pen, arrow, text, eraser, select, pan, plus undo and redo. With an Apple Pencil the Pencil draws with pressure and fingers move the canvas: one finger pans, two pinch to zoom, and a quick two-finger tap undoes. Without a stylus a finger draws. Arrows that start or end inside a box stay attached to it when you move the box. Tap with the text tool to type (Scribble works too). Paste or drop an image to put it on the canvas. On a keyboard: `D` `A` `T` `E` `V` `H` pick tools, space-drag pans, ⌘/Ctrl-scroll or a pinch zooms, ⌘Z / ⇧⌘Z undo and redo, ⇧1 fits the drawing on screen. Every open device shows the same drawing live.
+
 The laptop view is the same canvas plus a panel: **Chat** (talk to the built-in assistant if an API key is set, or to your coding agent through `read_chat` / `post_chat`) and **Spec** (the approved architecture with build progress).
 
 ## MCP tools
@@ -81,7 +85,7 @@ Batches hold at most 6 marks, and an agent can have at most 12 waiting for revie
 
 | File | Contents |
 | --- | --- |
-| `canvas.json` | Your ink: the tldraw document, records sorted so diffs show which shapes changed. |
+| `canvas.json` | Your ink: one shape per line, sorted by id, so diffs show which shapes changed. A canvas saved by 0.1 or 0.2 (tldraw format) is converted on the first start, keeping every shape id. |
 | `sketch.json`, `sketch.png` | What was sent at the last submit. |
 | `graph.json` | The interpreted architecture: nodes bound to shape ids, edges, statuses, accepted changes. |
 | `marks.json` | Every agent mark (`author`, `batchId`, `type`, `target`, `status`) and the batches they came in. |
@@ -101,7 +105,6 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |
 | `VIBEPRINT_AUTHOR` | Override the author name an MCP client's marks carry (default: detected `claude` / `codex`). |
-| `TLDRAW_LICENSE_KEY` | Only needed if you serve the canvas over HTTPS on a public domain, where tldraw hides the editor without a key. Local and LAN use runs as tldraw development mode. |
 
 ## Development
 
@@ -113,8 +116,8 @@ npm run typecheck
 npm run build      # dist/cli.js + dist/web
 ```
 
-Layout: `src/core` (state, merge, placement), `src/server` (HTTP + tldraw sync + git checkpoints), `src/interpret` (heuristic and Claude interpreters), `src/mcp` (MCP server), `src/cli` (`init`), `web/` (the canvas app), `src/shared` (types used everywhere).
+Layout: `src/core` (state, merge, placement), `src/server` (HTTP + canvas sync + git checkpoints), `src/interpret` (heuristic and Claude interpreters), `src/mcp` (MCP server), `src/cli` (`init`), `web/` (the canvas app), `src/shared` (types used everywhere).
 
 ## License
 
-Vibeprint is MIT licensed. The canvas is built on [tldraw](https://tldraw.dev), which has [its own license](https://github.com/tldraw/tldraw/blob/main/LICENSE.md): it is free in development, and production deployments need a key from tldraw.
+Vibeprint is MIT licensed, canvas included: pen strokes come from [perfect-freehand](https://github.com/steveruizok/perfect-freehand) (MIT) and text uses Shantell Sans (SIL OFL 1.1). No license keys anywhere.

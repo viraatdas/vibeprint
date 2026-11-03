@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useEditor } from 'tldraw'
+import { useEditor } from '../canvas/Board'
 import { ui } from '../store'
 import type { VibeprintState } from '@shared/types'
 
@@ -15,7 +15,7 @@ function tagsOf(vp: VibeprintState): Record<string, string[]> {
 }
 
 /**
- * Lives inside the tldraw editor. Watches the pen and lets agent marks (and
+ * Lives inside the board. Watches the pen and lets agent marks (and
  * fresh interpretation tags) land one at a time, only while the user isn't
  * drawing.
  */
@@ -25,7 +25,7 @@ export function PacingDriver() {
   useEffect(() => {
     let lastInput = 0
     let down = false
-    const offEvent = (info: { type: string; name?: string }) => {
+    const offEvent = editor.onInput((info) => {
       if (info.type === 'pointer') {
         if (info.name === 'pointer_down') down = true
         if (info.name === 'pointer_up') down = false
@@ -33,8 +33,7 @@ export function PacingDriver() {
       } else if (info.type === 'keyboard' || info.type === 'pinch') {
         lastInput = Date.now()
       }
-    }
-    editor.on('event', offEvent as never)
+    })
 
     const known = new Set<string>()
     let initialized = false
@@ -70,7 +69,7 @@ export function PacingDriver() {
 
     const tick = setInterval(() => {
       const now = Date.now()
-      const idle = !down && now - lastInput >= IDLE_MS && !editor.getEditingShapeId()
+      const idle = !down && now - lastInput >= IDLE_MS && !editor.editing
       const s = ui.get()
       if (s.idle !== idle) ui.set({ idle })
       if (!idle || !s.vp) return
@@ -91,7 +90,7 @@ export function PacingDriver() {
     }, 120)
 
     return () => {
-      editor.off('event', offEvent as never)
+      offEvent()
       unsub()
       clearInterval(tick)
     }

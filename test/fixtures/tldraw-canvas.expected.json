@@ -1,0 +1,36 @@
+{
+  "shape:UNkERk1T3VSgnMdjMXEyT": {
+    "count": 25,
+    "first": [
+      0,
+      0,
+      0.38
+    ],
+    "last": [
+      0,
+      6,
+      0.63
+    ],
+    "mid": [
+      182,
+      130
+    ]
+  },
+  "shape:W92x-uCNNLW9tJ6-LIW6e": {
+    "count": 17,
+    "first": [
+      0,
+      0,
+      0.5
+    ],
+    "last": [
+      1,
+      4,
+      0.5
+    ],
+    "mid": [
+      178,
+      120
+    ]
+  }
+}

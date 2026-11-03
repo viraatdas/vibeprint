@@ -12,7 +12,7 @@ export interface Size {
   h: number
 }
 
-/** Axis-aligned rectangle in tldraw page space. */
+/** Axis-aligned rectangle in canvas page space. */
 export interface Rect {
   x: number
   y: number
@@ -37,7 +37,7 @@ export type SketchShapeType =
   | 'other'
 
 export interface SketchShape {
-  /** tldraw shape id, e.g. "shape:abc123". Graph nodes bind to these. */
+  /** Canvas shape id, e.g. "shape:abc123". Graph nodes bind to these. */
   id: string
   type: SketchShapeType
   /** Page-space bounds. */
