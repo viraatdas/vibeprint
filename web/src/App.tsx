@@ -7,7 +7,7 @@ import { Editor } from './canvas/editor'
 import { CanvasSync } from './canvas/sync'
 import { AgentLayer } from './agent/AgentLayer'
 import { PacingDriver } from './agent/pacing'
-import { BatchStrip, SubmitButton, Toast, Toolbar, TopBar } from './ui/Chrome'
+import { BatchStrip, EmptyStart, SubmitButton, Toast, Toolbar, TopBar } from './ui/Chrome'
 import { SidePanel } from './ui/SidePanel'
 
 function canvasUri() {
@@ -45,6 +45,7 @@ function Canvas({ config }: { config: ClientConfig }) {
       <Toolbar />
       <BatchStrip />
       <SubmitButton />
+      <EmptyStart />
       <Toast />
     </Board>
   )

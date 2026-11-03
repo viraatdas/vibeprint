@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { TOKEN_HEADER, type DaemonInfo, type WaitResult } from '../shared/api.js'
-import type { ArchitectureView, Batch, ChatMessage, Decision, Graph, InterpretationResult, Mark, MarkInput, Sketch, VibeprintState } from '../shared/types.js'
+import { TOKEN_HEADER, type DaemonInfo, type MapResult, type WaitResult } from '../shared/api.js'
+import type { ArchitectureView, Batch, ChatMessage, Decision, Graph, InterpretationResult, Mark, MarkInput, RepoMap, Sketch, VibeprintState } from '../shared/types.js'
 import { FILES, VIBEPRINT_DIR, VibeprintError } from './core.js'
 
 export function readDaemonInfo(root: string): DaemonInfo | null {
@@ -81,6 +81,9 @@ export class DaemonClient {
     const res = await fetch(this.baseUrl + '/api/sketch.png', { headers: { [TOKEN_HEADER]: this.token } })
     if (!res.ok) return null
     return Buffer.from(await res.arrayBuffer())
+  }
+  map(author: string, map?: RepoMap) {
+    return this.req<MapResult>('POST', '/api/map', { author, ...(map ? { map } : {}) }, 120_000)
   }
   interpret(author: string, result: InterpretationResult) {
     return this.req<{ graph: Graph; questions: Mark[] }>('POST', '/api/interpretation', { author, result })

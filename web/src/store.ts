@@ -20,6 +20,8 @@ export interface UiState {
   review: { batchId: string; index: number } | null
   idle: boolean
   submitting: boolean
+  /** Drawing the code's architecture onto the canvas. */
+  mapping: boolean
   toast: string | null
 }
 
@@ -65,6 +67,7 @@ export const ui = createStore<UiState>({
   review: null,
   idle: true,
   submitting: false,
+  mapping: false,
   toast: null,
 })
 

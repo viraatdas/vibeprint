@@ -9,7 +9,9 @@ import { FILES, VIBEPRINT_DIR, VibeprintCore, VibeprintError } from '../core/cor
 import { readDaemonInfo } from '../core/daemon-client.js'
 import { DEFAULT_PORT, TOKEN_COOKIE, TOKEN_HEADER, type ActivityEvent, type ClientConfig, type DaemonInfo, type WaitResult } from '../shared/api.js'
 import { describeMark } from '../shared/marks.js'
-import type { InterpretationResult, MarkStatus, SketchShape } from '../shared/types.js'
+import type { InterpretationResult, MarkStatus, RepoMap, SketchShape } from '../shared/types.js'
+import { mapCode } from '../core/map.js'
+import { scanRepo } from '../core/repo-scan.js'
 import { CanvasRoom } from './canvas.js'
 import { GitCheckpointer } from './git.js'
 import { connectRelay, type RelayClient } from './relay.js'
@@ -18,7 +20,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.3.1'
+const VERSION = '0.4.0'
 
 export interface DaemonOptions {
   root: string
@@ -207,7 +209,8 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   // ---- activity feed for agents waiting on the user ------------------------
   const bootId = crypto.randomBytes(3).toString('hex')
   let activitySeq = 0
-  const activity: Array<{ seq: number; event: ActivityEvent; authors?: string[] }> = []
+  // `authors`: only those agents see it. `except`: everyone but that agent (it caused it).
+  const activity: Array<{ seq: number; event: ActivityEvent; authors?: string[]; except?: string }> = []
   const waiters = new Set<{ since: number; author?: string; done: (r: WaitResult) => void }>()
   const cursor = () => `${bootId}:${activitySeq}`
   const parseCursor = (c?: string | null): number | null => {
@@ -216,9 +219,11 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     return b === bootId ? Number(n) || 0 : 0
   }
   const eventsFor = (since: number, author?: string) =>
-    activity.filter((a) => a.seq > since && (!author || !a.authors || a.authors.includes(author))).map((a) => a.event)
-  const pushActivity = (event: ActivityEvent, authors?: string[]) => {
-    activity.push({ seq: ++activitySeq, event, authors })
+    activity
+      .filter((a) => a.seq > since && (!author || ((!a.authors || a.authors.includes(author)) && a.except !== author)))
+      .map((a) => a.event)
+  const pushActivity = (event: ActivityEvent, authors?: string[], except?: string) => {
+    activity.push({ seq: ++activitySeq, event, authors, except })
     if (activity.length > 500) activity.splice(0, activity.length - 500)
     for (const w of [...waiters]) {
       const evs = eventsFor(w.since, w.author)
@@ -228,7 +233,9 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
       }
     }
   }
-  core.on('submit', (s) => pushActivity({ type: 'submit', at: s.createdAt, seq: s.seq, shapeCount: s.shapes.length, note: s.note }))
+  core.on('submit', (s) => {
+    if (s.source !== 'map') pushActivity({ type: 'submit', at: s.createdAt, seq: s.seq, shapeCount: s.shapes.length, note: s.note })
+  })
   core.on('chat', (m) => {
     if (m.role === 'user') pushActivity({ type: 'chat', at: m.createdAt, message: m })
   })
@@ -427,6 +434,22 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
           log(`interpretation crashed: ${err?.stack ?? err}`)
         })
         return send(res, 200, { seq: sketch.seq, interpreter: core.interpreter.mode })
+      }
+      case 'POST /api/map': {
+        // Draw the code's architecture: scanned here, or sent by a coding agent that read the code.
+        const body = await readJson<{ author?: string; map?: RepoMap }>(req)
+        const author = (body.author ?? 'vibeprint').toLowerCase()
+        if (body.author) core.touchAgent(author)
+        running?.abort()
+        running = null
+        core.setInterpreter({ active: false })
+        const map = body.map ?? scanRepo(root)
+        if (!map.nodes?.length) throw new VibeprintError(body.map ? 'The map has no components.' : 'Found no source code to map in this repo. Ask your coding agent to map it with map_architecture, or sketch it yourself.', 422)
+        const plan = mapCode(core, canvas.list(), map, author)
+        canvas.apply(plan.put, plan.del)
+        const seq = core.sketch!.seq
+        pushActivity({ type: 'map', at: new Date().toISOString(), seq, author, nodes: plan.nodes, edges: plan.edges }, undefined, author)
+        return send(res, 200, { seq, nodes: plan.nodes, edges: plan.edges, replaced: plan.replaced, shapeIds: plan.put.map((s) => s.id) })
       }
       case 'POST /api/interpretation': {
         const body = await readJson<{ author?: string; result: InterpretationResult }>(req)

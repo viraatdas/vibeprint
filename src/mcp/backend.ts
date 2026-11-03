@@ -4,10 +4,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
-import type { ActivityEvent, WaitResult } from '../shared/api.js'
+import type { ActivityEvent, MapResult, WaitResult } from '../shared/api.js'
 import { describeMark } from '../shared/marks.js'
-import type { ArchitectureView, Batch, ChatMessage, Graph, InterpretationResult, Mark, MarkInput, MarkStatus, Sketch } from '../shared/types.js'
+import type { ArchitectureView, Batch, ChatMessage, Graph, InterpretationResult, Mark, MarkInput, MarkStatus, RepoMap, Sketch } from '../shared/types.js'
 import { FILES, VibeprintCore, VibeprintError } from '../core/core.js'
+import { mapCode } from '../core/map.js'
+import { scanRepo } from '../core/repo-scan.js'
+import { readCanvasFile, writeCanvasFile } from '../server/canvas.js'
 import { DaemonClient, findDaemon } from '../core/daemon-client.js'
 
 export type DescribedMark = Mark & { describe: string }
@@ -35,6 +38,8 @@ export interface Backend {
   sketch(): Promise<{ sketch: Sketch | null; graph: Graph }>
   sketchImage(): Promise<Buffer | null>
   interpret(author: string, result: InterpretationResult): Promise<{ graph: Graph; questions: Mark[] }>
+  /** Draw the existing code onto the canvas: `map` from the agent, or scanned when omitted. */
+  map(author: string, map?: RepoMap): Promise<MapResult>
   addMarks(author: string, marks: MarkInput[], opts?: { message?: string; finish?: boolean }): Promise<AddMarksResult>
   finishBatch(author: string, message?: string): Promise<{ batch: Batch | null }>
   listMarks(query?: { status?: MarkStatus; author?: string }): Promise<ListMarksResult>
@@ -67,6 +72,9 @@ export class HttpBackend implements Backend {
   }
   interpret(author: string, result: InterpretationResult) {
     return this.client.interpret(author, result)
+  }
+  map(author: string, map?: RepoMap) {
+    return this.client.map(author, map)
   }
   async addMarks(author: string, marks: MarkInput[], opts: { message?: string; finish?: boolean } = {}): Promise<AddMarksResult> {
     const res = await this.client.addMarks(author, marks, opts)
@@ -167,6 +175,18 @@ export class LocalBackend implements Backend {
   interpret(author: string, result: InterpretationResult) {
     return this.write((c) => c.applyInterpretation(result, author))
   }
+  map(author: string, map?: RepoMap) {
+    return this.write((c): MapResult => {
+      const shapes = new Map(readCanvasFile(c).shapes.map((s) => [s.id, s]))
+      const scanned = map ?? scanRepo(this.root)
+      if (!scanned.nodes.length) throw new VibeprintError('Found no source code to map. Read the code and pass nodes and edges.')
+      const plan = mapCode(c, [...shapes.values()], scanned, author)
+      for (const id of plan.del) shapes.delete(id)
+      for (const s of plan.put) shapes.set(s.id, s)
+      writeCanvasFile(c, shapes.values())
+      return { seq: c.sketch!.seq, nodes: plan.nodes, edges: plan.edges, replaced: plan.replaced, shapeIds: plan.put.map((s) => s.id) }
+    })
+  }
   addMarks(author: string, marks: MarkInput[], opts: { message?: string; finish?: boolean } = {}) {
     return this.write((c) => {
       const res = c.addMarks(author, marks, opts)
@@ -203,11 +223,15 @@ export class LocalBackend implements Backend {
       const events: ActivityEvent[] = []
       if (sinceMs !== null) {
         const after = (iso?: string) => !!iso && Date.parse(iso) > sinceMs
-        if (c.sketch && after(c.sketch.createdAt)) {
+        const author = opts.author?.trim().toLowerCase()
+        if (c.sketch && after(c.sketch.createdAt) && c.sketch.source !== 'map') {
           events.push({ type: 'submit', at: c.sketch.createdAt, seq: c.sketch.seq, shapeCount: c.sketch.shapes.length, ...(c.sketch.note ? { note: c.sketch.note } : {}) })
         }
+        if (c.sketch && after(c.sketch.createdAt) && c.sketch.source === 'map' && c.graph.interpretedBy !== author) {
+          const mapped = c.graph.nodes.filter((n) => n.fromCode && !n.removed)
+          events.push({ type: 'map', at: c.sketch.createdAt, seq: c.sketch.seq, author: c.graph.interpretedBy ?? 'vibeprint', nodes: mapped.length, edges: c.graph.edges.length })
+        }
         for (const m of c.chat) if (m.role === 'user' && after(m.createdAt)) events.push({ type: 'chat', at: m.createdAt, message: m })
-        const author = opts.author?.trim().toLowerCase()
         const decided = c.marks.filter((m) => m.type !== 'status' && m.status !== 'pending' && after(m.decidedAt) && (!author || m.author === author))
         if (decided.length) {
           events.push({

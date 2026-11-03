@@ -41,7 +41,7 @@ ${AGENT_RULE}
 
 The user draws this project's architecture on the Vibeprint canvas (\`vibeprint serve\`, state in \`.vibeprint/\`). Work with it through the \`vibeprint\` MCP server:
 
-1. **Before work:** call \`get_architecture\` (and \`get_node\` for detail). Build what it describes.
+1. **Before work:** call \`get_architecture\` (and \`get_node\` for detail). Build what it describes. Components marked "in the code" were mapped from the existing code: check them against it and fix the map with marks, or redraw it with \`map_architecture\` after reading the code.
 2. **As work lands:** call \`set_status\` on the node (\`building\`, \`done\`, or \`blocked\` with a detail). Progress updates land immediately.
 3. **Structural changes** (a new component or connection, removing or renaming one): propose them as marks with \`add\`, \`strike\`, \`rewrite\` or \`annotate\`, or several at once with \`propose\`; then \`finish_batch\` and wait for the user's decision with \`list_marks\` or \`wait_for_user\`. Build only what is accepted.
 4. **Never deviate silently.** If the code and the drawing disagree, say so with a mark or \`post_chat\`. Don't edit \`.vibeprint/\` files by hand.

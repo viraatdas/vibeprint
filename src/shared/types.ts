@@ -72,6 +72,8 @@ export interface Sketch {
   hasImage: boolean
   /** Optional message typed alongside the submit. */
   note?: string
+  /** 'map': drawn by mapping the existing code, not by the user's pen. */
+  source?: 'map'
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +105,8 @@ export interface GraphNode {
   /** Set by an accepted rewrite. Re-interpretation keeps it. */
   override?: { label?: string; kind?: string }
   description?: string
+  /** Drawn by mapping the repo's existing code; kind and tags come from the code. */
+  fromCode?: boolean
 }
 
 export interface GraphEdge {
@@ -239,6 +243,30 @@ export interface ChatMessage {
   batchId?: string
 }
 
+/** The code that already exists, as components and connections (scan or coding agent). */
+export interface RepoMapNode {
+  /** Any id unique within the map; edges refer to it. */
+  id: string
+  label: string
+  /** client | service | worker | module | database | cache | queue | storage | search | external */
+  kind?: string
+  tags?: string[]
+  /** Where the code lives, e.g. "src/server/". */
+  path?: string
+  description?: string
+}
+
+export interface RepoMapEdge {
+  from: string
+  to: string
+  label?: string
+}
+
+export interface RepoMap {
+  nodes: RepoMapNode[]
+  edges: RepoMapEdge[]
+}
+
 /** What an interpreter (heuristic, Claude API, or a coding agent via MCP) returns. */
 export interface InterpretationResult {
   nodes: Array<{
@@ -250,6 +278,7 @@ export interface InterpretationResult {
     /** The sketch shape ids this node was drawn with (box + handwriting inside it). */
     shapeIds: string[]
     description?: string
+    fromCode?: boolean
   }>
   edges: Array<{
     id?: string

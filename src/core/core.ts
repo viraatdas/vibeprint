@@ -50,6 +50,7 @@ export const FILES = {
   runtime: 'runtime',
   daemon: 'runtime/daemon.json',
   relay: 'runtime/relay.json',
+  map: 'runtime/map.json',
   token: 'runtime/token',
   assets: 'assets',
 } as const
@@ -279,7 +280,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   // Submit + interpretation
   // -------------------------------------------------------------------------
 
-  recordSubmission(shapes: SketchShape[], image?: Buffer, note?: string): Sketch {
+  recordSubmission(shapes: SketchShape[], image?: Buffer, note?: string, opts: { source?: 'map' } = {}): Sketch {
     if (!Array.isArray(shapes)) throw new VibeprintError('shapes must be an array')
     const sketch: Sketch = {
       seq: (this.sketch?.seq ?? 0) + 1,
@@ -288,12 +289,13 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       bounds: unionRects(shapes.map((s) => s.bounds)),
       hasImage: !!image,
       note: note?.trim() || undefined,
+      ...(opts.source ? { source: opts.source } : {}),
     }
     if (image) this.writeFileAtomic(FILES.sketchPng, image)
     this.sketch = sketch
     this.markDirty('sketch')
     this.flush()
-    this.addChat('system', 'vibeprint', `Sketch #${sketch.seq} submitted · ${shapes.length} shape${shapes.length === 1 ? '' : 's'}${sketch.note ? ` · "${sketch.note}"` : ''}`)
+    if (!opts.source) this.addChat('system', 'vibeprint', `Sketch #${sketch.seq} submitted · ${shapes.length} shape${shapes.length === 1 ? '' : 's'}${sketch.note ? ` · "${sketch.note}"` : ''}`)
     this.changed('sketch')
     this.emit('submit', sketch)
     return sketch
@@ -304,7 +306,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     return fs.existsSync(p) ? fs.readFileSync(p) : null
   }
 
-  applyInterpretation(result: InterpretationResult, by: string): { graph: Graph; questions: Mark[] } {
+  applyInterpretation(result: InterpretationResult, by: string, opts: { quiet?: boolean } = {}): { graph: Graph; questions: Mark[] } {
     if (!this.sketch) throw new VibeprintError('Nothing has been submitted yet. Draw on the canvas and hit Submit.', 409)
     if (!result || !Array.isArray(result.nodes) || !Array.isArray(result.edges)) {
       throw new VibeprintError('interpretation needs { nodes: [...], edges: [...] }')
@@ -349,6 +351,8 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     }
 
     this.markDirty('graph', 'marks')
+    this.changed('graph', 'marks')
+    if (opts.quiet) return { graph, questions }
     const live = graph.nodes.filter((n) => !n.removed)
     const liveEdges = graph.edges.filter((e) => !e.removed).length
     this.addChat(
@@ -357,8 +361,26 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       `Read sketch #${this.sketch.seq}: ${live.length} node${live.length === 1 ? '' : 's'}, ${liveEdges} edge${liveEdges === 1 ? '' : 's'}${graph.summary && !/^\d/.test(graph.summary) ? ` — ${graph.summary}` : ''}`,
     )
     this.emit('checkpoint', `vibeprint: interpret sketch #${this.sketch.seq} (${by})`)
-    this.changed('graph', 'marks')
     return { graph, questions }
+  }
+
+  /** Mark components as already built (mapped from the code). Not a mark: nothing to review. */
+  markBuilt(nodeIds: string[], detail = 'in the code'): void {
+    const ids = new Set(nodeIds)
+    for (const n of this.graph.nodes) {
+      if (!ids.has(n.id) || n.status === 'done') continue
+      n.status = 'done'
+      n.statusDetail = detail
+    }
+    this.graph.version++
+    this.graph.updatedAt = isoNow()
+    this.markDirty('graph')
+    this.changed('graph')
+  }
+
+  /** Commit .vibeprint/ at the next checkpoint with this message. */
+  checkpoint(message: string): void {
+    this.emit('checkpoint', message)
   }
 
   // -------------------------------------------------------------------------

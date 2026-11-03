@@ -1,5 +1,5 @@
 import { arrowPoints, docBounds, sortedShapes, TEXT_LINE, TEXT_SIZE, type Doc } from '@shared/canvas'
-import { arrowPaths, ARROW_WIDTH, drawShapePath } from './ink'
+import { ARROW_LABEL_SIZE, arrowPaths, ARROW_WIDTH, drawShapePath } from './ink'
 
 const PAD = 32
 
@@ -54,6 +54,21 @@ export async function exportSketchPng(doc: Doc, ink: string): Promise<string | u
         ctx.lineWidth = ARROW_WIDTH
         ctx.stroke(new Path2D(shaft))
         if (head) ctx.stroke(new Path2D(head))
+        if (s.text?.trim()) {
+          // The label sits on the shaft with a white halo, as on screen.
+          ctx.save()
+          ctx.font = `${ARROW_LABEL_SIZE}px "VP Hand", cursive`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.lineWidth = 7
+          ctx.strokeStyle = '#ffffff'
+          ctx.lineJoin = 'round'
+          const mx = (a.x + end.x) / 2
+          const my = (a.y + end.y) / 2
+          ctx.strokeText(s.text.trim(), mx, my)
+          ctx.fillText(s.text.trim(), mx, my)
+          ctx.restore()
+        }
         break
       }
       case 'text': {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { extractSketch } from '@shared/canvas'
+import { extractSketch, shapeBounds } from '@shared/canvas'
+import { unionRects } from '@shared/geometry'
 import { batchIsPending, marksOfBatch, summarizeMarks } from '@shared/marks'
 import { api } from '../api'
 import { useEditor, useEditorValue } from '../canvas/Board'
@@ -22,6 +23,7 @@ const I = {
   eyeOff: <path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.3-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />,
   panel: <path d="M4 5h16v14H4zM15 5v14" />,
   trash: <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5" />,
+  map: <path d="M9 3.5h6v4.5H9zM3.5 16h6v4.5h-6zM14.5 16h6v4.5h-6zM12 8v4M6.5 16v-1.5a2.5 2.5 0 0 1 2.5-2.5h6a2.5 2.5 0 0 1 2.5 2.5V16" />,
 }
 
 function Icon({ name }: { name: keyof typeof I }) {
@@ -119,6 +121,64 @@ export function SubmitButton() {
   )
 }
 
+/**
+ * Draw the repo's existing architecture onto the canvas, then bring it into view. The shapes
+ * arrive over the canvas socket, usually just before the HTTP reply.
+ */
+export function useMapRepo() {
+  const editor = useEditor()
+  const mapping = useUi((s) => s.mapping)
+  const run = async () => {
+    if (ui.get().mapping) return
+    ui.set({ mapping: true })
+    try {
+      editor.complete()
+      const res = await api.mapRepo()
+      const ids = new Set(res.shapeIds)
+      const fit = () => {
+        const rects = [...ids].map((id) => editor.getShape(id)).filter((s) => !!s).map((s) => shapeBounds(s!, editor.doc))
+        const b = rects.length === ids.size ? unionRects(rects) : null
+        if (b) editor.zoomToBounds(b, { animate: true })
+        return !!b
+      }
+      if (!fit()) {
+        const stop = editor.subscribe(() => {
+          if (fit()) stop()
+        })
+        setTimeout(stop, 4000)
+      }
+      const things = `${res.nodes} component${res.nodes === 1 ? '' : 's'} and ${res.edges} connection${res.edges === 1 ? '' : 's'}`
+      toast(res.replaced ? `Redrew the map: ${things}.` : `Mapped ${things} from the code. Move, erase or sketch over them.`)
+    } catch (err) {
+      toast(`Couldn't map the repo: ${(err as Error).message}`)
+    } finally {
+      ui.set({ mapping: false })
+    }
+  }
+  return { mapping, run }
+}
+
+/** An empty canvas offers the two ways to start. */
+export function EmptyStart() {
+  const empty = useEditorValue((e) => e.loaded && e.isEmpty())
+  const hasGraph = useUi((s) => !!s.vp?.graph.nodes.length)
+  const live = useUi((s) => !!s.vp)
+  const { mapping, run } = useMapRepo()
+  if (!empty || hasGraph || !live) return null
+  return (
+    <div className="vp-start">
+      <div className="vp-start-card" onPointerDown={(e) => e.stopPropagation()}>
+        <p className="vp-start-title">Sketch the system you want to build.</p>
+        <p className="vp-start-body">Already have code? Map it first, then draw your changes on top.</p>
+        <button className="vp-btn vp-btn-ink" onClick={run} disabled={mapping}>
+          <Icon name="map" />
+          <span>{mapping ? 'Mapping the code…' : 'Map this repo'}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function TopBar() {
   const vp = useUi((s) => s.vp)
   const collapsed = useUi((s) => s.collapsed)
@@ -132,6 +192,7 @@ export function TopBar() {
     return () => clearInterval(t)
   }, [])
   const agents = Object.entries(vp?.agents ?? {}).filter(([name, at]) => name !== 'vibeprint' && now - Date.parse(at) < 15 * 60_000)
+  const { mapping, run: mapRepo } = useMapRepo()
 
   return (
     <header className="vp-top" onPointerDown={(e) => e.stopPropagation()}>
@@ -146,6 +207,10 @@ export function TopBar() {
             {name}
           </span>
         ))}
+        <button className="vp-pill" onClick={mapRepo} disabled={mapping} title="Draw the components this repo already has, and how they connect">
+          <Icon name="map" />
+          <span className="vp-pill-label">{mapping ? 'Mapping…' : 'Map this repo'}</span>
+        </button>
         <button className={`vp-pill${collapsed ? '' : ' is-on'}`} onClick={() => setCollapsed(!collapsed)} aria-pressed={!collapsed} title="Show or hide everything the agent drew">
           <Icon name={collapsed ? 'eyeOff' : 'eye'} />
           <span>{collapsed ? 'Agent ink hidden' : 'Agent ink'}</span>

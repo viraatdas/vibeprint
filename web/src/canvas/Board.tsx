@@ -2,7 +2,7 @@ import { createContext, memo, useContext, useEffect, useLayoutEffect, useMemo, u
 import { arrowPoints, TEXT_SIZE, type DrawShape, type ImageShape, type TextShape } from '@shared/canvas'
 import type { Point, Rect } from '@shared/types'
 import { attachInput } from './input'
-import { arrowPaths, drawShapePath } from './ink'
+import { ARROW_LABEL_SIZE, arrowPaths, drawShapePath } from './ink'
 import { uid, type Editor } from './editor'
 
 const EditorContext = createContext<Editor | null>(null)
@@ -118,7 +118,7 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
                   if (s.type === 'draw') return <Stroke key={s.id} shape={s} faded={faded} />
                   if (s.type === 'image') return <Picture key={s.id} shape={s} faded={faded} />
                   const { a, b } = arrowPoints(s, editor.doc)
-                  return <Arrow key={s.id} id={s.id} ax={a.x} ay={a.y} bx={b.x} by={b.y} faded={faded} />
+                  return <Arrow key={s.id} id={s.id} ax={a.x} ay={a.y} bx={b.x} by={b.y} text={s.text} faded={faded} />
                 })}
                 <path ref={liveRef} className="vp-ink" />
               </g>
@@ -140,12 +140,17 @@ const Stroke = memo(function Stroke({ shape, faded }: { shape: DrawShape; faded:
   return <path className={`vp-shape vp-ink${faded ? ' is-erasing' : ''}`} data-shape-id={shape.id} d={drawShapePath(shape)} />
 })
 
-const Arrow = memo(function Arrow({ id, ax, ay, bx, by, faded }: { id: string; ax: number; ay: number; bx: number; by: number; faded: boolean }) {
+const Arrow = memo(function Arrow({ id, ax, ay, bx, by, text, faded }: { id: string; ax: number; ay: number; bx: number; by: number; text?: string; faded: boolean }) {
   const { shaft, head } = arrowPaths({ x: ax, y: ay }, { x: bx, y: by })
   return (
     <g className={`vp-shape vp-arrow${faded ? ' is-erasing' : ''}`} data-shape-id={id}>
       <path d={shaft} />
       {head && <path d={head} />}
+      {text?.trim() && (
+        <text className="vp-arrow-label" x={(ax + bx) / 2} y={(ay + by) / 2} fontSize={ARROW_LABEL_SIZE}>
+          {text.trim()}
+        </text>
+      )}
     </g>
   )
 })

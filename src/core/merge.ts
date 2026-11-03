@@ -63,12 +63,17 @@ export function mergeInterpretation(
     idMap.set(tempId, id)
     if (rn.id) idMap.set(rn.id, id)
 
-    const tags = dedupe((rn.tags?.length ? rn.tags : rn.kind ? [rn.kind] : []).map((t) => t.trim()).filter(Boolean)).slice(0, 3)
+    // A box mapped from the code keeps what the code said about it until the user renames it.
+    const keepCode = !rn.fromCode && match?.fromCode && norm(match.label) === norm(label)
+    const tags = keepCode
+      ? match!.tags
+      : dedupe((rn.tags?.length ? rn.tags : rn.kind ? [rn.kind] : []).map((t) => t.trim()).filter(Boolean)).slice(0, 3)
     const node: GraphNode = {
       id,
       label,
-      kind: rn.kind || undefined,
+      kind: (keepCode ? match!.kind : rn.kind) || undefined,
       tags,
+      fromCode: rn.fromCode || keepCode || undefined,
       shapeIds,
       bounds: roundRect(bounds),
       origin: 'ink',

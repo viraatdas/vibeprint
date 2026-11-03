@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { ClientConfig } from '@shared/api'
+import type { ClientConfig, MapResult } from '@shared/api'
 import type { Decision, VibeprintState } from '@shared/types'
 
 export class ApiError extends Error {
@@ -35,6 +35,8 @@ export const api = {
   decideMark: (id: string, decision: Decision) => call('POST', `/api/marks/${id}/decide`, { decision }),
   decideBatch: (id: string, decision: Decision) => call('POST', `/api/batches/${id}/decide`, { decision }),
   chat: (text: string) => call('POST', '/api/chat', { text }),
+  /** Scan the repo and draw what is already built. */
+  mapRepo: () => call<MapResult>('POST', '/api/map', {}),
 }
 
 export type Connection = 'connecting' | 'live' | 'offline'

@@ -8,6 +8,7 @@ Draw your architecture on an iPad. Your coding agent reads it, marks it up in it
 - **Your ink is never touched.** The agent draws beside your shapes, strikes through them, or writes a corrected label next to yours. An accepted strike dims the shape instead of deleting it. One button hides all agent ink.
 - **The build shows up on the sketch.** As code lands, agents flip node statuses and boxes go from dashed to solid with a check.
 - **It lives in the repo.** The graph, marks and canvas are plain JSON in `.vibeprint/`, committed to git at each checkpoint, so the spec travels with the code and has history.
+- **Start from the code you already have.** **Map this repo** draws the project's existing architecture (apps, services, workers, databases, third-party APIs, and how they connect) as boxes and arrows you can edit like your own, all marked as built. Sketch the changes on top; your agent checks the map against the code.
 - **One MCP server, any agent.** Claude Code and Codex both talk to it; no custom integration.
 
 ## Quick start
@@ -54,6 +55,12 @@ The MCP server works with or without the canvas running. With `vibeprint serve` 
 5. Accept or reject from the iPad (tap a numbered badge, or **Review** / **Accept all** on the batch strip) or from the laptop's chat panel. The agent sees the outcome through `list_marks` or `wait_for_user`.
 6. Questions arrive as margin notes pinned near a shape. Answer by writing beside them and submitting again.
 
+### Starting from an existing codebase
+
+Tap **Map this repo** (top bar, or the card on an empty canvas). Vibeprint reads the repo without any model, in well under a second: components come from the folder layout and package manifests (a Next.js or Vite app at the root is one component; a folder with its own `package.json` is another), connections from the imports between them, and databases, queues and third-party APIs from the packages each component uses. The map lands as ordinary ink beside anything you've drawn, laid out with callers above what they call, and becomes the architecture with every component marked done.
+
+It's a first draft. Connected agents hear about it, and they can correct it with marks or redraw it properly with `map_architecture` after reading the code. You can also ask your agent to map the project from the start. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Boxes you draw afterwards come in as planned work next to what's built.
+
 ### Drawing
 
 Tools: pen, arrow, text, eraser, select, pan, plus undo and redo. With an Apple Pencil the Pencil draws with pressure and fingers move the canvas: one finger pans, two pinch to zoom, and a quick two-finger tap undoes. Without a stylus a finger draws. Arrows that start or end inside a box stay attached to it when you move the box. Tap with the text tool to type (Scribble works too). Paste or drop an image to put it on the canvas. On a keyboard: `D` `A` `T` `E` `V` `H` pick tools, space-drag pans, ⌘/Ctrl-scroll or a pinch zooms, ⌘Z / ⇧⌘Z undo and redo, ⇧1 fits the drawing on screen. Every open device shows the same drawing live.
@@ -68,6 +75,7 @@ The laptop view is the same canvas plus a panel: **Chat** (talk to the built-in 
 | `get_node` | One node or edge with its connections, ink and marks. Ids or labels work. |
 | `get_sketch` | The latest sketch as an image plus shape data, for agents doing the interpretation. |
 | `interpret` | Set the graph for the latest sketch (nodes bound to shape ids, edges, tags, up to two questions). |
+| `map_architecture` | Draw the code's existing components and connections on the canvas as the architecture, marked done. Pass what the agent read from the code, or nothing to use the built-in scan. |
 | `add` | Propose a new component next to a node, optionally wired in, or a new edge between existing nodes. |
 | `strike` | Propose removing a node or edge. Accepted strikes dim the ink. |
 | `rewrite` | Propose a corrected label or kind. |
@@ -91,7 +99,7 @@ Batches hold at most 6 marks, and an agent can have at most 12 waiting for revie
 | `marks.json` | Every agent mark (`author`, `batchId`, `type`, `target`, `status`) and the batches they came in. |
 | `chat.json` | The chat panel history. |
 | `assets/` | Images pasted onto the canvas. |
-| `runtime/` | Port, access token and relay address of the canvas. Git-ignored. |
+| `runtime/` | Port, access token and relay address of the canvas, and which shapes the last code map drew. Git-ignored. |
 
 The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpretation, and each round of decisions. Anything else you have staged stays staged. It skips commits during a merge or rebase; turn it off with `vibeprint serve --no-commit`.
 

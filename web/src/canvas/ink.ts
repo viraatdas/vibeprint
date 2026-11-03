@@ -69,3 +69,4 @@ export function arrowPaths(a: Point, b: Point): { shaft: string; head: string } 
 }
 
 export const ARROW_WIDTH = 3.2
+export const ARROW_LABEL_SIZE = 17

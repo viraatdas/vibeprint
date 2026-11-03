@@ -34,6 +34,15 @@ export interface InterpretationBody {
   result: InterpretationResult
 }
 
+export interface MapResult {
+  seq: number
+  nodes: number
+  edges: number
+  /** Whether it replaced an earlier map nobody had edited. */
+  replaced: boolean
+  shapeIds: string[]
+}
+
 export interface DecideBody {
   decision: Decision
 }
@@ -46,6 +55,8 @@ export interface ChatBody {
 
 export type ActivityEvent =
   | { type: 'submit'; at: string; seq: number; shapeCount: number; note?: string }
+  /** The existing code was drawn onto the canvas (by the scanner or an agent). */
+  | { type: 'map'; at: string; seq: number; author: string; nodes: number; edges: number }
   | { type: 'chat'; at: string; message: ChatMessage }
   | { type: 'decision'; at: string; marks: Array<{ id: string; author: string; status: MarkStatus; describe: string }> }
 

@@ -16,13 +16,14 @@ import {
   type Graph,
   type InterpretationResult,
   type MarkInput,
+  type RepoMap,
   type Sketch,
   type SketchShape,
 } from '../shared/types.js'
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.3.1'
+const VERSION = '0.4.0'
 
 export interface McpServerOptions {
   root: string
@@ -39,6 +40,7 @@ Rule: ${AGENT_RULE}
 Workflow:
 1. Before starting work, call get_architecture. Use get_node for one component's detail and get_sketch to see the drawing itself.
 2. If the latest sketch is not interpreted yet and no interpreter is running, interpret it yourself: read get_sketch (image + shapes), then call interpret.
+   If the user mapped the existing code onto the canvas (a "map" event, or nodes marked "from code"), check that map against the code. Fix small things with marks (add, strike, rewrite). If it is badly wrong, or the user asks you to map the project, read the code and call map_architecture with the real components and connections.
 3. As work lands, call set_status on the node (planned → building → done, or blocked with a detail). Status updates are progress reports and land immediately.
 4. If the build needs a structural change (a new component or connection, removing or renaming one), propose it as marks: add, strike, rewrite, annotate (notes and questions), or several at once with propose. A batch holds at most ${LIMITS.marksPerBatch} marks, so keep it to what matters. Call finish_batch when a pass is done.
 5. Proposals are not part of the architecture until the user accepts them. Wait for the decision with wait_for_user (needs \`vibeprint serve\`) or check list_marks, then build on what was accepted. Rejected means don't do it.
@@ -322,6 +324,8 @@ function formatEvent(e: ActivityEvent): string {
       return `${e.at} The user submitted sketch #${e.seq} (${e.shapeCount} shapes)${e.note ? `: "${e.note}"` : ''}. Call get_architecture (or get_sketch if it needs interpreting).`
     case 'chat':
       return `${e.at} Chat from ${e.message.role === 'user' ? 'the user' : e.message.author}: ${e.message.text}`
+    case 'map':
+      return `${e.at} ${e.author === 'vibeprint' ? 'The user mapped the existing code' : `${e.author} mapped the existing code`} onto the canvas as sketch #${e.seq} (${e.nodes} components, ${e.edges} connections, marked done). Call get_architecture and check the map against the code: propose fixes with add/strike/rewrite, or redraw it with map_architecture.`
     case 'decision':
       return `${e.at} Decisions:\n${e.marks.map((m) => `    ${m.status} ${m.id} (${m.author}): ${m.describe}`).join('\n')}`
   }
@@ -493,6 +497,54 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
             graph.edges.length > 0 && `Edges:\n${graph.edges.filter((e) => !e.removed).map((e) => `- ${e.id}: ${labels.get(e.from) ?? e.from} → ${labels.get(e.to) ?? e.to}${e.label ? ` "${e.label}"` : ''}`).join('\n')}`,
             dropped > 0 && `${dropped} node(s) were dropped because none of their shapeIds exist in the sketch and they matched no existing node.`,
             questions.length > 0 && `Questions posted as margin notes: ${questions.map((q) => `${q.id} "${q.data.text}"`).join('; ')}`,
+            b.mode === 'files' && FILES_NOTE,
+          )
+        }),
+      ),
+  )
+
+  server.registerTool(
+    'map_architecture',
+    {
+      title: 'Draw the existing code as the architecture',
+      description:
+        'Draw the components this repo already has, and how they connect, onto the canvas as editable boxes and arrows, and record them as the architecture with every component marked done. ' +
+        'Read the code first and pass `nodes` and `edges`; with neither, Vibeprint scans the repo itself (folders, package manifests, imports), which is rougher. ' +
+        'Aim for 4-14 components at the level a person would sketch on a whiteboard: apps, services, workers, databases, queues, third-party APIs. Not files or classes. ' +
+        'Redrawing replaces your previous map if the user has not edited it; otherwise the new map goes beside it.',
+      inputSchema: {
+        nodes: z
+          .array(
+            z.looseObject({
+              id: z.string().describe('Any id unique within this map; edges refer to it'),
+              label: z.string().describe('What a person would write in the box: "API", "Web app", "Postgres"'),
+              kind: z.string().optional().describe('client | service | worker | module | database | cache | queue | storage | search | external'),
+              tags: z.array(z.string()).optional().describe('Up to 3 short tags, e.g. the framework: ["Next.js"]'),
+              path: z.string().optional().describe('Where the code lives, e.g. "apps/web/"'),
+              description: z.string().optional().describe('One line on what it does'),
+            }),
+          )
+          .optional()
+          .describe('The components. Omit to let Vibeprint scan the repo.'),
+        edges: z
+          .array(z.looseObject({ from: z.string(), to: z.string(), label: z.string().optional().describe('Short: "HTTP", "SQL", "jobs"') }))
+          .optional()
+          .describe('Who calls or depends on whom, by node id.'),
+      },
+      annotations: WRITE,
+    },
+    (args) =>
+      safe(() =>
+        withBackend(async (b) => {
+          const nodes = (args.nodes ?? []) as RepoMap['nodes']
+          const map: RepoMap | undefined = nodes.length ? { nodes, edges: (args.edges ?? []) as RepoMap['edges'] } : undefined
+          const res = await b.map(author(), map)
+          const arch = await b.architecture()
+          const mapped = arch.nodes.filter((n) => n.status === 'done' && n.statusDetail === 'in the code')
+          return text(
+            `Drew ${res.nodes} components and ${res.edges} connections on the canvas as sketch #${res.seq}${map ? '' : ' (scanned from the repo)'}${res.replaced ? ', replacing the previous map' : ''}. They are recorded as the architecture and marked done.`,
+            `Components:\n${mapped.map((n) => `- ${n.id} · ${n.label}${n.kind ? ` · ${n.kind}` : ''}${n.connectsTo.length ? ` → ${n.connectsTo.join(', ')}` : ''}`).join('\n') || '- (none)'}`,
+            'The user can now sketch on top of it: new boxes they draw come in as planned work. Propose corrections to the map with add/strike/rewrite marks.',
             b.mode === 'files' && FILES_NOTE,
           )
         }),

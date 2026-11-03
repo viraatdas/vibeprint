@@ -10,7 +10,8 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { VibeprintCore } from '../src/core/core.js'
 import { LocalBackend, resolveBackend } from '../src/mcp/backend.js'
 import { authorFromClientName, createMcpServer } from '../src/mcp/server.js'
-import { AGENT_RULE, LIMITS, type Batch, type Graph, type Mark, type SketchShape } from '../src/shared/types.js'
+import { AGENT_RULE, LIMITS, type Batch, type Graph, type Mark, type Sketch, type SketchShape } from '../src/shared/types.js'
+import { serializeCanvas, type Shape } from '../src/shared/canvas.js'
 
 const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64')
 
@@ -104,6 +105,7 @@ test('lists the tools and gives instructions with the agent rule', async () => {
       'get_sketch',
       'interpret',
       'list_marks',
+      'map_architecture',
       'post_chat',
       'propose',
       'read_chat',
@@ -313,4 +315,37 @@ test('get_sketch flags an uninterpreted sketch, and interpret folds it in', asyn
   assert.ok(g.nodes.some((n) => n.id === 'n_redis_cache'), 'accepted agent node survives')
   assert.ok(g.edges.some((e) => e.from === 'n_api' && e.to === 'n_jobs_queue'))
   assert.match(textOf(await call('get_sketch')), /Interpreted \(graph v\d+\)/)
+})
+
+test('map_architecture draws the code beside the sketch and marks it built', async () => {
+  // The sketched shapes are on the canvas, as they would be after a submit.
+  const sketch = readJson<Sketch>('sketch.json')
+  const onCanvas = sketch.shapes.map((sh, i) => {
+    const { x, y, w, h } = sh.bounds
+    return sh.type === 'arrow'
+      ? { id: sh.id, z: i, type: 'arrow', start: { ...sh.arrow!.start }, end: { ...sh.arrow!.end } }
+      : { id: sh.id, z: i, type: 'draw', closed: true, points: [[x, y, 0.5], [x + w, y, 0.5], [x + w, y + h, 0.5], [x, y + h, 0.5], [x, y + 2, 0.5]] }
+  })
+  fs.writeFileSync(path.join(dir, '.vibeprint/canvas.json'), serializeCanvas(onCanvas as Shape[]))
+  const res = await call('map_architecture', {
+    nodes: [
+      { id: 'web', label: 'Web app', kind: 'client', path: 'web/' },
+      { id: 'api', label: 'API', kind: 'service', path: 'server/' },
+      { id: 'jobs', label: 'Email worker', kind: 'worker', path: 'worker/' },
+    ],
+    edges: [
+      { from: 'web', to: 'api', label: 'HTTP' },
+      { from: 'api', to: 'jobs', label: 'jobs' },
+    ],
+  })
+  assert.ok(!res.isError, textOf(res))
+  assert.match(textOf(res), /Drew 3 components and 2 connections/)
+  assert.match(textOf(res), /Email worker/)
+  const g = graphOnDisk()
+  const worker = g.nodes.find((n) => n.label === 'Email worker')
+  assert.ok(worker?.fromCode && worker.status === 'done')
+  // The sketched nodes are still there.
+  assert.ok(g.nodes.some((n) => n.label === 'Postgres' && !n.fromCode))
+  const canvas = readJson<{ shapes: Array<{ id: string }> }>('canvas.json')
+  assert.ok(canvas.shapes.length >= 8)
 })

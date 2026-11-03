@@ -321,9 +321,19 @@ export class Editor {
   /** Fit everything on screen, never zooming in past 100%. */
   zoomToFit() {
     const b = docBounds(this.shapesById)
+    if (!b) return this.setCamera({ x: 0, y: 0, z: 1 })
+    this.zoomToBounds(b)
+  }
+
+  /** Fit a page rectangle on screen, never zooming in past 100%. */
+  zoomToBounds(b: Rect, opts: { animate?: boolean } = {}) {
     const { w, h } = this.viewport
-    if (!b || !w || !h) return this.setCamera({ x: 0, y: 0, z: 1 })
-    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - 160) / Math.max(1, b.w), (h - 160) / Math.max(1, b.h))))
-    this.setCamera({ x: w / (2 * z) - (b.x + b.w / 2), y: h / (2 * z) - (b.y + b.h / 2), z })
+    if (!w || !h) return
+    // Keep clear of the top bar (and a toast under it) as well as the edges.
+    const top = 70
+    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - 160) / Math.max(1, b.w), (h - 160 - top) / Math.max(1, b.h))))
+    const target = { x: w / (2 * z) - (b.x + b.w / 2), y: (h + top) / (2 * z) - (b.y + b.h / 2), z }
+    if (opts.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) this.animateTo(target, 420)
+    else this.setCamera(target)
   }
 }

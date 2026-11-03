@@ -27,6 +27,44 @@ const opsSchema = z.object({
 })
 
 const MAX_SHAPES = 50_000
+
+/**
+ * Read .vibeprint/canvas.json. A canvas written by 0.1/0.2 (tldraw) comes back converted,
+ * keeping every shape id; the caller saves it in the new format.
+ */
+export function readCanvasFile(core: VibeprintCore, log: (msg: string) => void = () => {}): { shapes: Shape[]; text: string; converted: boolean } {
+  const p = core.file(FILES.canvas)
+  if (!fs.existsSync(p)) return { shapes: [], text: '', converted: false }
+  const text = fs.readFileSync(p, 'utf8')
+  let data: { format?: string; shapes?: unknown[]; records?: Array<Record<string, unknown>> }
+  try {
+    data = JSON.parse(text)
+  } catch (err) {
+    throw new Error(`Could not parse .vibeprint/canvas.json (${(err as Error).message}). Resolve merge conflicts or restore it from git.`)
+  }
+  const shapes: Shape[] = []
+  if (data.format === CANVAS_FORMAT && Array.isArray(data.shapes)) {
+    for (const raw of data.shapes) {
+      const parsed = shapeSchema.safeParse(raw)
+      if (parsed.success) shapes.push(parsed.data as Shape)
+      else log(`canvas: skipped an unreadable shape in canvas.json (${parsed.error.issues[0]?.message})`)
+    }
+    return { shapes, text, converted: false }
+  }
+  if (Array.isArray(data.records)) {
+    for (const s of importTldraw(data.records)) {
+      const parsed = shapeSchema.safeParse(s)
+      if (parsed.success) shapes.push(parsed.data as Shape)
+    }
+    return { shapes, text, converted: true }
+  }
+  throw new Error('.vibeprint/canvas.json is not a Vibeprint canvas. Restore it from git.')
+}
+
+/** Write canvas.json for a change made without the daemon (the MCP server on its own). */
+export function writeCanvasFile(core: VibeprintCore, shapes: Iterable<Shape>): void {
+  core.writeFileAtomic(FILES.canvas, serializeCanvas(shapes))
+}
 const TICK_MS = 25_000
 
 export class CanvasRoom {
@@ -47,35 +85,12 @@ export class CanvasRoom {
   }
 
   private load() {
-    const p = this.core.file(FILES.canvas)
-    if (!fs.existsSync(p)) return
-    const text = fs.readFileSync(p, 'utf8')
-    let data: { format?: string; shapes?: unknown[]; records?: Array<Record<string, unknown>> }
-    try {
-      data = JSON.parse(text)
-    } catch (err) {
-      throw new Error(`Could not parse .vibeprint/canvas.json (${(err as Error).message}). Resolve merge conflicts or restore it from git.`)
-    }
-    if (data.format === CANVAS_FORMAT && Array.isArray(data.shapes)) {
-      for (const raw of data.shapes) {
-        const parsed = shapeSchema.safeParse(raw)
-        if (parsed.success) this.shapes.set(parsed.data.id, parsed.data as Shape)
-        else this.log(`canvas: skipped an unreadable shape in canvas.json (${parsed.error.issues[0]?.message})`)
-      }
-      this.lastSaved = text
-      return
-    }
-    if (Array.isArray(data.records)) {
-      // Written by vibeprint 0.1/0.2, which used tldraw. Convert once, keeping shape ids.
-      for (const s of importTldraw(data.records)) {
-        const parsed = shapeSchema.safeParse(s)
-        if (parsed.success) this.shapes.set(s.id, parsed.data as Shape)
-      }
+    const file = readCanvasFile(this.core, this.log)
+    for (const shape of file.shapes) this.shapes.set(shape.id, shape)
+    if (file.converted) {
       this.log(`canvas: converted ${this.shapes.size} shapes from the old tldraw format`)
       this.save()
-      return
-    }
-    throw new Error('.vibeprint/canvas.json is not a Vibeprint canvas. Restore it from git.')
+    } else this.lastSaved = file.text
   }
 
   /** Every shape on the canvas right now. */
@@ -121,6 +136,16 @@ export class CanvasRoom {
     this.send(ws, { t: 'ack', n })
     this.broadcast({ t: 'ops', ...(put.length ? { put: put as Shape[] } : {}), ...(del.length ? { del } : {}) }, ws)
     this.scheduleSave()
+  }
+
+  /** A change made by the daemon itself (mapping the code): every open canvas gets it. */
+  apply(put: Shape[], del: string[] = []): void {
+    const checked = put.map((s) => shapeSchema.parse(s) as Shape)
+    if (this.shapes.size + checked.length > MAX_SHAPES) throw new Error('The canvas is full.')
+    for (const id of del) this.shapes.delete(id)
+    for (const s of checked) this.shapes.set(s.id, s)
+    this.broadcast({ t: 'ops', ...(checked.length ? { put: checked } : {}), ...(del.length ? { del } : {}) })
+    this.save()
   }
 
   private scheduleSave() {
