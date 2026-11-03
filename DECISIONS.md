@@ -92,3 +92,14 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it; the trial key expires then anyway
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
 - **By:** worker · 2026-11-03T22:39:39Z
+
+## worker: Added Map this repo (0.4.0)
+- **Did:** Added Map this repo (0.4.0): one tap draws the repo's existing architecture onto the canvas as editable ink (hand-drawn boxes, labels, attached arrows) and records it as the architecture with every component marked done, so boxes the user sketches afterwards come in as planned work. The scan uses no model and takes milliseconds: components from folders and manifests (a root Next.js/Vite app is one component, folders with their own manifest are separate, a small flat package is drawn file by file), connections from imports, databases/queues/third-party APIs from packages. Layout puts callers above what they call, with data and third-party APIs on the bottom row. Connected agents get a 'map' event, and the new map_architecture MCP tool lets an agent redraw the map from its own reading of the code. Releases are also faster to use: CI now attaches the same tarball to a GitHub release, installable seconds after the run while npm's index catches up. Verified: 97/97 tests locally and in CI. A headless browser run of the empty-canvas card and the top-bar button passed on laptop and iPad sizes with no console errors. From a clean HOME and cache, npx -y vibeprint@0.4.0 mapped a fresh clone of crumb to 8 components and 10 connections, all done, and listed map_architecture over MCP. The release link installed in 9s.
+- **Interfaces:** POST /api/map {map?, author?} -> {seq,nodes,edges,replaced,shapeIds} | ActivityEvent {type:'map'} | MCP tool map_architecture (16 tools) | Sketch.source 'map', GraphNode.fromCode, statusDetail 'in the code' | .vibeprint/runtime/map.json | arrow labels (ArrowShape.text) render on canvas and PNG | publish.yml: GitHub release v<version> with vibeprint-<version>.tgz
+- **Delivery:** verified; release; target=npm:vibeprint@0.4.0; revision=962fd9d; verifiedAt=2026-11-03T23:24:00Z; checks=5
+- **Follow-ups:**
+  - Try Map this repo on a real iPad — the button and empty-canvas card were checked in headless Chromium at iPad size only
+  - Try 0.3+ on a real iPad with an Apple Pencil — Safari-only paths (gesture events, keyboard and Scribble focus, palm resting) were only emulated in Chromium
+  - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it; the trial key expires then anyway
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
+- **By:** worker · 2026-11-03T23:24:00Z
