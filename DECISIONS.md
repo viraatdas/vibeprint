@@ -103,3 +103,14 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it; the trial key expires then anyway
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
 - **By:** worker · 2026-11-03T23:24:00Z
+
+## worker: Map this repo reads the code (0.5.0)
+- **Did:** Map this repo now reads the code (0.5.0). The quick scan still draws at once; then a model reads the code and redraws the map in place about a minute later: the Claude API with ANTHROPIC_API_KEY, otherwise the installed Claude Code or Codex, run headless and read-only (Claude Code with only Read/Grep/Glob, Codex in its read-only sandbox), with schema-checked JSON. Edits to the quick map while it reads always win; a failure keeps the quick map and says why. The layout now slides rows and moves components within rows so arrows stay out of other boxes, and colliding edge labels stay off the canvas. Verified: 105/105 tests locally and in CI (fake claude/codex executables cover redraw, edited-meanwhile and failure). Real Claude Code runs mapped crumb (12 components) and vibeprint (10 components, 13 connections) in 54-59s with no console errors. 0.5.0 published by CI run 41740545113; the GitHub release link started 0.5.0 from a clean cache and detected Claude Code.
+- **Interfaces:** VIBEPRINT_MAPPER=api|claude|codex|off | VibeprintState.mapper {mode,label,active,outcome,lastError} | MapResult.reading | ArchitectureView.mapNote | src/interpret/code-map.ts (detectMapper, mapWithModel, MAP_SCHEMA) | repoDigest() in src/core/repo-scan.ts
+- **Delivery:** verified; release; target=npm:vibeprint@0.5.0; revision=d105a6e; verifiedAt=2026-11-03T23:45:00Z; checks=3
+- **Follow-ups:**
+  - Try Map this repo on a real iPad — checked in headless Chromium at iPad size only
+  - Try 0.3+ on a real iPad with an Apple Pencil — Safari-only paths were only emulated in Chromium
+  - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
+- **By:** worker · 2026-11-03T23:45:00Z
