@@ -52,3 +52,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — handwriting would be read on Submit using the user's existing agent login
 - **By:** worker · 2026-11-03T00:50:27.006Z
 
+## worker: Published vibeprint@0.1.0 to npm (maintainer viraatdas). The account's 2FA
+- **Did:** Published vibeprint@0.1.0 to npm (maintainer viraatdas). The account's 2FA is a security key, so publishing needs a browser approval link, which only appears when npm runs in a terminal (ran it under script). Rudder's dotfile sync had overwritten ~/.npmrc with the laptop's expired token, so the login now lives in ~/.npm-publish-rc. Verified from the registry in a clean repo with an empty cache and home: npx -y vibeprint@0.1.0 init writes .mcp.json (npx -y vibeprint mcp), AGENTS.md, CLAUDE.md and .vibeprint/; npx vibeprint serves the canvas (200, app bundle loads, prints the iPad URL and QR code); npx vibeprint mcp lists 15 tools.
+- **Interfaces:** npm package vibeprint@0.1.0 (bin vibeprint -> dist/cli.js), dist-tag latest | https://vibeprint.viraat.dev install command npx vibeprint init now resolves
+- **Delivery:** verified; release; target=npm:vibeprint@0.1.0; revision=3a68b8c; verifiedAt=2026-11-03T21:16:21Z; checks=4
+- **Follow-ups:**
+  - Run npm login on the laptop — Rudder copies the laptop's ~/.npmrc to cloud machines, and that copy holds an expired token
+  - Try it on a real iPad with Apple Pencil — testing so far used an emulated iPad in headless Chromium
+  - Optional: interpret through the local claude/codex CLI when there's no ANTHROPIC_API_KEY — handwriting would be read on Submit using the user's existing agent login
+- **By:** worker · 2026-11-03T21:16:21.977Z
+
