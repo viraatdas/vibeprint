@@ -1,6 +1,6 @@
 {
   "name": "vibeprint",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Draw your architecture on an iPad; your coding agent reads it, marks it up, and tracks the build against it.",
   "type": "module",
   "license": "MIT",
@@ -27,7 +27,8 @@
     "vibeprint": "dist/cli.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "web/src/fonts/OFL.txt"
   ],
   "engines": {
     "node": ">=20"

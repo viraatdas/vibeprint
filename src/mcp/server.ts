@@ -22,7 +22,7 @@ import {
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.3.0'
+const VERSION = '0.3.1'
 
 export interface McpServerOptions {
   root: string

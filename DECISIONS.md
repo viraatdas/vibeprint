@@ -82,3 +82,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines, forcing re-approvals
   - Try it on a real iPad with Apple Pencil — testing so far used an emulated iPad in headless Chromium
 - **By:** worker · 2026-11-03T22:06:57Z
+
+## worker: Replaced tldraw with vibeprint's own canvas (0.3.0)
+- **Did:** Replaced tldraw with vibeprint's own MIT canvas and released it as 0.3.0 (0.3.1 adds the font's OFL license to the package). No tldraw dependency, license key or expiry. The canvas is SVG plus perfect-freehand: Pencil pressure, arrows that bind to boxes and follow them, text that works with the iPad keyboard and Scribble, eraser, select/move, pan, pinch, two-finger-tap undo, image paste/drop, and PNG export. The daemon syncs one document per repo over /api/canvas and saves canvas.json one shape per line. A tldraw canvas.json from 0.1/0.2 is converted on first start, keeping every shape id. Verified: 86/86 tests, including a fixture captured from the real 0.2.0 app. A browser run passed 24/24 checks across an emulated iPad (Pencil and touch), a laptop and a phone: sync, binding, text, pinch, eraser, undo/redo, move, submit, agent marks, dimming and reload. 0.3.0 was published from GitHub Actions with provenance and no approvals. npx -y vibeprint@0.3.0 from a clean folder printed the relay link; a Pencil stroke drawn on that public https link was saved, and the canvas stayed up past 9s.
+- **Interfaces:** WebSocket /api/canvas (protocol 1: snapshot/ops/ack/rejected/tick) replaces /api/sync | .vibeprint/canvas.json format vibeprint-canvas v1 | ClientConfig.tldrawLicenseKey and the TLDRAW_LICENSE_KEY env var removed | relay still sends its license in 'ready' for 0.2.0 clients
+- **Delivery:** verified; release; target=npm:vibeprint@0.3.0; revision=a153322; verifiedAt=2026-11-03T22:39:39Z; checks=5
+- **Follow-ups:**
+  - Try 0.3 on a real iPad with an Apple Pencil — Safari-only paths (gesture events, keyboard and Scribble focus, palm resting) were only emulated in Chromium
+  - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it; the trial key expires then anyway
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
+- **By:** worker · 2026-11-03T22:39:39Z
