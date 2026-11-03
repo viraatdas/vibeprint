@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vibeprint</title>
-<meta name="description" content="Sketch your architecture on an iPad. Claude Code or Codex reads it, proposes changes in its own blue pen, and checks off each part as it gets built.">
+<meta name="description" content="Draw your architecture on an iPad. Claude Code or Codex marks it up in blue, then builds against it.">
 <meta name="theme-color" content="#f3f5f7">
 <meta property="og:title" content="Vibeprint">
 <meta property="og:description" content="The sketch is the spec. Draw your architecture on an iPad; your coding agent marks it up and builds against it.">
@@ -13,17 +13,19 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Kalam&family=Shantell+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Kalam&family=Shantell+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js')</script>
 <style>
 :root {
   --paper: #f3f5f7;
-  --sheet: #fbfcfd;
+  --screen: #f8f9fb;
+  --dot: #d4d9e0;
   --ink: #1d1d1f;
-  --muted: #5b626e;
-  --rule: #dce1e7;
+  --muted: #5f6672;
+  --line: #dde2e8;
   --agent: #2e5bff;
-  --agent-wash: rgba(46, 91, 255, 0.08);
-  --ui: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bezel: #1c1c1e;
+  --sans: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --hand: 'Kalam', 'Comic Sans MS', cursive;
   --pen: 'Shantell Sans', 'Comic Sans MS', cursive;
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -31,28 +33,79 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 var(--ui); }
-a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; }
-a:hover { color: var(--agent); }
-:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 4px; }
-.wrap { max-width: 1040px; margin-inline: auto; padding-inline: 24px; }
-.text { max-width: 640px; }
+body {
+  margin: 0; color: var(--ink); font: 400 17px/1.5 var(--sans);
+  background-color: var(--paper);
+  background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1120px; margin-inline: auto; padding-inline: 24px; }
 
-header { display: flex; align-items: center; justify-content: space-between; padding-top: 22px; padding-bottom: 22px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 18px; text-decoration: none; }
-.brand svg { width: 30px; height: 30px; }
-nav { display: flex; gap: 22px; font-size: 15px; }
-nav a { text-decoration: none; color: var(--muted); }
-nav a:hover { color: var(--ink); }
+.top { display: flex; align-items: center; justify-content: space-between; padding-block: 20px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 19px; letter-spacing: -0.01em; text-decoration: none; }
+.brand svg { width: 28px; height: 28px; }
+.gh { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 500; text-decoration: none; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px); }
+.gh:hover { border-color: var(--ink); }
+.gh svg { width: 17px; height: 17px; }
 
-.hero { padding-top: 40px; }
-h1 { font-size: clamp(42px, 7vw, 76px); line-height: 1; letter-spacing: -0.03em; font-weight: 700; margin: 0 0 22px; text-wrap: balance; }
-.lede { font-size: clamp(18px, 2.2vw, 21px); line-height: 1.5; color: var(--muted); margin: 0; max-width: 34em; text-wrap: pretty; }
-.lede strong { color: var(--ink); font-weight: 500; }
+.hero { text-align: center; padding-top: clamp(28px, 6vw, 72px); }
+h1 { font-size: clamp(50px, 9.4vw, 120px); line-height: 0.92; letter-spacing: -0.045em; font-weight: 760; margin: 0 auto; max-width: 11ch; text-wrap: balance; font-variation-settings: 'opsz' 96; }
+.lede { font-size: clamp(18px, 2.1vw, 22px); line-height: 1.45; color: var(--muted); margin: 24px auto 0; max-width: 30em; text-wrap: balance; }
+.cta { margin-top: 32px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.cmd { display: inline-flex; align-items: center; gap: 14px; font: 500 17px var(--mono); color: #fff; background: var(--ink); border: 0; border-radius: 999px; padding: 15px 18px 15px 24px; cursor: pointer; box-shadow: 0 10px 30px -12px rgba(29, 29, 31, 0.6); transition: transform 0.15s ease; }
+.cmd:hover { transform: translateY(-1px); }
+.cmd:active { transform: translateY(1px); }
+.cmd .p { color: #8b93a1; }
+.cmd .copy { font: 500 13px var(--sans); color: #c9ced6; border-left: 1px solid rgba(255, 255, 255, 0.18); padding-left: 14px; min-width: 52px; text-align: left; }
+.then { font-size: 14px; color: var(--muted); margin: 0; }
+.then code { font: 13.5px var(--mono); color: var(--ink); }
 
-.sheet { margin: 44px 0 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 18px; box-shadow: 0 1px 0 rgba(29, 29, 31, 0.04), 0 18px 40px -28px rgba(29, 29, 31, 0.35); overflow: hidden; }
-.scroller { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.sketch { display: block; width: 100%; min-width: 680px; height: auto; padding: 18px 18px 6px; }
+/* The iPad */
+.stage { margin-top: clamp(40px, 6vw, 72px); }
+.device-wrap { position: relative; max-width: 1080px; margin-inline: auto; }
+.device { background: var(--bezel); border-radius: clamp(20px, 3.2vw, 38px); padding: clamp(7px, 1.3vw, 15px); box-shadow: inset 0 0 0 1px #3a3a3c, 0 60px 110px -50px rgba(24, 39, 90, 0.45), 0 26px 50px -34px rgba(0, 0, 0, 0.5); }
+.screen {
+  position: relative; aspect-ratio: 1194 / 834; overflow: hidden; container-type: inline-size;
+  border-radius: clamp(13px, 2vw, 24px);
+  background-color: var(--screen);
+  background-image: radial-gradient(circle at 1px 1px, #dfe3e9 1px, transparent 0);
+  background-size: 2cqw 2cqw;
+}
+.sketch { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sk { transform: translate(116px, 110px) scale(1.16); }
+.chrome { position: absolute; font-family: -apple-system, BlinkMacSystemFont, var(--sans); color: var(--ink); }
+.project { top: 3.2%; left: 2.2%; font-size: 1.4cqw; font-weight: 600; display: flex; align-items: center; gap: 0.6cqw; }
+.project::before { content: ''; width: 0.75cqw; height: 0.75cqw; border-radius: 50%; background: #22a35a; }
+.pills { top: 2.4%; right: 2%; display: flex; gap: 0.7cqw; }
+.pill { font: 500 1.3cqw/1 var(--sans); padding: 0.75cqw 1.2cqw; border-radius: 99px; border: 1px solid var(--line); background: #fff; display: inline-flex; align-items: center; gap: 0.55cqw; color: var(--agent); }
+.pill.who::before { content: ''; width: 0.65cqw; height: 0.65cqw; border-radius: 50%; background: var(--agent); }
+.pill.ink-toggle { cursor: pointer; border-color: rgba(46, 91, 255, 0.35); }
+.pill.ink-toggle svg { width: 1.5cqw; height: 1.5cqw; }
+.pill.ink-toggle[aria-pressed='false'] { color: var(--muted); border-color: var(--line); }
+.toolbar { left: 1.6%; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 0.45cqw; padding: 0.6cqw; background: #fff; border: 1px solid var(--line); border-radius: 1.5cqw; box-shadow: 0 0.4cqw 1.4cqw -0.6cqw rgba(0, 0, 0, 0.18); }
+.tool { width: 4.2cqw; height: 4.2cqw; border-radius: 1cqw; display: grid; place-items: center; color: var(--ink); }
+.tool.on { background: var(--ink); color: #fff; }
+.tool svg { width: 2.1cqw; height: 2.1cqw; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.submit { right: 2.2%; bottom: 4.4%; display: flex; flex-direction: column; align-items: flex-end; gap: 0.9cqw; }
+.submit .read { font-size: 1.25cqw; color: var(--muted); }
+.submit .btn { font: 650 1.75cqw/1 var(--sans); color: #fff; background: var(--ink); padding: 1.35cqw 2.6cqw; border-radius: 99px; }
+/* On a phone the iPad is ~340px wide: drop the toolbar, zoom the sketch, enlarge the chrome. */
+@container (max-width: 560px) {
+  .sk { transform: translate(-22px, 92px) scale(1.42); }
+  .toolbar { display: none; }
+  .project { font-size: 3.1cqw; gap: 1.2cqw; }
+  .project::before { width: 1.6cqw; height: 1.6cqw; }
+  .pill { font-size: 2.7cqw; padding: 1.3cqw 2.2cqw; gap: 1cqw; }
+  .pill.who::before { width: 1.3cqw; height: 1.3cqw; }
+  .pill.ink-toggle svg { width: 3cqw; height: 3cqw; }
+  .submit { gap: 1.4cqw; }
+  .submit .read { display: none; }
+  .submit .btn { font-size: 3.2cqw; padding: 2.2cqw 4.4cqw; }
+}
+
+/* Ink and marks */
 .ink { fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .hand { font-family: var(--hand); fill: var(--ink); }
 .pen { fill: none; stroke: var(--agent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
@@ -62,229 +115,205 @@ h1 { font-size: clamp(42px, 7vw, 76px); line-height: 1; letter-spacing: -0.03em;
 .agent { font-family: var(--pen); fill: var(--agent); }
 .agent.tag { opacity: 0.5; }
 .agent.kind { opacity: 0.75; }
-.reveal { fill: none; stroke: #fff; stroke-width: 8; stroke-linecap: round; }
+.reveal { fill: none; stroke: #fff; stroke-width: 9; stroke-linecap: round; }
 .badge circle { fill: var(--agent); }
-.badge text { fill: #fff; font: 600 12px var(--ui); }
-.cron, .mark-add, .badge, .pen.pending { transition: opacity 0.5s ease; }
+.badge text { fill: #fff; font: 700 12px var(--sans); }
+.wash { fill: rgba(46, 91, 255, 0.1); stroke: none; }
+.status-label { font-weight: 500; }
+.after { display: none; }
+.agent-ink, .cron, .mark-add, .mark-strike, .badge { transition: opacity 0.45s ease; }
 
+/* The replay. Without JS (or before the iPad scrolls into view) everything shows its end state. */
+.js .device-wrap:not(.play) .anim { visibility: hidden; }
+.js .device-wrap:not(.play) .strip, .js .device-wrap:not(.play) .read { visibility: hidden; }
 @media (prefers-reduced-motion: no-preference) {
-  .sheet:not(.done) .draw, .sheet:not(.done) .reveal { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 0.55s ease-in-out var(--d) forwards; }
-  .sheet:not(.done) .write { clip-path: inset(-20% 100% -20% 0); animation: write 0.4s linear var(--d) forwards; }
-  .sheet:not(.done) .badge { opacity: 0; animation: pop 0.25s ease-out var(--d) forwards; }
-  .sheet:not(.done) .strip { opacity: 0; transform: translateY(8px); animation: rise 0.4s ease-out 6.85s forwards; }
+  .play .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw var(--t) ease-in-out var(--d) forwards; }
+  .play .write { clip-path: inset(-25% 100% -25% 0); animation: write var(--t) linear var(--d) forwards; }
+  .play .pop { opacity: 0; animation: pop 0.2s ease-out var(--d) forwards; }
+  .play .submit .btn { animation: press 0.35s ease 4.32s; }
+  .play .submit .read { opacity: 0; animation: pop 0.3s ease 4.82s forwards; }
+  .play .strip { opacity: 0; translate: -50% 10px; animation: rise 0.45s cubic-bezier(.2, .8, .2, 1) 9.35s forwards; }
+  .accepted .later { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw var(--t) ease-in-out var(--a) forwards; }
+  .accepted .wash, .accepted .later-pop { opacity: 0; animation: pop 0.3s ease var(--a) forwards; }
 }
 @keyframes draw { to { stroke-dashoffset: 0; } }
-@keyframes write { to { clip-path: inset(-20% 0 -20% 0); } }
+@keyframes write { to { clip-path: inset(-25% 0 -25% 0); } }
 @keyframes pop { to { opacity: 1; } }
-@keyframes rise { to { opacity: 1; transform: none; } }
+@keyframes rise { to { opacity: 1; translate: -50% 0; } }
+@keyframes press { 40% { transform: scale(0.92); background: var(--agent); } }
 
-/* Accept all: the proposed box goes solid, the struck shape dims. Reject all: the proposals go away. */
-.sheet.accepted .pen.pending { stroke-dasharray: none; opacity: 1; }
-.sheet.accepted .cron { opacity: 0.22; }
-.sheet.accepted .badge, .sheet.rejected .badge { opacity: 0; }
-.sheet.rejected .mark-add, .sheet.rejected .mark-strike { opacity: 0; }
+.accepted .after { display: inline; }
+.accepted .pen.pending { stroke-dasharray: none; opacity: 1; }
+.accepted .after .pen.pending { stroke-dasharray: 7 6; }
+.accepted .cron { opacity: 0.22; }
+.accepted .badge, .rejected .badge { opacity: 0; }
+.rejected .mark-add, .rejected .mark-strike, .rejected .mark-note { opacity: 0; }
+.ink-off .agent-ink { opacity: 0; }
 
-.strip { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 18px 18px; padding: 10px 10px 10px 16px; border: 1px solid var(--rule); border-radius: 14px; background: #fff; font-size: 15px; }
-.who { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
-.who::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--agent); }
-.summary { font-family: var(--pen); color: var(--agent); flex: 1; min-width: 12em; }
-.strip button { font: 500 15px var(--ui); padding: 9px 16px; border-radius: 10px; border: 1px solid var(--rule); background: #fff; color: var(--ink); cursor: pointer; }
-.strip button.primary { background: var(--agent); border-color: var(--agent); color: #fff; }
+/* Proposal strip: inside the screen on wide viewports, under the iPad on phones. */
+.strip { position: absolute; left: 50%; translate: -50% 0; bottom: calc(clamp(7px, 1.3vw, 15px) + 3.4%); width: min(64%, 640px); display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; background: #fff; border: 1.5px solid var(--agent); border-radius: 16px; box-shadow: 0 16px 34px -18px rgba(46, 91, 255, 0.55); font-size: clamp(12px, 1.25vw, 15px); }
+.strip .what { flex: 1; min-width: 0; }
+.strip .who { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.85em; }
+.strip .who::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--agent); }
+.strip .summary { font: 500 1.35em/1.2 var(--pen); color: var(--agent); }
+.strip button { font: 600 1em var(--sans); padding: 0.7em 1.1em; border-radius: 11px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .strip button:hover { border-color: var(--ink); }
+.strip button.primary { background: var(--agent); border-color: var(--agent); color: #fff; }
 .strip button.primary:hover { background: #2049e0; }
-.strip .again { border: 0; background: none; color: var(--muted); padding: 9px 6px; text-decoration: underline; text-underline-offset: 3px; }
-.caption { margin: 14px 2px 0; font-size: 14px; color: var(--muted); }
 
-section { padding-top: 88px; }
-h2 { font-size: 28px; line-height: 1.2; letter-spacing: -0.015em; font-weight: 650; margin: 0 0 14px; text-wrap: balance; }
-p { margin: 0 0 14px; }
-.muted { color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 4vw, 56px); padding-top: clamp(56px, 8vw, 104px); }
+.facts h2 { font-size: 21px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 650; margin: 0 0 8px; }
+.facts p { margin: 0; color: var(--muted); font-size: 16.5px; }
+.facts code { font: 0.9em var(--mono); color: var(--ink); }
 
-.install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 40px; align-items: start; }
-.code { position: relative; background: var(--ink); color: #eef0f3; border-radius: 14px; padding: 18px 20px; font: 15px/1.75 var(--mono); overflow-x: auto; }
-.code pre { margin: 0; }
-.code .c { color: #8d95a3; }
-.copy { position: absolute; top: 10px; right: 10px; font: 500 13px var(--ui); color: #eef0f3; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
-.copy:hover { background: rgba(255, 255, 255, 0.16); }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; padding-top: 72px; padding-bottom: 40px; font-size: 14.5px; color: var(--muted); }
+footer a { text-underline-offset: 3px; }
 
-ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
-ol.steps li { counter-increment: step; border-top: 2px solid var(--ink); padding-top: 14px; }
-ol.steps li::before { content: counter(step); display: block; font: 500 26px/1 var(--pen); color: var(--agent); margin-bottom: 10px; }
-ol.steps h3 { font-size: 18px; margin: 0 0 6px; font-weight: 600; }
-ol.steps p { font-size: 16px; color: var(--muted); margin: 0; }
-
-.rules { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 40px; margin: 26px 0 0; padding: 0; list-style: none; }
-.rules li { font-size: 16px; color: var(--muted); padding-left: 26px; position: relative; }
-.rules li::before { content: ''; position: absolute; left: 0; top: 8px; width: 13px; height: 9px; border-left: 2.4px solid var(--agent); border-bottom: 2.4px solid var(--agent); transform: rotate(-45deg); border-radius: 1px; }
-.rules strong { color: var(--ink); font-weight: 600; }
-
-.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
-blockquote { margin: 18px 0 0; padding: 16px 20px; border-left: 3px solid var(--agent); background: var(--agent-wash); border-radius: 0 12px 12px 0; font-size: 16px; }
-code { font: 0.9em var(--mono); background: rgba(29, 29, 31, 0.06); padding: 1px 5px; border-radius: 5px; }
-.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.tools code { background: #fff; border: 1px solid var(--rule); padding: 4px 8px; font-size: 13.5px; }
-
-footer { margin-top: 110px; padding-top: 26px; padding-bottom: 48px; border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 12px 26px; font-size: 15px; color: var(--muted); }
-footer .grow { flex: 1; min-width: 14em; }
-
-@media (max-width: 860px) {
-  .install, .split { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  ol.steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-}
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   .wrap { padding-inline: 16px; }
-  .hero { padding-top: 20px; }
-  ol.steps, .rules { grid-template-columns: minmax(0, 1fr); }
-  section { padding-top: 64px; }
-  nav a.hide-sm { display: none; }
-  .strip { margin: 0 12px 12px; }
-  .sketch { min-width: 0; padding: 10px 8px 2px; }
+  .strip { position: static; translate: none; width: 100%; margin-top: 14px; }
+  .strip { flex-wrap: wrap; padding: 14px; font-size: 14px; }
+  .strip .what { flex-basis: 100%; }
+  .strip button { flex: 1; }
+  .play .strip { translate: 0 10px; }
+  @keyframes rise { to { opacity: 1; translate: 0 0; } }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .cmd { font-size: 15.5px; }
 }
 </style>
 </head>
 <body>
-<header class="wrap">
+<header class="wrap top">
   <a class="brand" href="/" aria-label="Vibeprint home"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#f4f6f8"/><path d="M15 20c6-.6 14-.4 19 .3.6 6 .5 13-.2 19-6 .5-13 .4-18.6-.2-.6-6-.6-13-.2-19.1z" fill="none" stroke="#1d1d1f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M34.5 30c4 .2 7.4.1 11-.3m-3.6-4 4 4.2-4.3 4" fill="none" stroke="#2e5bff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 44.5c5.2 4.8 13.8 5 19.6-.6" fill="none" stroke="#2e5bff" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 6"/><path d="M19.5 29.5l4 4.2 8-9" fill="none" stroke="#2e5bff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
 vibeprint</a>
-  <nav>
-    <a class="hide-sm" href="#start">Install</a>
-    <a href="https://github.com/viraatdas/vibeprint">GitHub</a>
-    <a href="https://www.npmjs.com/package/vibeprint">npm</a>
-  </nav>
+  <a class="gh" href="https://github.com/viraatdas/vibeprint"><svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
 </header>
 
 <main>
-<div class="wrap hero">
-  <h1>The sketch is the spec.</h1>
-  <p class="lede">Draw your system on an iPad. <strong>Claude Code or Codex reads it, proposes changes in its own blue pen, and checks off each part as it gets built.</strong> Your ink is never touched.</p>
+  <section class="wrap hero">
+    <h1>The sketch is the spec.</h1>
+    <p class="lede">Draw your architecture on an iPad. Claude Code or Codex marks it up in blue, then builds against it.</p>
+    <div class="cta">
+      <button class="cmd" id="copy" type="button" aria-label="Copy the command npx vibeprint init"><span><span class="p">$</span> npx vibeprint init</span><span class="copy" id="copy-label">Copy</span></button>
+      <p class="then">in your repo, then <code>npx vibeprint</code> and scan the QR code with your iPad</p>
+    </div>
+  </section>
 
-  <figure class="sheet" id="sheet" style="margin-left:0;margin-right:0">
-    <div class="scroller"><svg class="sketch" viewBox="10 32 880 414" role="img" aria-labelledby="sketch-title sketch-desc">
-<title id="sketch-title">A hand-drawn architecture sketch with the agent's blue marks</title>
-<desc id="sketch-desc">Black ink: a web app connected to an api, which connects to postgres and an email worker; a cron box also feeds the worker. Blue agent marks: faint tags under each box, a check on the api because it's built, a proposed redis cache in dashed blue, a strike through cron with the note "the worker can run this on a schedule", and the question "retries with backoff?" beside the email worker.</desc>
+  <section class="wrap stage">
+    <div class="device-wrap" id="demo">
+      <div class="device">
+        <div class="screen">
+          <svg class="sketch" viewBox="0 0 1194 834" role="img" aria-labelledby="sk-title sk-desc">
+<title id="sk-title">A Vibeprint session on an iPad</title>
+<desc id="sk-desc">Black ink, drawn by the user: a web app connected to an api, which connects to postgres and an email worker; a cron box also feeds the worker. After Submit, the agent's blue marks appear: faint tags under each box, a proposed redis cache in dashed blue, a strike through cron with the note "the worker can run this on a schedule", and the question "retries with backoff?" beside the email worker.</desc>
+<g class="sk">
 <g class="user">
-<path class="ink" d="M37,71 Q81,72.1 103.1,72.1 Q125.1,72.1 147.1,72.1 Q169.2,72.1 191.2,71.6 L213.2,71"/><path class="ink" d="M210,67.8 Q210.9,116.9 209.9,141.4 L209,165.9"/><path class="ink" d="M213.1,158 Q169.3,159.7 147.4,159.8 Q125.5,160 103.6,159.4 Q81.7,158.8 59.8,157.9 L37.9,157"/><path class="ink" d="M41,159.9 Q39.5,113.6 39.5,90.4 L39.5,67.3"/><text class="hand" x="125" y="122" font-size="25" text-anchor="middle">web app</text>
-<path class="ink" d="M325.4,69.5 Q378,68.3 404.3,68.9 Q430.6,69.6 456.9,70.3 L483.2,71"/><path class="ink" d="M481,67.3 Q481.6,114.2 480.3,137.7 L479,161.1"/><path class="ink" d="M482.9,158 Q430.2,158.8 403.9,158.5 Q377.6,158.2 351.3,157.6 L325,157"/><path class="ink" d="M331,159.8 Q330.3,113.5 330.4,90.3 L330.5,67.1"/><text class="hand" x="405" y="122" font-size="25" text-anchor="middle">api</text>
-<path class="ink" d="M635.7,87.6 Q652.7,73 663.9,67.2 Q675.2,61.4 688.7,57.6 Q702.2,53.9 717,52.6 Q731.8,51.2 746.6,52.3 Q761.5,53.3 775.5,56.6 Q789.5,59.9 801.3,65.5 Q813.2,71.1 822.2,78.4 Q831.2,85.8 835.3,94.5 Q839.4,103.2 839.8,112.3 Q840.2,121.3 835.1,129.8 Q830,138.3 821.8,145.7 Q813.6,153.2 802.8,159.4 Q792,165.7 778.1,169.3 Q764.2,172.9 749.2,174.6 Q734.3,176.2 719.1,175.1 Q703.9,173.9 690.5,169.8 Q677.1,165.6 664.8,160.3 Q652.5,155.1 644.5,147.4 Q636.4,139.8 631.5,131.3 Q626.6,122.8 627.1,113.8 Q627.6,104.8 632.2,96.4 Q636.7,87.9 643.6,79.9 Q650.5,71.9 662.4,66.3 L674.3,60.6"/><text class="hand" x="733" y="122" font-size="25" text-anchor="middle">postgres</text>
-<path class="ink" d="M316.1,293.5 Q365.3,292.2 389.9,292.1 Q414.6,291.9 439.2,291.7 Q463.8,291.5 488.4,292.3 L513,293"/><path class="ink" d="M510.5,289.2 Q510.2,336 509.6,359.5 L509,382.9"/><path class="ink" d="M513.3,380 Q463.8,380.8 439.1,380.3 Q414.4,379.8 389.7,379.8 Q364.9,379.8 340.2,379.4 L315.5,379"/><path class="ink" d="M321,381.4 Q319.9,335.5 319.9,312.6 L320,289.7"/><text class="hand" x="415" y="344" font-size="25" text-anchor="middle">email worker</text>
-<g class="cron"><path class="ink" d="M34.5,300 Q87.3,299.6 113.7,299.9 Q140,300.2 166.4,300.6 L192.8,301"/><path class="ink" d="M191.5,297.7 Q191.1,339.3 190,360 L189,380.8"/><path class="ink" d="M193.4,376 Q141.9,376.7 116.1,376.8 Q90.4,376.9 64.7,376 L38.9,375"/><path class="ink" d="M41,378.2 Q41.6,337.9 41.3,317.8 L41,297.6"/><text class="hand" x="115" y="347" font-size="25" text-anchor="middle">cron</text></g>
-<path class="ink" d="M214,114 Q241.5,113.6 255.3,113.4 Q269,113.2 282.8,113.4 Q296.5,113.5 310.3,113.8 L324,114"/><path class="ink" d="M312.4,107.7 L324.4,114.4 L312.2,119.9"/><path class="ink" d="M484,114 Q511.2,114.3 524.8,114.4 Q538.4,114.6 552,114.6 Q565.6,114.5 579.2,114.5 Q592.8,114.4 606.4,114.2 L620,114"/><path class="ink" d="M606,106.3 L619.9,114.2 L606.2,122.2"/><path class="ink" d="M405,162 Q409.4,192.9 410.1,208.4 Q410.8,223.9 411.4,239.4 Q412,254.9 411.5,270.4 L411,286"/><path class="ink" d="M418.1,272.9 L410.7,286 L404.8,272.5"/><path class="ink" d="M194,338 Q224,337.2 239,336.4 Q254,335.5 269,335.3 Q284,335 299,335.5 L314,336"/><path class="ink" d="M301.5,328.9 L313.6,335.8 L301,342.3"/>
+<path class="ink draw anim" pathLength="1" d="M37,71 Q81,72.1 103.1,72.1 Q125.1,72.1 147.1,72.1 Q169.2,72.1 191.2,71.6 L213.2,71" style="--d:0.40s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M210,67.8 Q210.9,116.9 209.9,141.4 L209,165.9" style="--d:0.47s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M213.1,158 Q169.3,159.7 147.4,159.8 Q125.5,160 103.6,159.4 Q81.7,158.8 59.8,157.9 L37.9,157" style="--d:0.54s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M41,159.9 Q39.5,113.6 39.5,90.4 L39.5,67.3" style="--d:0.61s;--t:0.07s"/><text class="hand write anim" x="125" y="122" font-size="25" text-anchor="middle" style="--d:0.68s;--t:0.20s">web app</text>
+<path class="ink draw anim" pathLength="1" d="M325.4,69.5 Q378,68.3 404.3,68.9 Q430.6,69.6 456.9,70.3 L483.2,71" style="--d:0.93s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M481,67.3 Q481.6,114.2 480.3,137.7 L479,161.1" style="--d:1.00s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M482.9,158 Q430.2,158.8 403.9,158.5 Q377.6,158.2 351.3,157.6 L325,157" style="--d:1.07s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M331,159.8 Q330.3,113.5 330.4,90.3 L330.5,67.1" style="--d:1.14s;--t:0.07s"/><text class="hand write anim" x="405" y="122" font-size="25" text-anchor="middle" style="--d:1.21s;--t:0.20s">api</text>
+<path class="ink draw anim" pathLength="1" d="M635.7,87.6 Q652.7,73 663.9,67.2 Q675.2,61.4 688.7,57.6 Q702.2,53.9 717,52.6 Q731.8,51.2 746.6,52.3 Q761.5,53.3 775.5,56.6 Q789.5,59.9 801.3,65.5 Q813.2,71.1 822.2,78.4 Q831.2,85.8 835.3,94.5 Q839.4,103.2 839.8,112.3 Q840.2,121.3 835.1,129.8 Q830,138.3 821.8,145.7 Q813.6,153.2 802.8,159.4 Q792,165.7 778.1,169.3 Q764.2,172.9 749.2,174.6 Q734.3,176.2 719.1,175.1 Q703.9,173.9 690.5,169.8 Q677.1,165.6 664.8,160.3 Q652.5,155.1 644.5,147.4 Q636.4,139.8 631.5,131.3 Q626.6,122.8 627.1,113.8 Q627.6,104.8 632.2,96.4 Q636.7,87.9 643.6,79.9 Q650.5,71.9 662.4,66.3 L674.3,60.6" style="--d:1.46s;--t:0.32s"/><text class="hand write anim" x="733" y="122" font-size="25" text-anchor="middle" style="--d:1.78s;--t:0.20s">postgres</text>
+<path class="ink draw anim" pathLength="1" d="M316.1,293.5 Q365.3,292.2 389.9,292.1 Q414.6,291.9 439.2,291.7 Q463.8,291.5 488.4,292.3 L513,293" style="--d:2.03s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M510.5,289.2 Q510.2,336 509.6,359.5 L509,382.9" style="--d:2.10s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M513.3,380 Q463.8,380.8 439.1,380.3 Q414.4,379.8 389.7,379.8 Q364.9,379.8 340.2,379.4 L315.5,379" style="--d:2.17s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M321,381.4 Q319.9,335.5 319.9,312.6 L320,289.7" style="--d:2.24s;--t:0.07s"/><text class="hand write anim" x="415" y="344" font-size="25" text-anchor="middle" style="--d:2.31s;--t:0.20s">email worker</text>
+<g class="cron"><path class="ink draw anim" pathLength="1" d="M34.5,300 Q87.3,299.6 113.7,299.9 Q140,300.2 166.4,300.6 L192.8,301" style="--d:2.56s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M191.5,297.7 Q191.1,339.3 190,360 L189,380.8" style="--d:2.63s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M193.4,376 Q141.9,376.7 116.1,376.8 Q90.4,376.9 64.7,376 L38.9,375" style="--d:2.70s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M41,378.2 Q41.6,337.9 41.3,317.8 L41,297.6" style="--d:2.77s;--t:0.07s"/><text class="hand write anim" x="115" y="347" font-size="25" text-anchor="middle" style="--d:2.84s;--t:0.20s">cron</text></g>
+<path class="ink draw anim" pathLength="1" d="M214,114 Q241.5,113.6 255.3,113.4 Q269,113.2 282.8,113.4 Q296.5,113.5 310.3,113.8 L324,114" style="--d:3.09s;--t:0.16s"/><path class="ink draw anim" pathLength="1" d="M312.4,107.7 L324.4,114.4 L312.2,119.9" style="--d:3.25s;--t:0.06s"/><path class="ink draw anim" pathLength="1" d="M484,114 Q511.2,114.3 524.8,114.4 Q538.4,114.6 552,114.6 Q565.6,114.5 579.2,114.5 Q592.8,114.4 606.4,114.2 L620,114" style="--d:3.31s;--t:0.16s"/><path class="ink draw anim" pathLength="1" d="M606,106.3 L619.9,114.2 L606.2,122.2" style="--d:3.47s;--t:0.06s"/><path class="ink draw anim" pathLength="1" d="M405,162 Q409.4,192.9 410.1,208.4 Q410.8,223.9 411.4,239.4 Q412,254.9 411.5,270.4 L411,286" style="--d:3.53s;--t:0.16s"/><path class="ink draw anim" pathLength="1" d="M418.1,272.9 L410.7,286 L404.8,272.5" style="--d:3.69s;--t:0.06s"/><path class="ink draw anim" pathLength="1" d="M194,338 Q224,337.2 239,336.4 Q254,335.5 269,335.3 Q284,335 299,335.5 L314,336" style="--d:3.75s;--t:0.16s"/><path class="ink draw anim" pathLength="1" d="M301.5,328.9 L313.6,335.8 L301,342.3" style="--d:3.91s;--t:0.06s"/>
 </g>
 <g class="agent-ink">
-<g class="tags"><text class="agent write tag" x="44" y="180" font-size="14" text-anchor="start" style="--d:1.10s">frontend</text><text class="agent write tag" x="334" y="180" font-size="14" text-anchor="start" style="--d:1.10s">service</text><text class="agent write tag" x="676" y="196" font-size="14" text-anchor="start" style="--d:1.10s">database</text><text class="agent write tag" x="324" y="402" font-size="14" text-anchor="start" style="--d:1.10s">worker</text></g>
-<g class="mark-status"><path class="pen draw check" pathLength="1" d="M461,64 Q466.9,71 469.9,73.5 Q472.8,76 477.3,69 Q481.7,62 487.1,55.1 L492.5,48.1" style="--d:6.15s"/></g>
-<g class="mark-add"><mask id="m1" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" style="--d:1.80s"/></mask><path class="pen pending" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" mask="url(#m1)"/><text class="agent write" x="730" y="339" font-size="21" text-anchor="middle" style="--d:2.50s">redis cache</text><text class="agent write kind" x="642" y="283" font-size="13" text-anchor="start" style="--d:2.80s">cache</text><mask id="m2" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" style="--d:3.05s"/></mask><path class="pen pending" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" mask="url(#m2)"/><mask id="m3" maskUnits="userSpaceOnUse" x="0" y="0" width="900" height="470"><path class="reveal" pathLength="1" d="M628.5,297 L633.6,312.2 L618.6,307.7" style="--d:3.45s"/></mask><path class="pen pending" d="M628.5,297 L633.6,312.2 L618.6,307.7" mask="url(#m3)"/><g class="badge" style="--d:3.70s"><circle cx="822" cy="290" r="11"/><text x="822" y="294.5" text-anchor="middle">1</text></g></g>
-<g class="mark-strike"><path class="pen draw" pathLength="1" d="M32.7,382.3 Q73.2,361.5 93,350.3 Q112.9,339.1 132.9,328.3 Q152.9,317.4 173.1,306.9 L193.3,296.5" style="--d:3.85s"/><text class="agent write" x="40" y="410" font-size="16" text-anchor="start" style="--d:4.30s">the worker can run</text><text class="agent write" x="40" y="429" font-size="16" text-anchor="start" style="--d:4.55s">this on a schedule</text><g class="badge" style="--d:4.95s"><circle cx="194" cy="296" r="11"/><text x="194" y="300.5" text-anchor="middle">2</text></g></g>
-<g class="mark-note"><path class="pen draw thin" pathLength="1" d="M504,384 C516,394 522,400 532,402" style="--d:5.10s"/><text class="agent write" x="538" y="410" font-size="16" text-anchor="start" style="--d:5.35s">retries with</text><text class="agent write" x="538" y="429" font-size="16" text-anchor="start" style="--d:5.60s">backoff?</text><g class="badge" style="--d:6.00s"><circle cx="660" cy="402" r="11"/><text x="660" y="406.5" text-anchor="middle">?</text></g></g>
+<g class="tags"><text class="agent write anim tag" x="44" y="180" font-size="14" text-anchor="start" style="--d:5.17s;--t:0.06s">frontend</text><text class="agent write anim tag" x="334" y="180" font-size="14" text-anchor="start" style="--d:5.23s;--t:0.06s">service</text><text class="agent write anim tag" x="676" y="196" font-size="14" text-anchor="start" style="--d:5.29s;--t:0.06s">database</text><text class="agent write anim tag" x="324" y="402" font-size="14" text-anchor="start" style="--d:5.35s;--t:0.06s">worker</text></g>
+<g class="mark-add"><mask id="m1" maskUnits="userSpaceOnUse" x="-50" y="-50" width="1000" height="560"><path class="reveal draw anim" pathLength="1" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" style="--d:5.86s;--t:0.50s"/></mask><path class="pen pending" d="M640.5,293 Q685.6,292.5 708.1,292.5 Q730.6,292.5 753.2,291.6 Q775.7,290.8 798.2,290.7 Q820.7,290.6 819.9,310.9 Q819,331.1 819.4,351.3 Q819.8,371.5 797.1,371.9 Q774.5,372.2 751.9,372.2 Q729.2,372.3 706.6,372.6 Q684,372.9 661.4,373.1 Q638.7,373.3 640,353.5 Q641.3,333.7 641.7,313.8 Q642,294 650.3,293.8 L658.5,293.6" mask="url(#m1)"/><text class="agent write anim" x="730" y="339" font-size="21" text-anchor="middle" style="--d:6.36s;--t:0.25s">redis cache</text><text class="agent write anim kind" x="642" y="283" font-size="13" text-anchor="start" style="--d:6.61s;--t:0.12s">cache</text><mask id="m2" maskUnits="userSpaceOnUse" x="-50" y="-50" width="1000" height="560"><path class="reveal draw anim" pathLength="1" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" style="--d:6.73s;--t:0.30s"/></mask><path class="pen pending" d="M486,150 Q505.6,174.5 515.6,186.6 Q525.6,198.7 536,210.5 Q546.3,222.3 556.8,234 Q567.2,245.7 578.2,256.9 Q589.2,268 600,279.3 Q610.9,290.6 622.5,301.3 L634,312" mask="url(#m2)"/><mask id="m3" maskUnits="userSpaceOnUse" x="-50" y="-50" width="1000" height="560"><path class="reveal draw anim" pathLength="1" d="M628.5,297 L633.6,312.2 L618.6,307.7" style="--d:7.03s;--t:0.12s"/></mask><path class="pen pending" d="M628.5,297 L633.6,312.2 L618.6,307.7" mask="url(#m3)"/><g class="badge"><g class="pop anim" style="--d:7.15s;--t:0.12s"><circle cx="822" cy="290" r="11"/><text x="822" y="294.5" text-anchor="middle">1</text></g></g></g>
+<g class="mark-strike"><path class="pen draw anim" pathLength="1" d="M32.7,382.3 Q73.2,361.5 93,350.3 Q112.9,339.1 132.9,328.3 Q152.9,317.4 173.1,306.9 L193.3,296.5" style="--d:7.47s;--t:0.32s"/><text class="agent write anim" x="40" y="410" font-size="16" text-anchor="start" style="--d:7.79s;--t:0.22s">the worker can run</text><text class="agent write anim" x="40" y="429" font-size="16" text-anchor="start" style="--d:8.01s;--t:0.22s">this on a schedule</text><g class="badge"><g class="pop anim" style="--d:8.23s;--t:0.12s"><circle cx="194" cy="296" r="11"/><text x="194" y="300.5" text-anchor="middle">2</text></g></g></g>
+<g class="mark-note"><path class="pen draw anim thin" pathLength="1" d="M504,384 C516,394 522,400 532,402" style="--d:8.55s;--t:0.15s"/><text class="agent write anim" x="538" y="410" font-size="16" text-anchor="start" style="--d:8.70s;--t:0.20s">retries with</text><text class="agent write anim" x="538" y="429" font-size="16" text-anchor="start" style="--d:8.90s;--t:0.18s">backoff?</text><g class="badge"><g class="pop anim" style="--d:9.08s;--t:0.12s"><circle cx="660" cy="402" r="11"/><text x="660" y="406.5" text-anchor="middle">?</text></g></g></g>
+<g class="after">
+<rect class="wash" x="321" y="61" width="168" height="106" rx="14" style="--a:0.50s;--t:0.25s"/>
+<path class="pen check later" pathLength="1" d="M467,62 Q472.9,69 475.9,71.5 Q478.8,74 483.3,67 Q487.7,60 493.1,53.1 L498.5,46.1" style="--a:0.75s;--t:0.35s"/>
+<path class="pen check later" pathLength="1" d="M811,54 Q816.9,61 819.8,63.5 Q822.8,66 827.2,59.4 Q831.6,52.8 837.1,46.2 L842.5,39.5" style="--a:1.10s;--t:0.35s"/>
+<mask id="n1" maskUnits="userSpaceOnUse" x="-50" y="-50" width="1000" height="560"><path class="reveal later" pathLength="1" d="M308.9,280.7 Q351.1,280.6 372.2,280.8 Q393.3,280.9 414.3,281 Q435.4,281.1 456.5,281.4 Q477.6,281.7 498.7,281.3 Q519.7,280.8 519.1,307.9 Q518.5,335 518.9,362.2 Q519.3,389.3 498.4,389.1 Q477.4,388.9 456.5,388.5 Q435.5,388.1 414.6,387.7 Q393.7,387.3 372.7,387.7 Q351.8,388.1 330.8,388.8 Q309.9,389.5 310.2,362.5 Q310.5,335.6 310.5,308.7 Q310.4,281.7 318.7,281.3 L326.9,280.8" style="--a:1.45s;--t:0.55s"/></mask><path class="pen pending" d="M308.9,280.7 Q351.1,280.6 372.2,280.8 Q393.3,280.9 414.3,281 Q435.4,281.1 456.5,281.4 Q477.6,281.7 498.7,281.3 Q519.7,280.8 519.1,307.9 Q518.5,335 518.9,362.2 Q519.3,389.3 498.4,389.1 Q477.4,388.9 456.5,388.5 Q435.5,388.1 414.6,387.7 Q393.7,387.3 372.7,387.7 Q351.8,388.1 330.8,388.8 Q309.9,389.5 310.2,362.5 Q310.5,335.6 310.5,308.7 Q310.4,281.7 318.7,281.3 L326.9,280.8" mask="url(#n1)"/>
+<text class="agent status-label later-pop" x="518" y="276" font-size="14" text-anchor="end" style="--a:2.00s;--t:0.20s">building</text>
 </g>
-</svg></div>
-    <div class="strip" role="group" aria-label="Proposed changes from the agent">
-      <span class="who">claude</span>
-      <span class="summary" id="summary" aria-live="polite">1 add, 1 strike, 1 question</span>
-      <button type="button" id="reject">Reject all</button>
-      <button type="button" class="primary" id="accept">Accept all</button>
-      <button type="button" class="again" id="again" hidden>Draw it again</button>
+</g>
+</g>
+</svg>
+          <div class="chrome project" aria-hidden="true">demo-shop</div>
+          <div class="chrome pills">
+            <span class="pill who" aria-hidden="true">claude</span>
+            <button class="pill ink-toggle" id="ink" type="button" aria-pressed="true" aria-label="Show agent ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Agent ink</button>
+          </div>
+          <div class="chrome toolbar" aria-hidden="true"><span class="tool on"><svg viewBox="0 0 24 24"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 013 3L8 19l-4 1z"/><path d="M14.5 6.5l3 3"/></svg></span><span class="tool"><svg viewBox="0 0 24 24"><path d="M5 19L19 5"/><path d="M9 5h10v10"/></svg></span><span class="tool"><svg viewBox="0 0 24 24"><path d="M6 5h12"/><path d="M12 5v14"/><path d="M9 19h6"/></svg></span><span class="tool"><svg viewBox="0 0 24 24"><path d="M7 20h11"/><path d="M5.5 15.5l9-9a2 2 0 012.8 0l1.2 1.2a2 2 0 010 2.8L11 18H8z"/></svg></span><span class="tool"><svg viewBox="0 0 24 24"><path d="M6 4l12 7-5.5 1.5L10 18z"/></svg></span><span class="tool"><svg viewBox="0 0 24 24"><path d="M8 13V6.5a1.5 1.5 0 013 0V12m0-6.5v-1a1.5 1.5 0 013 0V12m0-6a1.5 1.5 0 013 0v7.5a6.5 6.5 0 01-6.5 6.5h-.6a6 6 0 01-4.6-2.2L4.5 14.6a1.6 1.6 0 012.4-2.1L8 13.8"/></svg></span></div>
+          <div class="chrome submit" aria-hidden="true"><span class="read">Sketch #1 read</span><span class="btn">Submit</span></div>
+        </div>
+      </div>
+      <div class="strip" role="group" aria-label="The agent's proposals">
+        <div class="what"><div class="who">claude</div><div class="summary" id="summary" aria-live="polite">1 add, 1 strike, 1 question</div></div>
+        <button type="button" id="reject">Reject all</button>
+        <button type="button" class="primary" id="accept">Accept all</button>
+        <button type="button" id="replay" hidden>Replay</button>
+      </div>
     </div>
-  </figure>
-  <p class="caption">Black is yours. Blue is the agent's, and dashed blue is waiting on you.</p>
-</div>
+  </section>
 
-<section class="wrap install" id="start">
-  <div>
-    <h2>Start in your repo</h2>
-    <p class="muted">Vibeprint runs on your laptop next to your code. The iPad joins over Wi-Fi by scanning the QR code it prints. There's no account and nothing hosted.</p>
-    <p class="muted">Needs Node 20 or newer. <code>init</code> adds the agent rule to <code>AGENTS.md</code> and connects Claude Code. For Codex, run <code>codex mcp add vibeprint -- vibeprint mcp</code>.</p>
-  </div>
-  <div class="code">
-    <button class="copy" type="button" id="copy" aria-label="Copy install commands">Copy</button>
-<pre id="cmds"><span class="c"># once</span>
-npm install -g vibeprint
-
-<span class="c"># in your project</span>
-vibeprint init
-vibeprint</pre>
-  </div>
-</section>
-
-<section class="wrap">
-  <h2>How a session goes</h2>
-  <ol class="steps">
-    <li><h3>Sketch, then submit</h3><p>Boxes, arrows and words with the Pencil. Tap Submit when it says what you mean.</p></li>
-    <li><h3>The agent reads it</h3><p>Faint tags show what it understood. If one is wrong, scribble a correction and submit again.</p></li>
-    <li><h3>It proposes, you decide</h3><p>Changes arrive as small batches of marks. Accept them all with one tap, or go through them one by one.</p></li>
-    <li><h3>The build shows up</h3><p>As code lands, the agent marks each part building, done or blocked, right on your boxes.</p></li>
-  </ol>
-</section>
-
-<section class="wrap">
-  <h2>How the agent draws</h2>
-  <p class="muted text">Every agent action is a mark with an author and a status, kept apart from your ink.</p>
-  <ul class="rules">
-    <li><strong>Always in its own color.</strong> You can tell its ink from yours at a glance, and hide all of it with one button.</li>
-    <li><strong>Never on your strokes.</strong> It adds beside, strikes through, or writes a correction next to yours. An accepted strike dims your shape and doesn't delete it.</li>
-    <li><strong>Waits for your pen.</strong> Marks only appear after you've paused, one at a time, drawn on like a second pen.</li>
-    <li><strong>A few at a time.</strong> Proposals come in short batches with a one-line summary, never a wall of edits.</li>
-    <li><strong>Asks in the margin.</strong> Questions are notes pinned beside a shape. Answer by writing next to them.</li>
-    <li><strong>Quiet by default.</strong> Tags stay faint, and progress marks are a dashed outline turning solid with a check.</li>
-  </ul>
-</section>
-
-<section class="wrap split">
-  <div>
-    <h2>Works with the agent you already use</h2>
-    <p class="muted">One MCP server serves Claude Code and Codex alike. <code>init</code> puts this rule where both of them read it:</p>
-    <blockquote>Read the architecture through the Vibeprint tools before starting work. If the build needs a structural change, propose it as a mark and wait for approval. Never deviate silently.</blockquote>
-    <div class="tools" aria-label="MCP tools">
-      <code>get_architecture</code><code>get_node</code><code>get_sketch</code><code>add</code><code>strike</code><code>rewrite</code><code>annotate</code><code>set_status</code><code>propose</code><code>wait_for_user</code>
-    </div>
-  </div>
-  <div>
-    <h2>Lives in your repo</h2>
-    <p class="muted">The graph, the marks and your drawing are plain JSON in <code>.vibeprint/</code>, committed alongside your code. The spec has history, shows up in diffs, and travels with every clone.</p>
-    <p class="muted">Handwriting is read by Claude when <code>ANTHROPIC_API_KEY</code> is set. Without it, your coding agent does the reading through the same tools, with whatever model it runs on.</p>
-  </div>
-</section>
+  <section class="wrap facts">
+    <div><h2>Your ink stays yours</h2><p>The agent writes beside your shapes, never on them. One tap hides everything it drew.</p></div>
+    <div><h2>Claude Code and Codex</h2><p>One MCP server. Agents read the approved architecture before they build, and ask before they change it.</p></div>
+    <div><h2>Lives in your repo</h2><p>The sketch, the graph and every mark are plain JSON in <code>.vibeprint/</code>, committed with your code.</p></div>
+  </section>
 </main>
 
 <footer class="wrap">
-  <span class="grow">Vibeprint is MIT licensed. The canvas is built on <a href="https://tldraw.dev">tldraw</a>.</span>
-  <a href="https://github.com/viraatdas/vibeprint">Source on GitHub</a>
-  <a href="https://www.npmjs.com/package/vibeprint">vibeprint on npm</a>
+  <span>MIT licensed. The canvas is built on <a href="https://tldraw.dev">tldraw</a>.</span>
+  <span><a href="https://github.com/viraatdas/vibeprint">Source on GitHub</a></span>
 </footer>
 
 <script>
 (() => {
-  const sheet = document.getElementById('sheet')
+  const demo = document.getElementById('demo')
   const summary = document.getElementById('summary')
   const accept = document.getElementById('accept')
   const reject = document.getElementById('reject')
-  const again = document.getElementById('again')
-  const settle = (cls, text) => {
-    sheet.classList.add('done', cls)
-    summary.textContent = text
-    accept.hidden = reject.hidden = true
-    again.hidden = false
-    again.focus()
-  }
-  accept.addEventListener('click', () => settle('accepted', 'Accepted. Redis is in the architecture, cron is out.'))
-  reject.addEventListener('click', () => settle('rejected', 'Rejected. The agent keeps building what you drew.'))
-  again.addEventListener('click', () => {
-    // Dropping .done re-applies the draw-on animations, so they play from the start.
-    sheet.classList.remove('accepted', 'rejected', 'done')
+  const replay = document.getElementById('replay')
+  const ink = document.getElementById('ink')
+  const reset = () => {
     summary.textContent = '1 add, 1 strike, 1 question'
     accept.hidden = reject.hidden = false
-    again.hidden = true
+    replay.hidden = true
+  }
+  const play = () => {
+    demo.classList.remove('play', 'accepted', 'rejected', 'ink-off')
+    ink.setAttribute('aria-pressed', 'true')
+    reset()
+    void demo.offsetWidth // restart the animations
+    demo.classList.add('play')
+  }
+  const settle = (cls, text) => {
+    demo.classList.add('play', cls)
+    summary.textContent = text
+    accept.hidden = reject.hidden = true
+    replay.hidden = false
+    replay.focus()
+  }
+  accept.addEventListener('click', () => settle('accepted', 'Accepted. Building it now.'))
+  reject.addEventListener('click', () => settle('rejected', 'Rejected. Your sketch stands.'))
+  replay.addEventListener('click', play)
+  ink.addEventListener('click', () => {
+    const off = demo.classList.toggle('ink-off')
+    ink.setAttribute('aria-pressed', String(!off))
   })
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        io.disconnect()
+        play()
+      }
+    }, { threshold: 0.2 })
+    io.observe(demo)
+  } else play()
+
   const copy = document.getElementById('copy')
+  const label = document.getElementById('copy-label')
   copy.addEventListener('click', async () => {
-    const text = document.getElementById('cmds').innerText.split('\n').filter((l) => l && !l.startsWith('#')).join('\n')
     try {
-      await navigator.clipboard.writeText(text)
-      copy.textContent = 'Copied'
+      await navigator.clipboard.writeText('npx vibeprint init')
+      label.textContent = 'Copied'
     } catch {
-      copy.textContent = 'Select and copy'
+      label.textContent = 'Select it'
     }
-    setTimeout(() => (copy.textContent = 'Copy'), 1600)
+    setTimeout(() => (label.textContent = 'Copy'), 1600)
   })
 })()
 </script>
