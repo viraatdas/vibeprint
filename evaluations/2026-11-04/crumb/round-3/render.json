@@ -1,0 +1,150 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 454.0767384105959,
+    "y": 288.71274834437077,
+    "z": 0.5195475463420929
+  },
+  "text": [
+    {
+      "text": "Crumb: how does an AI agent get a logged-in browser for a saved account?",
+      "renderedSize": 16.625521482946972
+    },
+    {
+      "text": "New engineers · The crumb launch flow: agent CLI call, detached supervisor, Chrome over CDP, encrypted vault, and OS key store.",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "[ Agent host ]",
+      "renderedSize": 11.949593565868136
+    },
+    {
+      "text": "Local coding agent and its\nhook, user-run",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "AI agent",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "client · Runs crumb\ncommands, drives the\nbrowser via CDP",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "Vault guard",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "module · Blocks agent tool\ncalls that reference\n~/.crumb",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "[ Crumb local processes\n]",
+      "renderedSize": 11.949593565868136
+    },
+    {
+      "text": "Local self-hosted Node CLI,\nsupervisor and Chrome",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "Crumb CLI",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "client · Starts the\nsupervisor, waits for\nhandle, prints it",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "worker · Detached process:\ninjects state, autosaves\nsession",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "service · Local Chrome\nexposing a CDP endpoint",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "[ Local state and OS ]",
+      "renderedSize": 11.949593565868136
+    },
+    {
+      "text": "Local filesystem vault and OS\nkey store",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "Session vault",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "storage · Encrypted .crumb\nentries plus run handle\nfiles",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "OS key store",
+      "renderedSize": 12.988688658552322
+    },
+    {
+      "text": "external · Holds vault\nkey; falls back to\nCRUMB_KEY or key file",
+      "renderedSize": 9.871403380499764
+    },
+    {
+      "text": "READING KEY · Frames = deployment/trust zones. Boxes = runtime units; type appears below the name. Arrows = initiator →\nrecipient, including the response. Solid = sync request · dashed = async delivery/stream · dotted = local disk/IPC. AI red;\nyour additions blue.",
+      "renderedSize": 10.390950926841857
+    },
+    {
+      "text": "Fails closed on key",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "Missing key in configured store\nthrows KEY_UNAVAILABLE; never mints a\nnew key over an existing vault.",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 9.351855834157671
+    },
+    {
+      "text": "Autosave and merge",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "Supervisor saves every 30s, on\nSIGUSR2 and SIGTERM, 3-way merging so\nconcurrent runs don't clobber.",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 9.351855834157671
+    },
+    {
+      "text": "Start timeout",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "CLI polls for the handle up to 60s;\nsupervisor errors surface via a\n.error file, else INTERNAL.",
+      "renderedSize": 10.910498473183951
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 9.351855834157671
+    },
+    {
+      "text": "Outside this view: Session import/export via src/transfer.ts; Interactive login and capture from an existing browser.",
+      "renderedSize": 8.832308287815579
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.312760741473486
+    }
+  ],
+  "errors": []
+}

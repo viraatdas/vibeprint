@@ -1,0 +1,116 @@
+{
+  "title": "Outbound: how does an approved email draft get sent through Gmail?",
+  "audience": "New engineers",
+  "scope": "Email branch of sendMessage: owner clicks Send, row is claimed, guards run, Gmail sends, status is written.",
+  "omissions": [
+    "LinkedIn sends via the browser worker; X DMs marked sent by hand",
+    "Finding, research, enrollment and the reply-check cron"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "device",
+      "label": "Owner device",
+      "description": "Local: owner's web browser"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel",
+      "description": "Hosted, managed: Next.js app"
+    },
+    {
+      "id": "data",
+      "label": "Postgres",
+      "description": "Hosted database"
+    },
+    {
+      "id": "google",
+      "label": "Google",
+      "description": "External, managed: Gmail API"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "Web browser",
+      "kind": "client",
+      "tags": [
+        "React"
+      ],
+      "path": "app/(app)/",
+      "description": "Today/conversation UI with Send button",
+      "group": "device"
+    },
+    {
+      "id": "app",
+      "label": "App server",
+      "kind": "service",
+      "tags": [
+        "Next.js"
+      ],
+      "path": "lib/engine.ts",
+      "description": "Server action runs sendMessage guards+send",
+      "group": "vercel"
+    },
+    {
+      "id": "pg",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [],
+      "path": "",
+      "description": "Messages, people, campaigns, settings",
+      "group": "data"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Reply/in-touch checks; sends the email",
+      "group": "google"
+    }
+  ],
+  "edges": [
+    {
+      "from": "browser",
+      "to": "app",
+      "label": "1. Send + owner edits",
+      "mode": "sync"
+    },
+    {
+      "from": "app",
+      "to": "pg",
+      "label": "2/4. claim, read, mark",
+      "mode": "sync"
+    },
+    {
+      "from": "app",
+      "to": "gmail",
+      "label": "3. checks, send email",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Atomic claim on click",
+      "text": "Only draft/failed outbound rows are claimed as 'sending' (edits saved); others return skipped, so a double click sends once. A crash mid-send can leave a row stuck in 'sending'.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Mixed guard failure modes",
+      "text": "Daily limit fails the row. The prior-reply check is fail-open (errors count as 0). The Gmail in-touch check fails closed, skipped for replies or owner override; hits are saved.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Failure paths are retryable",
+      "text": "No usable/bounced email, no Gmail connection, or a send error marks the row failed (send errors also recorded as a Gmail connection error). Failed rows can be claimed again.",
+      "source": "lib/engine.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:53:57.953Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

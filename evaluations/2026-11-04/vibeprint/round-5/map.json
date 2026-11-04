@@ -1,0 +1,170 @@
+{
+  "title": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+  "audience": "New engineers",
+  "scope": "iPad canvas via opt-in hosted relay or LAN to the local daemon, .vibeprint state, and the agent's MCP server.",
+  "omissions": [
+    "Sketch interpretation via Claude API or heuristics (src/interpret/)",
+    "CLI commands, git checkpoints and repo code-map scanning"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "ipad",
+      "label": "iPad",
+      "description": "User's tablet browser, external device"
+    },
+    {
+      "id": "hosted",
+      "label": "Hosted relay",
+      "description": "Hosted relay, opt-in via config"
+    },
+    {
+      "id": "dev",
+      "label": "Dev machine: daemon",
+      "description": "Local, self-hosted daemon and state"
+    },
+    {
+      "id": "agent",
+      "label": "Dev machine: agent",
+      "description": "Local agent with stdio MCP child"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "iPad browser",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/",
+      "description": "Draws the canvas, sends strokes, reviews marks",
+      "group": "ipad"
+    },
+    {
+      "id": "relay",
+      "label": "Relay",
+      "kind": "service",
+      "tags": [
+        "WebSocket"
+      ],
+      "path": "relay/",
+      "description": "Forwards iPad requests over daemon's tunnel",
+      "group": "hosted"
+    },
+    {
+      "id": "daemon",
+      "label": "Daemon",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "ws"
+      ],
+      "path": "src/server/",
+      "description": "vibeprint serve: canvas state, token-gated",
+      "group": "dev"
+    },
+    {
+      "id": "store",
+      "label": ".vibeprint dir",
+      "kind": "storage",
+      "tags": [
+        "JSON files"
+      ],
+      "path": ".vibeprint/",
+      "description": "Plain JSON: canvas, graph, relay identity",
+      "group": "dev"
+    },
+    {
+      "id": "agent",
+      "label": "Coding agent",
+      "kind": "external",
+      "tags": [
+        "Claude Code",
+        "Codex"
+      ],
+      "path": "",
+      "description": "Reads sketch, builds, proposes marks",
+      "group": "agent"
+    },
+    {
+      "id": "mcp",
+      "label": "MCP server",
+      "kind": "module",
+      "tags": [
+        "MCP",
+        "stdio"
+      ],
+      "path": "src/mcp/",
+      "description": "Tools: get_sketch, marks, wait_for_user",
+      "group": "agent"
+    }
+  ],
+  "edges": [
+    {
+      "from": "browser",
+      "to": "relay",
+      "label": "canvas+token",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "relay",
+      "label": "tunnel WS",
+      "mode": "async"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "LAN canvas",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "store",
+      "label": "state JSON",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "mcp",
+      "label": "tool calls",
+      "mode": "local"
+    },
+    {
+      "from": "mcp",
+      "to": "daemon",
+      "label": "HTTP: tools",
+      "mode": "sync"
+    },
+    {
+      "from": "mcp",
+      "to": "store",
+      "label": "files mode",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Relay optional, LAN fallback",
+      "text": "Relay only with a configured URL; if unreachable, serve prints the LAN URL and the tunnel reconnects",
+      "source": "src/server/daemon.ts"
+    },
+    {
+      "title": "Daemon down: files mode",
+      "text": "MCP picks daemon or .vibeprint/ files per call; canvas sees file writes on the next vibeprint serve",
+      "source": "src/mcp/backend.ts"
+    },
+    {
+      "title": "No live wait without daemon",
+      "text": "In files mode wait_for_user returns at once and asks the user to run vibeprint serve",
+      "source": "src/mcp/backend.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:41:50.397Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

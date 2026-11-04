@@ -1,0 +1,102 @@
+{
+  "title": "crumb: how does a running state-mode session autosave its cookies to the vault?",
+  "audience": "New engineers",
+  "scope": "Timer-driven saves in one running state-mode supervisor: snapshot Chrome, merge with the latest vault entry, rewrite it.",
+  "omissions": [
+    "Launch, run handle files, and crumb sync/close signal saves",
+    "Profile mode, agent CDP use, login/import/capture/check flows"
+  ],
+  "owner": "Viraat Das",
+  "groups": [
+    {
+      "id": "host",
+      "label": "Local machine",
+      "description": "Local self-managed host, same OS user"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sup",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node.js",
+        "Playwright"
+      ],
+      "path": "src/",
+      "description": "Chrome owner; best-effort saves, no file lock",
+      "group": "host"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "client",
+      "tags": [
+        "Chromium",
+        "CDP"
+      ],
+      "path": "",
+      "description": "Owned child on temp profile; exit skips save",
+      "group": "host"
+    },
+    {
+      "id": "vault",
+      "label": "Vault files",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "",
+      "description": "0600 files: plain header, AES-GCM session",
+      "group": "host"
+    }
+  ],
+  "edges": [
+    {
+      "from": "sup",
+      "to": "sup",
+      "label": "timer tick, default 30s",
+      "mode": "async"
+    },
+    {
+      "from": "sup",
+      "to": "chrome",
+      "label": "1 storageState → cookies",
+      "mode": "sync"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "2 read, 3 merge + rename",
+      "mode": "local"
+    },
+    {
+      "from": "chrome",
+      "to": "sup",
+      "label": "close → exit, no save",
+      "mode": "async"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Timer, errors and exit",
+      "text": "Default 30s (--autosave 0 = no timer). Ticks join an in-flight save; unchanged snapshots skip. Errors only logged. Chrome self-close exits with no final save; SIGTERM/SIGINT save first.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Three-way merge, no lock",
+      "text": "Each save re-reads the entry, applies only before→after changes, adds provenance + browser hints, then writes a temp file and renames it. No lock: writes between read and rename are lost.",
+      "source": "src/vault.ts"
+    },
+    {
+      "title": "Vault key custody",
+      "text": "Key from CRUMB_KEY, else config.json's store: macOS Keychain, Linux Secret Service or ~/.crumb/key (0600); cached per process. Session is AES-256-GCM (id as AAD); header is plaintext.",
+      "source": "src/crypto.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:07:00.112Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

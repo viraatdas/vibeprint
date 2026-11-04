@@ -1,0 +1,127 @@
+{
+  "title": "Outbound: how do concurrent Send clicks claim one draft so only one proceeds?",
+  "audience": "New engineers",
+  "scope": "The owner's Send click from two tabs, the sendAction server action, and the atomic Postgres claim on one message row.",
+  "omissions": [
+    "Post-claim guards, Gmail/LinkedIn delivery and daily rate limits",
+    "Finding, research, enrollment and drafting of prospects"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "device",
+      "label": "Owner device",
+      "description": "Local browser, two tabs of one client"
+    },
+    {
+      "id": "app",
+      "label": "App server",
+      "description": "Hosted Next.js server runtime"
+    },
+    {
+      "id": "data",
+      "label": "Postgres",
+      "description": "Hosted database"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tabA",
+      "label": "Browser tab A",
+      "kind": "client",
+      "tags": [
+        "Next.js",
+        "React"
+      ],
+      "path": "app/(app)/",
+      "description": "Owner clicks Send on a draft",
+      "group": "device"
+    },
+    {
+      "id": "tabB",
+      "label": "Browser tab B",
+      "kind": "client",
+      "tags": [
+        "Next.js",
+        "React"
+      ],
+      "path": "app/(app)/",
+      "description": "Same draft, concurrent second click",
+      "group": "device"
+    },
+    {
+      "id": "server",
+      "label": "App server",
+      "kind": "service",
+      "tags": [
+        "Next.js"
+      ],
+      "path": "app/(app)/actions.ts",
+      "description": "sendAction runs sendMessage per click",
+      "group": "app"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [],
+      "path": "",
+      "description": "messages row; draft/failed claimed once",
+      "group": "data"
+    }
+  ],
+  "edges": [
+    {
+      "from": "tabA",
+      "to": "server",
+      "label": "1. sendAction id+edits",
+      "mode": "sync"
+    },
+    {
+      "from": "tabB",
+      "to": "server",
+      "label": "1. sendAction id+edits",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "2. claim → row | none",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "tabA",
+      "label": "3. won: on to guards",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "tabB",
+      "label": "3. none → skipped",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Atomic claim",
+      "text": "After loadSettings, one UPDATE WHERE id, direction='out', status IN (draft,failed) sets sending, clears error, stamps sentAt/updatedAt, saves edits, RETURNING. No row → skipped.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Not one-way",
+      "text": "After a win, failed guards set the row to failed or skipped, with sentAt null and an error. Failed rows can be claimed again by a manual Send. Skipped rows cannot.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Crash after claim",
+      "text": "This only prevents duplicate claims. It does not guarantee delivery. A row left 'sending' can't be reclaimed. Refresh resolves only queued LinkedIn rows that have an externalId.",
+      "source": "lib/engine.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:00:01.774Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

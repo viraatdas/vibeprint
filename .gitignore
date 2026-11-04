@@ -10,3 +10,5 @@ dist/
 .vercel/
 .env*
 *.tgz
+
+/site/evaluations/

@@ -1,0 +1,142 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 519.9623887240355,
+    "y": 152.55727002967353,
+    "z": 0.5768325559501905
+  },
+  "text": [
+    {
+      "text": "Crumb: how does `crumb launch` restore a saved session\nfor an agent?",
+      "renderedSize": 18.458641790406094
+    },
+    {
+      "text": "New engineers · State-mode crumb launch: detached supervisor, decrypt and inject session, CDP\nhandle file, autosave",
+      "renderedSize": 10.959818563053618
+    },
+    {
+      "text": "Caller",
+      "renderedSize": 12.69031623090419
+    },
+    {
+      "text": "Local: agent and\nshort-lived CLI",
+      "renderedSize": 10.959818563053618
+    },
+    {
+      "text": "Agent process",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Runs crumb launch,\nthen drives CDP",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "crumb CLI",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Spawns supervisor,\npolls, prints\nhandle",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Browser runtime",
+      "renderedSize": 12.69031623090419
+    },
+    {
+      "text": "Local: detached\nsupervisor and Chromium",
+      "renderedSize": 10.959818563053618
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Hidden\n__supervise;\nrestores and\nautosaves",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Temp profile,\n127.0.0.1\ndebugging port",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Crumb data dir",
+      "renderedSize": 12.69031623090419
+    },
+    {
+      "text": "Local disk,\nself-managed",
+      "renderedSize": 10.959818563053618
+    },
+    {
+      "text": "Encrypted vault",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Sessions; key from\nOS\nstore/file/CRUMB_KEY",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Run files",
+      "renderedSize": 14.420813898754762
+    },
+    {
+      "text": "Plaintext\nrun/<id>.json,\n.error, .log",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state;\ndouble border = external service. Arrows: caller → recipient (response included). Solid =\nsync; dashed = async; dotted = local command/I/O.",
+      "renderedSize": 11.536651119003809
+    },
+    {
+      "text": "Startup fails closed",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "CLI polls every 150ms, 60s\ndefault. Error file, child\nexit or timeout raises an\nerror that points to the\nlog.",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 10.382986007103428
+    },
+    {
+      "text": "Missing key blocks restore",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "If the configured key store\nor CRUMB_KEY can't supply\nthe key, decryption throws\nKEY_UNAVAILABLE and launch\nfails.",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 10.382986007103428
+    },
+    {
+      "text": "Autosave is best-effort",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "Saves every 30s by default,\non SIGUSR2 and on\nSIGTERM/SIGINT. Failures\nare only logged. Closing\nthe window skips a final\nsave.",
+      "renderedSize": 12.113483674953999
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 10.382986007103428
+    },
+    {
+      "text": "Outside this view: login, capture, check, close and sync commands; profile mode (persistent user-data dir,\nnothing injected).",
+      "renderedSize": 9.806153451153238
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 9.229320895203047
+    }
+  ],
+  "errors": []
+}

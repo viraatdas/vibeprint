@@ -1,0 +1,195 @@
+{
+  "title": "Crumb: how does an AI agent get a logged-in browser for a saved account?",
+  "audience": "New engineers",
+  "scope": "Running crumb launch: agent guard, CLI, detached supervisor, Chrome, the encrypted vault, OS key store and target sites.",
+  "omissions": [
+    "Session export/import between machines (transfer)",
+    "crumb check and capture-from-CDP flows"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "agent",
+      "label": "Agent host",
+      "description": "Local coding agent (Claude Code/Codex) and its hook"
+    },
+    {
+      "id": "local",
+      "label": "Local crumb processes",
+      "description": "Local self-hosted Node processes, Chrome and ~/.crumb state"
+    },
+    {
+      "id": "os",
+      "label": "OS services",
+      "description": "Local OS keychain / Secret Service holding the vault key"
+    },
+    {
+      "id": "web",
+      "label": "Websites",
+      "description": "External third-party sites the account belongs to"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "Coding agent",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Asks for a session via crumb CLI, then drives the browser",
+      "group": "agent"
+    },
+    {
+      "id": "guard",
+      "label": "Vault guard",
+      "kind": "module",
+      "tags": [
+        "PreToolUse hook"
+      ],
+      "path": "hooks/",
+      "description": "Blocks agent tool calls that mention ~/.crumb or CRUMB_HOME",
+      "group": "agent"
+    },
+    {
+      "id": "cli",
+      "label": "crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node",
+        "TypeScript"
+      ],
+      "path": "src/cli.ts",
+      "description": "Short-lived command; spawns supervisor and waits for its handle",
+      "group": "local"
+    },
+    {
+      "id": "supervisor",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Detached process: launches Chrome, injects state, autosaves",
+      "group": "local"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "Chromium"
+      ],
+      "path": "",
+      "description": "System or Playwright Chrome with a local DevTools port",
+      "group": "local"
+    },
+    {
+      "id": "vault",
+      "label": "Session vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Encrypted sessions, profiles and run handles under ~/.crumb",
+      "group": "local"
+    },
+    {
+      "id": "keystore",
+      "label": "OS key store",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Keychain or secret-tool holding the vault key (or file/env)",
+      "group": "os"
+    },
+    {
+      "id": "sites",
+      "label": "Target sites",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Websites using the injected cookies and storage",
+      "group": "web"
+    }
+  ],
+  "edges": [
+    {
+      "from": "agent",
+      "to": "guard",
+      "label": "Tool call vetted pre-run",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "cli",
+      "label": "crumb launch site:account",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "supervisor",
+      "label": "spawn detached __supervise",
+      "mode": "async"
+    },
+    {
+      "from": "cli",
+      "to": "vault",
+      "label": "Poll run handle / error file",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "keystore",
+      "label": "Fetch vault key",
+      "mode": "sync"
+    },
+    {
+      "from": "supervisor",
+      "to": "vault",
+      "label": "Read/merge-write session",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "chrome",
+      "label": "launchPersistentContext+state",
+      "mode": "sync"
+    },
+    {
+      "from": "agent",
+      "to": "chrome",
+      "label": "CDP: browser control",
+      "mode": "sync"
+    },
+    {
+      "from": "chrome",
+      "to": "sites",
+      "label": "HTTPS with saved cookies",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Autosave and stop",
+      "text": "Supervisor snapshots storage every 30s by default, on SIGUSR2 (crumb sync) and on SIGTERM (crumb close), merging changes into the vault. A failed autosave is only logged.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Startup handshake",
+      "text": "CLI polls for the run handle (pid + CDP URLs) for up to 60s; supervisor writes an error file on failure, else CLI reports 'did not start'.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Key fails closed",
+      "text": "If the vault exists but its key is missing from keychain/secret-service/CRUMB_KEY, crumb throws KEY_UNAVAILABLE instead of creating a new key.",
+      "source": "src/crypto.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:08:44.057Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

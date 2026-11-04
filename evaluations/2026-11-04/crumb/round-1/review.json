@@ -1,0 +1,76 @@
+{
+  "project": "crumb",
+  "round": 1,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:05:35.696Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 0,
+      "evidence": "The image has no title, subtitle or caption. Nothing says it shows crumb, what question it answers, or who it is for."
+    },
+    {
+      "id": "abstraction",
+      "score": 2,
+      "evidence": "Most boxes are TS modules, which is consistent. But Guard hook is a separate agent-harness script, and Vault files and Chromium are runtime resources, all drawn with the same box style. config.ts, crypto.ts and paths.ts are left out, while Vault stands in for them in some places but not others."
+    },
+    {
+      "id": "focus",
+      "score": 2,
+      "evidence": "Missing pieces: the agent that calls the CLI and that the hook intercepts; Chrome profile dirs (session.ts uses profileDir); the user's installed browsers that transfer.ts reads through @steipete/sweet-cookie; the OS keychain/keystore in crypto.ts; and config.ts. None of these omissions are noted."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Only 3 of 10 arrows are labeled ('guards', 'encrypted', 'CDP'). The unlabeled arrows seem to mean 'calls', but 'guards' means something else entirely. The Hook→Vault files arrow suggests the hook writes or reads the files, when it actually blocks agent tool calls. Nothing shows ordering or the detached/supervise process model."
+    },
+    {
+      "id": "boundaries",
+      "score": 0,
+      "evidence": "There are no containers. Nothing separates the crumb process from the agent harness, the local filesystem or external browsers, and no trust boundary is drawn even though the tool exists to keep secrets away from agents."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Flows mostly top to bottom with no crossings, and node labels are readable at 1194x834. Edge labels ('guards', 'CDP', 'encrypted') are very small. The graph sits in the middle third of the canvas with a lot of empty margin, and the long Guard hook edge is awkward."
+    },
+    {
+      "id": "notation",
+      "score": 1,
+      "evidence": "Every node is the same red sketch box apart from the cylinder for storage. External Chromium looks the same as internal modules. There is no legend and no non-color signal for kind."
+    },
+    {
+      "id": "operations",
+      "score": 1,
+      "evidence": "Only the 'encrypted' label and the guard hint at non-functional concerns. The diagram doesn't show the key source or keychain, detached supervisor processes or run files, locking, browser-not-found or decryption failures, or stale cookies."
+    },
+    {
+      "id": "freshness",
+      "score": 1,
+      "evidence": "There is no date, version, revision or owner on the image, and it hasn't been checked against a running system. Several edges are inaccurate (see inaccuracies)."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "A newcomer could tell it's a CLI driving sessions and a vault, but not what crumb is for, why the hook exists, or where cookies come from. Without a walkthrough they would likely misread how the hook works."
+    }
+  ],
+  "coldRead": "crumb is a local Node CLI that gives AI agents per-account browser sessions. Agents run `crumb launch site:account`. resolve.ts uses config bindings and vault listings to pick the account. session.ts starts Chromium through Playwright (launchPersistentContext in browser.ts) on a per-account profile dir, injects saved cookies and storage, and later snapshots them back into the vault. vault.ts seals each entry with crypto.ts, using a key held in a keystore. transfer.ts imports cookies from the user's real browsers (sweet-cookie) or from files, and exports them. Separately, a Claude Code/Codex PreToolUse hook (hooks/guard.mjs) blocks any agent tool call that mentions ~/.crumb or CRUMB_HOME, so agents have to go through the CLI. Most of this cannot be recovered from the image alone.",
+  "inaccuracies": [
+    "Browser→Chromium is labeled 'CDP', but src/browser.ts:95 launches with chromium.launchPersistentContext. The only connectOverCDP call is in src/session.ts:281, which goes directly to playwright-core and bypasses browser.ts.",
+    "The Guard hook→Vault files 'guards' arrow suggests the hook accesses the files. hooks/guard.mjs actually reads agent tool-call JSON on stdin and exits 2 when a call references the vault path. It acts on the agent, which the diagram doesn't show.",
+    "Transfer only connects to Vault. src/transfer.ts:2 also reads cookies from the user's installed browsers through @steipete/sweet-cookie, an external source that isn't drawn.",
+    "CLI calls vault.ts directly (exists/listAccounts/removeAccount, src/cli.ts:14) and config.ts (src/cli.ts:7). Neither edge is shown.",
+    "Encryption depends on crypto.ts and config.ts (key store, execFileSync for the OS keychain in src/crypto.ts:1), which aren't drawn. Unencrypted Chrome profile dirs (paths.profileDir) also live on disk and aren't shown.",
+    "browser.ts imports normalizeState from vault.ts (src/browser.ts:7), a dependency the diagram leaves out."
+  ],
+  "improvements": [
+    "Add a title, plus a date/revision line (557acd4, 2026-11-04) and an owner line. Then add boundaries: an 'agent harness' container (Agent + PreToolUse guard hook), a 'crumb CLI process' container, a 'local disk ~/.crumb' container (encrypted vault, config, profile dirs) and 'external' items (Chromium, the user's browsers, the OS keychain).",
+    "Fix and label every edge with what flows, e.g. 'launch site:account', 'read/seal entry', 'launchPersistentContext / connectOverCDP', 'import cookies (sweet-cookie)'. Redraw the guard as Agent tool call → Guard → blocked/allowed, not as an arrow to the files.",
+    "Add a legend that separates modules, external processes and storage with distinct shapes or line styles. Annotate key failure points (missing or locked key, browser not found, decrypt failure, stale session) and the detached supervise/run-file lifecycle."
+  ],
+  "total": 13,
+  "verdict": "Redo"
+}

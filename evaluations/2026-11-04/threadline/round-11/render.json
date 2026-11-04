@@ -1,0 +1,127 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 329.6488130563798,
+    "y": 159.14421364985162,
+    "z": 0.5529575847075232
+  },
+  "text": [
+    {
+      "text": "Outbound: how does the draft claim suppress a concurrent double Send?",
+      "renderedSize": 17.694642710640743
+    },
+    {
+      "text": "New engineers · Two Today tabs sending one draft, their separate sendAction calls, and the conditional Postgres UPDATE claiming its row.",
+      "renderedSize": 10.50619410944294
+    },
+    {
+      "text": "Owner's browser",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Local client: two tabs, one\nsession",
+      "renderedSize": 9.400278940027894
+    },
+    {
+      "text": "Vercel",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Hosted, managed: Vercel\nfunctions, sfo1",
+      "renderedSize": 9.400278940027894
+    },
+    {
+      "text": "AWS RDS",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Hosted, managed: us-west-1,\nTLS per docs",
+      "renderedSize": 9.400278940027894
+    },
+    {
+      "text": "Today tab A",
+      "renderedSize": 13.82393961768808
+    },
+    {
+      "text": "DraftCard Send: id\n+ edited body\n(+subject)",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Today tab B",
+      "renderedSize": 13.82393961768808
+    },
+    {
+      "text": "Same draft card,\nsame Send; either\nmay win",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Next.js server",
+      "renderedSize": 13.82393961768808
+    },
+    {
+      "text": "Per-tab\nsendAction→sendMe\nssage, owner-gated",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 13.82393961768808
+    },
+    {
+      "text": "First draft|failed\nUPDATE wins, per\nattempt",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; solid\n(sync) = awaited request/reply.",
+      "renderedSize": 11.059151694150465
+    },
+    {
+      "text": "Loser gets 0 rows: skipped, edits lost",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "Each UPDATE autocommits with no isolation\noverride (Postgres default READ\nCOMMITTED): a concurrent loser waits on\nthe row lock, re-checks, gets 0 rows →\nskipped; its edits drop, card hides.",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "Source: lib/engine.ts:1346-1358;\nlib/db/client.ts:9-20; components/today.tsx:174-176",
+      "renderedSize": 9.953236524735418
+    },
+    {
+      "text": "Suppression, not exactly-once",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "Winner resolves only after guards and a\ndelivery try. Guard fails and in-try throws\nreset it to failed (re-sendable), even if\nmarkSent threw after Gmail accepted;\nclosed/replied → skipped.",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "Source: lib/engine.ts:1360-1466",
+      "renderedSize": 9.953236524735418
+    },
+    {
+      "text": "A crash after the claim strands the row",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "A timeout (maxDuration 300) or a query\nthrow outside the try leaves the row\nsending: Send/Skip can't claim it;\nemail/LinkedIn rows count to the limit for\n24h; only LinkedIn gets a 3h alert.",
+      "renderedSize": 11.612109278857988
+    },
+    {
+      "text": "Source:\nlib/engine.ts:1316-1329,1368-1410,2010-2022;\napp/(app)/page.tsx:4",
+      "renderedSize": 9.953236524735418
+    },
+    {
+      "text": "Outside this view: Guards and Gmail/LinkedIn/X delivery after a successful claim; Conversation Send: each click inserts its own row, so no shared claim.",
+      "renderedSize": 9.400278940027894
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.847321355320371
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

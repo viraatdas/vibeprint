@@ -1,0 +1,103 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 922.0248735905045,
+    "y": 195.34465875370927,
+    "z": 0.4504858262387942
+  },
+  "text": [
+    {
+      "text": "crumb: how does a running state-mode session\nautosave back into the vault?",
+      "renderedSize": 14.415546439641414
+    },
+    {
+      "text": "New engineers · Timer and signal saves from a running supervisor and the\nChrome it owns into encrypted per-account vault files.",
+      "renderedSize": 8.559230698537089
+    },
+    {
+      "text": "Local machine",
+      "renderedSize": 9.910688177253473
+    },
+    {
+      "text": "Local, self-hosted user host",
+      "renderedSize": 8.559230698537089
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 11.262145655969855
+    },
+    {
+      "text": "Detached process;\ntimer and signal\nsaves",
+      "renderedSize": 9.009716524775884
+    },
+    {
+      "text": "Owned Chrome",
+      "renderedSize": 11.262145655969855
+    },
+    {
+      "text": "Supervisor's\nPlaywright context,\nnot a peer",
+      "renderedSize": 9.009716524775884
+    },
+    {
+      "text": "Account vault",
+      "renderedSize": 11.262145655969855
+    },
+    {
+      "text": "Encrypted\nper-account session\nfiles",
+      "renderedSize": 9.009716524775884
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder\n= stored state. Arrows: caller → recipient, response included; solid = sync;\ndotted = local command/I/O. Flow type is also written on each arrow.",
+      "renderedSize": 9.009716524775884
+    },
+    {
+      "text": "Save triggers",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "setInterval every\n--autosave secs\n(default 30; 0\ndisables).\nSIGINT/SIGTERM do a\nfinal save; SIGUSR2\nsaves (non-Windows).\nConcurrent saves\ncoalesce; unchanged\nsnapshots skipped.",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.108744872298296
+    },
+    {
+      "text": "Merge and write",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "mergeState(latest,\nbefore, after) plus\nbrowser hints, written\nwith 'sync' provenance\nvia 0600 temp file +\nrename. No lock\nagainst other writers.",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.108744872298296
+    },
+    {
+      "text": "Lost-save paths",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "Save errors are only\nlogged. If Chrome's\ncontext closes on its\nown, the supervisor\nexits with no final\nsave. Vault key:\nCRUMB_KEY, OS\nkeychain/secret-servic\ne, or 0600 key file.",
+      "renderedSize": 9.460202351014678
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.108744872298296
+    },
+    {
+      "text": "Outside this view: Launch, manual CLI close/sync commands and plaintext run handle files;\nlogin, capture, check, transfer and profile-mode sessions.",
+      "renderedSize": 7.658259046059501
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.207773219820707
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

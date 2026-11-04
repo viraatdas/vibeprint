@@ -1,0 +1,77 @@
+{
+  "project": "threadline",
+  "round": 9,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:00:34.575Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one clear question (how concurrent Send clicks claim one draft). The subtitle names the audience (new engineers) and the scope, and the detail fits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Tabs, server and DB are all runtime actors at the same level. But 'App server' appears as a node inside an 'App server' frame, and 'Postgres' as a node inside a 'Postgres' frame. These frames repeat the node rather than adding a level."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "There are only four nodes, all needed for the race. The 'Outside this view' line names the deliberate omissions: guards, delivery, rate limits, and find/research/draft."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Arrows are numbered and labelled. But the legend says 'response included', and the diagram still draws step-3 responses as separate server→tab arrows, which contradicts the key. 'won: on to guards' is not a response the tab receives at that moment; the tab only gets one after guards and delivery finish. Nothing shows that the two step-1 calls race, or which one reaches the UPDATE first."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames for Owner device, App server and Postgres label local versus hosted. The owner-only auth boundary (the server action trusts only an owner session) is not shown, and neither is managed versus self-hosted for Postgres."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "At 1194x834 most text is about 8–10px: the edge labels, node descriptions, notes and footer are hard to read. The four tab-B/server lines run close together and cross near the server. The content covers about 55% of the width and leaves large empty margins."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a visible key for frames, boxes, cylinders and solid sync arrows, and real names (sendAction, lib/engine.ts) are used. Everything is a single red, which is fine for colour-blind readers but gives no extra signal. The convention violation on the step-3 arrows weakens the key."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes cover the atomic UPDATE...RETURNING, failed rows being re-claimable while skipped rows are not, and the stuck-'sending' crash case. Nothing is shown on the diagram itself, for example a mark at the claim point. The fact that the claimed 'sending' row counts toward the daily limit is not mentioned."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer gives the date 2026-11-04, revision f467a33 plus local edits, 'Owner: Unassigned', and 'Live runtime NOT verified'. The claims match lib/engine.ts:1344-1366. No owner is assigned and nothing was verified in production, so this cannot go higher."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain the race and the single-UPDATE claim from the image and notes alone. They may misread 'won: on to guards' as a response that arrives immediately, and the small text slows reading."
+    }
+  ],
+  "coldRead": "The owner has the same draft open in two browser tabs and clicks Send in both. Each tab calls the Next.js server action sendAction with the message id and the edits. On the server, sendMessage loads settings and then runs a single conditional Postgres UPDATE: WHERE id matches, direction='out' and status is draft or failed. It sets status to 'sending', clears error, stamps sentAt, saves the edits and returns the row. Only one request can match, because the first UPDATE changes the status. That request continues to the guards and delivery; the other gets no row and returns 'skipped'. If a guard fails afterwards, the row becomes failed (Send can claim it again) or skipped (final). If the process crashes after the claim, the row stays 'sending' and nobody can claim it again. The only exception is queued LinkedIn rows with an externalId, which Refresh resolves. Delivery itself is out of scope.",
+  "inaccuracies": [
+    "The legend says 'response included' for caller→recipient arrows, yet the diagram also draws separate server→tab step-3 arrows. These are responses, not separately initiated events, so the diagram breaks its own key.",
+    "The step-3 label 'won: on to guards' (server→tab A) suggests the tab is told it won. In app/(app)/actions.ts:363-372 and lib/engine.ts:1339+, the winning tab gets nothing until sendMessage returns a final SendOutcome (sent/pending/failed/skipped) after the guards and delivery.",
+    "The DB node says 'draft/failed claimed once', but failed rows can be claimed again on a later Send (lib/engine.ts:1356, 1360-1366). 'Once' only holds for each concurrent race. The note explains this, but the node text does not.",
+    "Node path 'app/(app)/' for the tabs is vague. The Send buttons live on specific pages (Today, conversation), and the map does not identify them."
+  ],
+  "improvements": [
+    "Follow the stated key: remove the separate step-3 return arrows and put the outcomes on the request arrows, e.g. 'returns SendOutcome; loser → skipped'. Alternatively, change the key and label step 3 as the final response after guards and delivery.",
+    "Increase the size of the edge labels, node text and notes so they read at 1194x834. Use the empty margins, and route the tab-B request and response lines apart so they don't cross.",
+    "Mark the race on the Postgres node itself, e.g. 'UPDATE … WHERE status IN (draft,failed) RETURNING: the first commit wins, the second matches 0 rows'. Add a visible stuck-'sending' failure marker on the diagram rather than only in the notes, and assign an owner."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

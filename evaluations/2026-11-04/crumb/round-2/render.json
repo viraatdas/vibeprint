@@ -1,0 +1,166 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 399.55215231788065,
+    "y": 298.8824503311258,
+    "z": 0.5018695471541338
+  },
+  "text": [
+    {
+      "text": "Crumb: how does an AI agent get a logged-in browser for a saved account?",
+      "renderedSize": 16.05982550893228
+    },
+    {
+      "text": "New engineers · Running crumb launch: agent guard, CLI, detached supervisor, Chrome, the encrypted vault, OS key store and target sites.",
+      "renderedSize": 9.535521395928543
+    },
+    {
+      "text": "[ Agent host ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Local coding agent (Claude\nCode/Codex) and its hook",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Coding agent",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "client · Asks for a\nsession via crumb CLI,\nthen drives the browser",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Vault guard",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "module · Blocks agent tool\ncalls that mention\n~/.crumb or CRUMB_HOME",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ Local crumb\nprocesses ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Local self-hosted Node\nprocesses, Chrome and ~/.crumb\nstate",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "crumb CLI",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "client · Short-lived\ncommand; spawns supervisor\nand waits for its handle",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "worker · Detached process:\nlaunches Chrome, injects\nstate, autosaves",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "service · System or\nPlaywright Chrome with a\nlocal DevTools port",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Session vault",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "storage · Encrypted\nsessions, profiles and run\nhandles under ~/.crumb",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ OS services ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Local OS keychain / Secret\nService holding the vault key",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "OS key store",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "external · Keychain or\nsecret-tool holding the\nvault key (or file/env)",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ Websites ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "External third-party sites the\naccount belongs to",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Target sites",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "external · Websites using\nthe injected cookies and\nstorage",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "READING KEY · Frames: deployment / trust zones. Boxes: named runtime units (type below name). Arrows: initiator → recipient; a request includes its response. [sync]\nrequest/response · [async] event/stream · [local] disk/IPC. AI ink is red; your additions are blue.",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Autosave and stop",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "Supervisor snapshots storage every 30s by default,\non SIGUSR2 (crumb sync) and on SIGTERM (crumb\nclose), merging changes into the vault. A failed\nautosave is only logged.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Startup handshake",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "CLI polls for the run handle (pid + CDP URLs) for\nup to 60s; supervisor writes an error file on\nfailure, else CLI reports 'did not start'.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Key fails closed",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "If the vault exists but its key is missing from\nkeychain/secret-service/CRUMB_KEY, crumb throws\nKEY_UNAVAILABLE instead of creating a new key.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Outside this view: Session export/import between machines (transfer); crumb check and capture-from-CDP flows.",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.02991275446614
+    }
+  ],
+  "errors": []
+}

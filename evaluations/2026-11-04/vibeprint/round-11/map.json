@@ -1,0 +1,125 @@
+{
+  "title": "Vibeprint: how does an iPad sketch survive a page reload?",
+  "audience": "New engineers",
+  "scope": "Same-Wi-Fi link only (--no-relay or LAN URL): page reload, token cookie, WS snapshot, ink ops, canvas.json load/save.",
+  "omissions": [
+    "Default hosted relay link (QR uses it when up), MCP, AI, git commits",
+    "Marks/chat/graph files, pasted images, other clients' live ops"
+  ],
+  "owner": "Viraat Das (package.json author)",
+  "groups": [
+    {
+      "id": "ipad",
+      "label": "iPad",
+      "description": "Same Wi-Fi; holds HttpOnly token cookie"
+    },
+    {
+      "id": "dev",
+      "label": "Developer machine",
+      "description": "Local, self-run; token-gated LAN HTTP/WS"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "iPad browser",
+      "kind": "client",
+      "tags": [
+        "React",
+        "CanvasSync"
+      ],
+      "path": "web/src/",
+      "description": "Draws ink; unacked ops in page memory only",
+      "group": "ipad"
+    },
+    {
+      "id": "daemon",
+      "label": "vibeprint serve",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "CanvasRoom"
+      ],
+      "path": "src/server/",
+      "description": "Token-gated; acks ops in memory, saves later",
+      "group": "dev"
+    },
+    {
+      "id": "canvasfile",
+      "label": "canvas.json",
+      "kind": "storage",
+      "tags": [
+        "JSON"
+      ],
+      "path": ".vibeprint/canvas.json",
+      "description": "Read only at start; unparseable JSON aborts",
+      "group": "dev"
+    }
+  ],
+  "edges": [
+    {
+      "from": "daemon",
+      "to": "canvasfile",
+      "label": "A. startup read: shapes",
+      "mode": "local"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "B1. cookie: /api/config",
+      "mode": "sync"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "B2. token WS /api/canvas",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "B3. snapshot from memory",
+      "mode": "async"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "C1. ink ops (+replay)",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "C2. memory ack or reject",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "canvasfile",
+      "label": "C3. save 800ms idle/stop",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Acked is not saved",
+      "text": "Ack means daemon memory only. canvas.json is rewritten (temp file + rename) after 800ms with no op from any client, or on SIGINT/SIGTERM; a crash loses acked edits since the last pause.",
+      "source": "src/server/canvas.ts"
+    },
+    {
+      "title": "Reconnect replays; reload drops",
+      "text": "Unacked ops live only in page memory: a reconnect (500ms–10s backoff) replays them on a fresh snapshot; a full reload loses them. Rejected ops (invalid/full) drop; page resnapshots.",
+      "source": "web/src/canvas/sync.ts"
+    },
+    {
+      "title": "Token gate on reload",
+      "text": "/ needs no token; /api/config and /api/canvas WS need the ?t= link's 1-year HttpOnly cookie (token kept across restarts). Without it: 401, fixed 'needs the link' page, no retry.",
+      "source": "src/server/daemon.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:15:17.243Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

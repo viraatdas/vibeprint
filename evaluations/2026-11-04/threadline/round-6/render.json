@@ -1,0 +1,134 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 72.56830601092895,
+    "y": 262.60687613843345,
+    "z": 0.6614457831325301
+  },
+  "text": [
+    {
+      "text": "Outbound: how does an approved email draft get checked and sent through Gmail?",
+      "renderedSize": 21.166265060240963
+    },
+    {
+      "text": "New engineers · Owner clicks Send on an email draft: row claim, guard checks, Gmail send, and recording the outcome.",
+      "renderedSize": 12.567469879518072
+    },
+    {
+      "text": "Owner device",
+      "renderedSize": 14.551807228915662
+    },
+    {
+      "text": "Local browser of the\nowner",
+      "renderedSize": 12.567469879518072
+    },
+    {
+      "text": "Web app",
+      "renderedSize": 16.53614457831325
+    },
+    {
+      "text": "Today/conversation\nview with Send\nbutton",
+      "renderedSize": 13.228915662650602
+    },
+    {
+      "text": "Vercel",
+      "renderedSize": 14.551807228915662
+    },
+    {
+      "text": "Hosted, managed Next.js\napp",
+      "renderedSize": 12.567469879518072
+    },
+    {
+      "text": "App server",
+      "renderedSize": 16.53614457831325
+    },
+    {
+      "text": "Server action\nrunning\nsendMessage\nchecks",
+      "renderedSize": 13.228915662650602
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 14.551807228915662
+    },
+    {
+      "text": "Hosted database for app\nstate",
+      "renderedSize": 12.567469879518072
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 16.53614457831325
+    },
+    {
+      "text": "Messages, people,\ncampaigns, settings",
+      "renderedSize": 13.228915662650602
+    },
+    {
+      "text": "Google",
+      "renderedSize": 14.551807228915662
+    },
+    {
+      "text": "External managed Gmail\nAPI",
+      "renderedSize": 12.567469879518072
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 16.53614457831325
+    },
+    {
+      "text": "Mailbox history and\noutgoing email",
+      "renderedSize": 13.228915662650602
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external service. Arrows: caller → recipient,\nresponse included; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 13.228915662650602
+    },
+    {
+      "text": "Single send path, claimed once",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Only out draft/failed rows flip to 'sending'; a\ndouble click or second tab returns 'skipped'.",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 11.906024096385542
+    },
+    {
+      "text": "Skipped vs failed",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Closed stage or already replied → skipped. No\nperson, daily limit, in-touch, bad email, Gmail\nerror → failed.",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 11.906024096385542
+    },
+    {
+      "text": "Mixed fail modes",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Reply check errors count as no reply (sends).\nIn-touch check errors block send.\nReplies/override skip it.",
+      "renderedSize": 13.890361445783132
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 11.906024096385542
+    },
+    {
+      "text": "Outside this view: LinkedIn sends via the browser worker; X DMs sent by hand in X; Prospect finding, research, enrollment and drafting.",
+      "renderedSize": 11.244578313253012
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.583132530120482
+    }
+  ],
+  "errors": []
+}

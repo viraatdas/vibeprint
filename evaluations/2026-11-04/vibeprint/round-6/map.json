@@ -1,0 +1,123 @@
+{
+  "title": "Vibeprint: how does an iPad sketch over the LAN reach the local coding agent?",
+  "audience": "New engineers",
+  "scope": "Direct LAN path only: iPad browser to local daemon, plaintext .vibeprint/ state, and the agent's MCP server reading marks.",
+  "omissions": [
+    "Hosted relay path for iPads off the LAN (relay/, src/server/relay.ts)",
+    "Model-drawn quick map via Claude API (src/interpret/)"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "ipad",
+      "label": "iPad",
+      "description": "Local device on same LAN, user-managed"
+    },
+    {
+      "id": "dev",
+      "label": "Developer machine",
+      "description": "One local host: daemon, MCP, files"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "iPad browser",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/",
+      "description": "Draws sketches and marks, shows chat",
+      "group": "ipad"
+    },
+    {
+      "id": "daemon",
+      "label": "Daemon",
+      "kind": "service",
+      "tags": [
+        "HTTP",
+        "WebSocket"
+      ],
+      "path": "src/server/",
+      "description": "Token-gated canvas server, owns state",
+      "group": "dev"
+    },
+    {
+      "id": "mcp",
+      "label": "Agent MCP",
+      "kind": "service",
+      "tags": [
+        "MCP",
+        "stdio"
+      ],
+      "path": "src/mcp/",
+      "description": "Process the coding agent runs for tools",
+      "group": "dev"
+    },
+    {
+      "id": "state",
+      "label": ".vibeprint dir",
+      "kind": "storage",
+      "tags": [],
+      "path": "",
+      "description": "Plaintext canvas, marks, chat, token",
+      "group": "dev"
+    }
+  ],
+  "edges": [
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "1. ?t=token → cookie",
+      "mode": "sync"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "2. canvas ops over WS",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "state",
+      "label": "3. debounced save",
+      "mode": "local"
+    },
+    {
+      "from": "mcp",
+      "to": "daemon",
+      "label": "4. wait/marks → shapes",
+      "mode": "sync"
+    },
+    {
+      "from": "mcp",
+      "to": "state",
+      "label": "alt: locked file I/O",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Token gate",
+      "text": "Non-local callers without a matching token (header, cookie or ?t=) get 401; WS upgrades are refused too.",
+      "source": "src/server/daemon.ts"
+    },
+    {
+      "title": "No daemon: files mode",
+      "text": "MCP edits .vibeprint/ under files.lock; waits 5s then 503, locks older than 10s count as stale.",
+      "source": "src/mcp/backend.ts"
+    },
+    {
+      "title": "Single daemon",
+      "text": "On start it probes an existing daemon's /api/health (800ms) and reuses its port and token if alive.",
+      "source": "src/server/daemon.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:45:15.501Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

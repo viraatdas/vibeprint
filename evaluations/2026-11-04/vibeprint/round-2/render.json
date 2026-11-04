@@ -1,0 +1,158 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 399.55215231788065,
+    "y": 298.8824503311258,
+    "z": 0.5018695471541338
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+      "renderedSize": 16.05982550893228
+    },
+    {
+      "text": "New engineers · The sketch path from iPad to the local daemon, interpretation, .vibeprint/ state, and the agent's MCP server.",
+      "renderedSize": 9.535521395928543
+    },
+    {
+      "text": "[ iPad / browser ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Local user device running the\ncanvas web app",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Canvas app",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "client · iPad/laptop\ndrawing canvas for\nsketches and marks",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ Hosted relay ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Hosted Vibeprint relay on\nFly.io; optional, forwards\nonly",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Relay",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "service · Forwards iPad\nrequests to the daemon\nacross networks",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ Developer machine ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "Local self-hosted daemon,\nagent, MCP server and repo\nstate",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "service · vibeprint serve:\ncanvas sync, token check,\ninterpretation",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": ".vibeprint state",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "storage · Sketch,\narchitecture graph,\nruntime port and token",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "MCP server",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "service · vibeprint mcp:\narchitecture tools for the\nagent",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Coding agent",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "client · Reads\narchitecture and proposes\nmarks before building",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "[ External APIs ]",
+      "renderedSize": 11.542999584545077
+    },
+    {
+      "text": "External managed model API,\nused only with an API key",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Claude API",
+      "renderedSize": 12.044869131699212
+    },
+    {
+      "text": "external · Reads\nhandwriting when\nANTHROPIC_API_KEY is set",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "READING KEY · Frames: deployment / trust zones. Boxes: named runtime units (type below name). Arrows: initiator → recipient; a request includes its response. [sync]\nrequest/response · [async] event/stream · [local] disk/IPC. AI ink is red; your additions are blue.",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Token on every request",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "The relay keeps nothing; the daemon still checks\nthe access token on each forwarded request.\n--no-relay keeps traffic on the local network.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: README.md",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Works without the daemon",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "MCP finds the daemon via runtime/daemon.json\nport+token; if it is down it reads and writes\n.vibeprint/ directly and the canvas picks it up\nlater.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: src/core/daemon-client.ts",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Approval gate",
+      "renderedSize": 10.53926049023681
+    },
+    {
+      "text": "The agent rule says to propose structural changes\nas marks and wait for approval; MCP reports\n'Waiting for the user…' progress in daemon mode.",
+      "renderedSize": 9.033651848774408
+    },
+    {
+      "text": "Source: src/mcp/server.ts",
+      "renderedSize": 8.02991275446614
+    },
+    {
+      "text": "Outside this view: Map this repo / cleanup code-reading via headless Claude Code/Codex; vibeprint init setup and git checkpoints.",
+      "renderedSize": 8.531782301620275
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.02991275446614
+    }
+  ],
+  "errors": []
+}

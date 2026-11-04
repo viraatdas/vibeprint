@@ -149,7 +149,7 @@ export class Editor {
     const after: Change = new Map()
     for (const s of put) {
       before.set(s.id, opts.before?.has(s.id) ? opts.before.get(s.id)! : (this.shapesById.get(s.id) ?? null))
-      after.set(s.id, s)
+      after.set(s.id, { ...s, author: s.author ?? this.shapesById.get(s.id)?.author ?? 'user' })
     }
     for (const id of del) {
       const prior = opts.before?.has(id) ? opts.before.get(id)! : (this.shapesById.get(id) ?? null)
@@ -170,6 +170,13 @@ export class Editor {
 
   canUndo() {
     return this.undoStack.length > 0
+  }
+
+  /** A server reconciliation has its own complete snapshot, rather than local stroke undo. */
+  clearHistory() {
+    this.undoStack = []
+    this.redoStack = []
+    this.emit()
   }
 
   canRedo() {
@@ -334,9 +341,9 @@ export class Editor {
     const { w, h } = this.viewport
     if (!w || !h) return
     // Keep clear of the top bar (and a toast under it) as well as the edges.
-    const top = 70
-    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - 160) / Math.max(1, b.w), (h - 160 - top) / Math.max(1, b.h))))
-    const target = { x: w / (2 * z) - (b.x + b.w / 2), y: (h + top) / (2 * z) - (b.y + b.h / 2), z }
+    const top = 88, bottom = 72
+    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - 96) / Math.max(1, b.w), (h - top - bottom) / Math.max(1, b.h))))
+    const target = { x: w / (2 * z) - (b.x + b.w / 2), y: (h + top - bottom) / (2 * z) - (b.y + b.h / 2), z }
     if (opts.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) this.animateTo(target, 420)
     else this.setCamera(target)
   }

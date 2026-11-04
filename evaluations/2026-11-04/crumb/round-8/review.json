@@ -1,0 +1,78 @@
+{
+  "project": "crumb",
+  "round": 8,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:58:01.253Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one specific question: how changes in a running Chrome session get saved back to the vault. The subtitle names the audience (new engineers) and the scope. The detail level suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "The boxes are runtime actors (CLI, Supervisor, Chrome) and the cylinders are stored state (Run handle, Session vault), so the level is mostly consistent. Chrome is drawn as a peer process, but it is really a Playwright browser context that the supervisor owns (b.context in src/session.ts). The merge and snapshot logic appears only in notes, with no linked zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The diagram has all five actors needed to answer the question, and a footer explicitly notes what it leaves out (launch, profile mode, login, capture). Some lifecycle details are missing: the supervisor deletes the handle on cleanup, and the vault key or passphrase source, which encrypted writes depend on, isn't shown."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is labeled with what flows and its mode (SIGUSR2 / SIGTERM async; snapshot cookies+storage sync; read latest, write merge local). The ordering of a save (snapshot → read latest → merge → write → update lastSavedAt) is only implied by the notes, not numbered. The CLI's read of the handle at startup (runningHandle) and the SIGKILL path aren't drawn as edges."
+    },
+    {
+      "id": "boundaries",
+      "score": 2,
+      "evidence": "There is a single 'Local machine' frame. There's no visual boundary for the supervisor process versus its Chrome context, and nothing visually separates encrypted from plaintext stores. That difference appears only in node text ('Plaintext pid', 'Encrypted')."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Left-to-right direction with no crossings. But the content uses only about the middle half of the 1194x834 viewport, and edge labels and the footer are tiny (~6–7px) and hard to read. At this size the dashed (async) and dotted (local) lines are nearly impossible to tell apart, and the 'snapshot cookies+storage' label crowds its arrowhead."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The key explains frames, boxes, cylinders and the arrow convention (request includes its response; dashed/solid/dotted), and each arrow also states its mode as text, which is a non-color signal. Everything is drawn in one red, and the dashed and dotted styles are visually ambiguous at viewing size."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes cover real failure behavior that the code confirms: skip when unchanged, a shared in-flight save, errors only logged, Chrome closing directly means no final save, close falls back to SIGKILL after 30s, and sync returns after 10s without error. This is all prose, though; none of these failure points is marked on the graph itself."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "Dated 2026-11-04 with revision 557acd4, and names match the code. The owner is 'Unassigned' and the footer states that live runtime was not verified, so this is a source review only."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A new engineer could explain the timer, signal, snapshot, merge and write loop from the diagram plus its notes. Tiny labels and the ambiguous line styles invite misreads, and seeing that Chrome lives inside the supervisor needs a walkthrough."
+    }
+  ],
+  "coldRead": "On the local machine, a detached Node supervisor keeps a Chrome browser context open for an agent. Every --autosave seconds (default 30; 0 disables it), on SIGUSR2 from `crumb sync`, or on SIGINT/SIGTERM, the supervisor snapshots cookies and storage from Chrome. If nothing changed it skips the save. Otherwise it reads the vault's latest encrypted copy, does a 3-way merge of its changes onto it, and writes the result via temp file + rename. It then records lastSavedAt in a plaintext run-handle JSON file. `crumb sync` polls that handle for up to 10s to confirm a new save and returns without error even if nothing changed. `crumb close` sends SIGTERM, waits up to 30s, then SIGKILLs, which loses the final save. Closing Chrome directly exits the supervisor without a final save. Save errors are only logged.",
+  "inaccuracies": [
+    "Chrome is drawn as an independent peer service. In src/session.ts:202,229,236 it is the supervisor's own Playwright context (b.context), and its 'close' event ends the supervisor process. That lifecycle coupling isn't shown.",
+    "The supervisor→Run handle edge is labeled only 'lastSavedAt'. In src/session.ts:194-195,219 the supervisor also writes the whole handle at startup and deletes it on exit; closeSession also deletes it (src/session.ts:258).",
+    "The CLI's interaction with the handle is shown only as 'poll lastSavedAt'. The CLI also reads the handle first to get the pid it signals (runningHandle, src/session.ts:252,264), so the signal edge's dependency on the handle isn't visible.",
+    "'Plaintext' handle: it is written with mode 0o600 (src/session.ts:194), a local permission boundary the diagram doesn't mention.",
+    "The vault write also records a provenance header (source 'sync', src/session.ts:207) and merges browser hints, which 'write merge' leaves out (minor)."
+  ],
+  "improvements": [
+    "Make it readable at 1194x834. Scale the diagram to fill the viewport, raise edge-label and footer fonts to at least 11px, and replace dashed vs dotted with clearly different styles (e.g., a double line or open arrowheads), or drop one of the styles.",
+    "Show ownership and lifecycle boundaries. Nest Chrome inside a 'Supervisor process' frame (Playwright-owned context, and Chrome closing kills the supervisor). Visually separate the encrypted vault from the plaintext 0600 handle, and show where the vault key comes from.",
+    "Move the failure behavior onto the graph. Number the save steps (1 snapshot → 2 read latest → 3 merge → 4 temp+rename → 5 lastSavedAt), and mark failure points inline (SIGKILL after 30s skips the save; Chrome closed directly means no final save; errors only logged). Assign an owner as well."
+  ],
+  "total": 28,
+  "verdict": "Good"
+}

@@ -1,0 +1,103 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 620.085534124629,
+    "y": 179.84510385756676,
+    "z": 0.4893099568042397
+  },
+  "text": [
+    {
+      "text": "crumb: how does a running state-mode session autosave its cookies to\nthe vault?",
+      "renderedSize": 15.657918617735671
+    },
+    {
+      "text": "New engineers · Timer-driven saves in one running state-mode supervisor: snapshot Chrome, merge with the latest vault\nentry, rewrite it.",
+      "renderedSize": 9.296889179280555
+    },
+    {
+      "text": "Local machine",
+      "renderedSize": 10.764819049693275
+    },
+    {
+      "text": "Local self-managed host, same OS user",
+      "renderedSize": 9.296889179280555
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 12.232748920105992
+    },
+    {
+      "text": "Chrome owner;\nbest-effort saves, no\nfile lock",
+      "renderedSize": 9.786199136084795
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 12.232748920105992
+    },
+    {
+      "text": "Owned child on\ntemp profile; exit\nskips save",
+      "renderedSize": 9.786199136084795
+    },
+    {
+      "text": "Vault files",
+      "renderedSize": 12.232748920105992
+    },
+    {
+      "text": "0600 files: plain\nheader, AES-GCM\nsession",
+      "renderedSize": 9.786199136084795
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller →\nrecipient, response included; solid = sync; dotted = local command/I/O; dashed = async. Flow type is also written on\neach arrow.",
+      "renderedSize": 9.786199136084795
+    },
+    {
+      "text": "Timer, errors and exit",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Default 30s (--autosave 0 = no\ntimer). Ticks join an in-flight save;\nunchanged snapshots skip. Errors\nonly logged. Chrome self-close\nexits with no final save;\nSIGTERM/SIGINT save first.",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.807579222476315
+    },
+    {
+      "text": "Three-way merge, no lock",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Each save re-reads the entry,\napplies only before→after changes,\nadds provenance + browser hints,\nthen writes a temp file and\nrenames it. No lock: writes\nbetween read and rename are lost.",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Source: src/vault.ts",
+      "renderedSize": 8.807579222476315
+    },
+    {
+      "text": "Vault key custody",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Key from CRUMB_KEY, else\nconfig.json's store: macOS\nKeychain, Linux Secret Service or\n~/.crumb/key (0600); cached per\nprocess. Session is AES-256-GCM\n(id as AAD); header is plaintext.",
+      "renderedSize": 10.275509092889035
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 8.807579222476315
+    },
+    {
+      "text": "Outside this view: Launch, run handle files, and crumb sync/close signal saves; Profile mode, agent CDP use, login/import/capture/check\nflows.",
+      "renderedSize": 8.318269265672075
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Viraat Das · Live runtime NOT verified",
+      "renderedSize": 7.8289593088678355
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

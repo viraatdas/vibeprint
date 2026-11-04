@@ -1,0 +1,74 @@
+{
+  "project": "vibeprint",
+  "round": 2,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:09:05.699Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 3,
+      "evidence": "The title is a specific question ('how does an iPad sketch reach the local coding agent?') and the subtitle names the audience and scope. But the render is so broken that it doesn't actually answer that question for new engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All seven boxes are runtime units at the same level (app, relay, daemon, state, MCP server, agent, external API). The coding agent is a client outside the codebase, which is a slight mismatch with the rest."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The path covers the needed components. Omissions are stated in the 'Outside this view' line. Group descriptions repeat the node descriptions, which adds noise."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "The map's edge labels are good, but the image doesn't show them usefully. Canvas→Daemon, Canvas→Relay and the relay tunnel labels run together into one unreadable line ('[sync] HTTPS: sketch sync (remote)+token...[async] Forwarded requests'). The MCP→daemon and state labels overprint each other ('[sync] HTTP 127.0.0.1' on top of the .vibeprint state text). Arrowheads and endpoints can't be traced."
+    },
+    {
+      "id": "boundaries",
+      "score": 2,
+      "evidence": "There are four labelled zones (device, hosted, machine, external) with managed/self-hosted wording. But the frames are drawn as skewed, curved, blade-like shapes that don't enclose their nodes cleanly. In Developer machine the nodes spill outside the frame."
+    },
+    {
+      "id": "layout",
+      "score": 0,
+      "evidence": "Shapes are badly distorted: frames are wedge-shaped, and node outlines are warped trapezoids that cut through text. Edge labels collide horizontally across all four columns, and the vertical stack in the machine column overlaps. Text is about 8–9px at 1194x834. In effect it's spaghetti."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "There is a reading key for frames, boxes, arrows and [sync]/[async]/[local]. Everything is drawn in one red colour, so node kinds can't be told apart visually, and the distorted shapes make the shape conventions meaningless."
+    },
+    {
+      "id": "operations",
+      "score": 2,
+      "evidence": "The notes cover token checks on forwarded requests, the relay keeping no state, MCP falling back to the filesystem when the daemon is down, and the approval gate. There is nothing on relay outage, Claude API failure or the no-key path beyond 'only with an API key', or conflicting writes to state."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "The footer is dated 2026-11-04, cites revision dca6c85 plus local edits, and says 'Owner: Unassigned' and 'Live runtime NOT verified'. relay/, src/mcp/server.ts and src/core/daemon-client.ts exist. There is no owner and no production check."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "A newcomer could get the zones and the notes, but couldn't work out the request paths from the overlapping arrows and labels without someone walking them through it."
+    }
+  ],
+  "coldRead": "The diagram is meant to show how a sketch drawn on an iPad canvas (a web app) reaches the Vibeprint daemon running on the developer's machine. On the same network it goes directly over HTTP with a token. When remote, it goes through an optional relay hosted on Fly.io, which the daemon reaches through an outbound tunnel. The daemon can ask the Claude API to read handwriting and writes the sketch and architecture graph to .vibeprint/. The coding agent (Claude Code or Codex) calls the MCP server over stdio. The MCP server reads data and writes marks through the daemon on 127.0.0.1, or reads and writes .vibeprint/ directly if the daemon is down. Structural changes are proposed as marks and wait for the user's approval. Most of this comes from the notes and from guessing, because the arrows themselves are unreadable.",
+  "inaccuracies": [
+    "Render fault: the frames and node outlines are drawn as skewed, curved polygons instead of rectangles, so nodes in the Developer machine column (MCP server, Coding agent) spill outside their frame.",
+    "Render fault: the edge labels for Canvas→Daemon, Canvas→Relay, Daemon↔Relay and Daemon→Claude overlap on one horizontal line, and the direct LAN Canvas→Daemon edge can't be distinguished from the relay path.",
+    "The labels '[sync] HTTP 127.0.0.1: read/marks' and '[local] FS: fallback' overprint the .vibeprint state node text.",
+    "No owner is named (the footer says 'Unassigned'), and the claims are checked only against source (relay/server.mjs, src/mcp/server.ts, src/core/daemon-client.ts), not against a running system."
+  ],
+  "improvements": [
+    "Fix the shape renderer in web/src/canvas/png.ts and editor.ts so frames and nodes come out as proper rectangles that contain their children.",
+    "Route the edges with dedicated label positions and no overlap. Put Canvas→Daemon (LAN) and the relay path on separate visible lanes, and use real arrowheads.",
+    "Raise the font size to at least 12px at 1194x834, tell node kinds apart with shape or colour beyond plain red, and add failure notes for a relay outage and for the Claude API being unavailable or having no key."
+  ],
+  "total": 19,
+  "verdict": "Mediocre"
+}

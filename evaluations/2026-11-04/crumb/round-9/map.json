@@ -1,0 +1,95 @@
+{
+  "title": "crumb: how does a running state-mode session autosave back into the vault?",
+  "audience": "New engineers",
+  "scope": "Timer and signal saves from a running supervisor and the Chrome it owns into encrypted per-account vault files.",
+  "omissions": [
+    "Launch, manual CLI close/sync commands and plaintext run handle files",
+    "login, capture, check, transfer and profile-mode sessions"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "host",
+      "label": "Local machine",
+      "description": "Local, self-hosted user host"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sup",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node.js",
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Detached process; timer and signal saves",
+      "group": "host"
+    },
+    {
+      "id": "chrome",
+      "label": "Owned Chrome",
+      "kind": "service",
+      "tags": [
+        "Chromium"
+      ],
+      "path": "src/browser.ts",
+      "description": "Supervisor's Playwright context, not a peer",
+      "group": "host"
+    },
+    {
+      "id": "vault",
+      "label": "Account vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Encrypted per-account session files",
+      "group": "host"
+    }
+  ],
+  "edges": [
+    {
+      "from": "sup",
+      "to": "chrome",
+      "label": "1 snapshot→cookies/store",
+      "mode": "sync"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "2 read latest session",
+      "mode": "local"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "3 merge→temp+rename",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Save triggers",
+      "text": "setInterval every --autosave secs (default 30; 0 disables). SIGINT/SIGTERM do a final save; SIGUSR2 saves (non-Windows). Concurrent saves coalesce; unchanged snapshots skipped.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Merge and write",
+      "text": "mergeState(latest, before, after) plus browser hints, written with 'sync' provenance via 0600 temp file + rename. No lock against other writers.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Lost-save paths",
+      "text": "Save errors are only logged. If Chrome's context closes on its own, the supervisor exits with no final save. Vault key: CRUMB_KEY, OS keychain/secret-service, or 0600 key file.",
+      "source": "src/session.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:00:01.915Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

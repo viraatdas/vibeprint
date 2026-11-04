@@ -5,7 +5,8 @@ import os from 'node:os'
 import path from 'node:path'
 import WebSocket from 'ws'
 import { scanRepo } from '../src/core/repo-scan.js'
-import { mapCode } from '../src/core/map.js'
+import { mapCode, mapState } from '../src/core/map.js'
+import { readCanvasFile, writeCanvasFile } from '../src/server/canvas.js'
 import { VibeprintCore } from '../src/core/core.js'
 import { arrowPoints, extractSketch, shapeBounds, type Shape } from '../src/shared/canvas.js'
 import { interpretHeuristic } from '../src/interpret/heuristic.js'
@@ -92,6 +93,30 @@ const apply = (canvas: Map<string, Shape>, plan: { put: Shape[]; del: string[] }
 }
 
 describe('drawing a map', () => {
+  test('generated ink keeps attribution across save/reload and legacy maps upgrade without becoming edited', () => {
+    const core = freshCore()
+    const first = mapCode(core, [], MAP, 'claude')
+    assert.ok(first.put.every((s) => s.author === 'agent'))
+    const own: Shape = { id: 'shape:own', z: 100, type: 'text', x: 0, y: 900, w: 100, h: 30, text: 'My idea' }
+    writeCanvasFile(core, [...first.put, own])
+    const saved = readCanvasFile(core)
+    assert.ok(saved.shapes.filter((s) => s.id !== own.id).every((s) => s.author === 'agent'))
+    assert.equal(saved.shapes.find((s) => s.id === own.id)?.author, undefined)
+    assert.equal(mapState(core, saved.shapes), 'untouched')
+
+    // Simulate a canvas and fingerprint saved before author attribution existed.
+    const legacy = first.put.map(({ author: _author, ...shape }) => shape)
+    writeCanvasFile(core, [...legacy, own])
+    const upgraded = readCanvasFile(core)
+    assert.equal(upgraded.converted, true)
+    assert.ok(upgraded.shapes.filter((s) => s.id !== own.id).every((s) => s.author === 'agent'))
+    assert.equal(upgraded.shapes.find((s) => s.id === own.id)?.author, undefined)
+    assert.equal(mapState(core, upgraded.shapes), 'untouched')
+    const next = mapCode(core, upgraded.shapes, MAP, 'claude')
+    assert.equal(next.replaced, true)
+    assert.ok(!next.del.includes(own.id))
+  })
+
   test('draws boxes, labels and attached arrows, and records them as built', () => {
     const core = freshCore()
     const canvas = new Map<string, Shape>()

@@ -1,0 +1,111 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 350.8345004154303,
+    "y": 149.58367952522258,
+    "z": 0.5882994741091496
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch survive a page reload?",
+      "renderedSize": 18.825583171492788
+    },
+    {
+      "text": "New engineers · Direct LAN only: iPad browser ink ops, daemon memory, canvas.json startup read and debounced save, reconnect\nsnapshot.",
+      "renderedSize": 11.177690008073842
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 12.942588430401292
+    },
+    {
+      "text": "iPad on same LAN; holds\nHttpOnly cookie",
+      "renderedSize": 11.177690008073842
+    },
+    {
+      "text": "Developer machine",
+      "renderedSize": 12.942588430401292
+    },
+    {
+      "text": "Local, self-run; token-gated LAN HTTP/WS",
+      "renderedSize": 11.177690008073842
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 14.70748685272874
+    },
+    {
+      "text": "Draws ink; keeps\nunacked ops in page\nmemory",
+      "renderedSize": 11.765989482182992
+    },
+    {
+      "text": "Local daemon",
+      "renderedSize": 14.70748685272874
+    },
+    {
+      "text": "Holds canvas in\nmemory; acks\nbefore saving",
+      "renderedSize": 11.765989482182992
+    },
+    {
+      "text": "canvas.json",
+      "renderedSize": 14.70748685272874
+    },
+    {
+      "text": "Saved shapes; read\nonly at daemon\nstart",
+      "renderedSize": 11.765989482182992
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient,\nresponse included; dotted = local command/I/O; dashed = async. Flow type is also written on each arrow.",
+      "renderedSize": 11.765989482182992
+    },
+    {
+      "text": "Acked is not saved",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "Acks mean daemon memory only;\ncanvas.json is rewritten 800ms after\nthe last op or on SIGINT/SIGTERM, so a\ncrash can lose acked edits.\nUnparseable JSON stops startup; bad\nshapes are skipped.",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 10.589390533964693
+    },
+    {
+      "text": "Reconnect replays; reload drops",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "After a drop it reconnects (500ms–10s\nbackoff), takes a daemon-memory\nsnapshot that replaces the page, then\nreplays unacked ops. Those live only in\npage memory: a full reload drops\nthem.",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "Source: web/src/canvas/sync.ts",
+      "renderedSize": 10.589390533964693
+    },
+    {
+      "text": "Token gate on reload",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "LAN WS upgrades need the token; the\n?t= link sets a 1-year HttpOnly cookie\nthat reloads resend, and the token\nsurvives daemon restarts. Without it:\n401, page shows offline and retries.",
+      "renderedSize": 12.354288956292143
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 10.589390533964693
+    },
+    {
+      "text": "Outside this view: Hosted relay (on by default), MCP server, AI mapping, git commits; Marks/chat/graph files, image assets, other browsers' live ops.",
+      "renderedSize": 10.001091059855543
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+      "renderedSize": 9.412791585746394
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

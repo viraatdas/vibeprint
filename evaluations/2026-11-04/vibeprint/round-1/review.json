@@ -1,0 +1,75 @@
+{
+  "project": "vibeprint",
+  "round": 1,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:05:49.809Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 1,
+      "evidence": "There's no title, subtitle or caption in the image. A reader can guess it's a component overview of some local tool, but nothing says which question it answers or who it's for."
+    },
+    {
+      "id": "abstraction",
+      "score": 2,
+      "evidence": "Mostly at the component level, but it mixes processes (Daemon, Relay, CLI), in-process libraries (Core, Interpret), an entry point (CLI) and an external SaaS (Claude API) as identical boxes. Nothing marks which ones run as processes and which are code modules."
+    },
+    {
+      "id": "focus",
+      "score": 2,
+      "evidence": "The main pieces are present, but some important ones are missing: the .vibeprint/ on-disk state, git/repo scanning, and the MCP fallback that writes files directly when the daemon is down (src/mcp/backend.ts:103, src/mcp/server.ts:54). The coding agent that uses MCP and the iPad device aren't shown either."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "5 of the 10 arrows have no label (CLI→Daemon, CLI→MCP, Daemon→Core, Daemon→Interpret, Interpret→Core), and arrows mean different things: 'starts' (CLI), 'calls' (modules) and 'connects' (protocols). The labels that do exist are protocol names rather than what flows. Relay traffic, which goes iPad→relay→tunnel→daemon, isn't shown as directional."
+    },
+    {
+      "id": "boundaries",
+      "score": 0,
+      "evidence": "There are no containers at all. Nothing separates local machine, hosted Fly relay, external Anthropic API and the remote iPad, even though that trust and network split is the most important boundary in this system."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Flows top-down with no crossings, but it takes up roughly the middle 25% of the 1194px width and leaves large empty margins. Edge labels ('WebSocket', 'HTTP/WS', 'API') are about 6px and hard to read at iPad size. The long Web canvas→Relay arrow runs parallel to the Daemon edges and adds visual weight."
+    },
+    {
+      "id": "notation",
+      "score": 1,
+      "evidence": "Every node is the same red sketchy rectangle. The map's 'kind' (client/service/module/external) isn't shown visually, and there's no legend. Real names are used, which is the only credit here."
+    },
+    {
+      "id": "operations",
+      "score": 0,
+      "evidence": "No failure or state information appears: not the daemon-down file fallback, the relay identity/secret, the Claude-vs-heuristic fallback in Interpret, or where state persists."
+    },
+    {
+      "id": "freshness",
+      "score": 1,
+      "evidence": "Names match the directories (src/server, src/mcp, src/core, src/interpret, relay/), and the Daemon→Relay WebSocket matches src/server/relay.ts:8-10. But the diagram shows no date, version or owner, and it hasn't been checked against the running system."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "A newcomer couldn't tell what Vibeprint does, why there's a relay, who calls MCP, or that Core/Interpret are libraries inside the daemon process. Someone would need to explain it."
+    }
+  ],
+  "coldRead": "The diagram has no title, so this is inferred: a web canvas talks to a local daemon over HTTP/WS. A CLI starts both the daemon and an MCP server, and the MCP server calls the daemon over HTTP. The daemon uses Core and Interpret, and Interpret calls the Claude API. The daemon and the web canvas both connect to a Relay over WebSocket, presumably for remote access. The image doesn't say what the product does, where each box runs, who uses MCP (coding agents), that the relay is a hosted Fly service for the iPad, or where state is stored.",
+  "inaccuracies": [
+    "The MCP server doesn't depend only on the daemon. src/mcp/backend.ts:103 and src/mcp/server.ts:54 add a no-daemon mode that reads and writes .vibeprint/ files directly, and the diagram doesn't show it.",
+    "Web canvas→Relay is drawn as a plain 'WebSocket' arrow. Per src/server/relay.ts:8-10, remote requests from the iPad arrive at https://<id>.<relay domain>/ and the relay replays them over the daemon's single outbound WebSocket. The relay is a proxy, not a peer endpoint, so this edge suggests the wrong mental model.",
+    "CLI→Daemon and CLI→MCP have no labels, so 'starts the process' looks the same as the runtime 'calls' arrows from Daemon to Core/Interpret.",
+    "Core and Interpret are in-process libraries (src/core, src/interpret), and src/core/daemon-client.ts is also used by MCP. Drawing them as peer boxes next to processes and services misrepresents the deployment.",
+    "The image shows no versions or revision, even though the source is at 0.7.0 / dca6c85."
+  ],
+  "improvements": [
+    "Add a title stating what question the diagram answers (e.g. 'Vibeprint 0.7.0 runtime: how the iPad canvas and coding agents reach the local daemon'), plus the date, revision and an owner line.",
+    "Draw boundary containers for Local machine (CLI, daemon process with Core/Interpret inside, MCP, .vibeprint/ files), Hosted on Fly (Relay), External (Claude API), and Remote device (iPad browser and the coding agent). Use shape or line style for each kind and add a legend.",
+    "Label every arrow with what flows and when (starts, board JSON over HTTP, sketch→map request, tunnelled HTTPS over outbound WS). Add the failure paths: MCP's file fallback when the daemon is down, and Interpret's heuristic fallback when Claude is unavailable. Use the empty canvas space and enlarge the edge labels."
+  ],
+  "total": 11,
+  "verdict": "Redo"
+}

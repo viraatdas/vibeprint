@@ -198,7 +198,7 @@ export async function askClaudeJson(
   prompt: string,
   schema: object,
   what: string,
-  opts: { client?: AnthropicLike; model?: string; signal?: AbortSignal } = {},
+  opts: { client?: AnthropicLike; model?: string; signal?: AbortSignal; image?: Buffer } = {},
 ): Promise<unknown> {
   const client = opts.client ?? defaultClient()
   const response = await client.beta.messages.create(
@@ -206,7 +206,7 @@ export async function askClaudeJson(
       ...COMMON,
       model: opts.model ?? claudeConfig().model,
       output_config: { effort: 'medium', format: { type: 'json_schema', schema: schema as Record<string, unknown> } },
-      messages: [{ role: 'user', content: [{ type: 'text', text: prompt }] }],
+      messages: [{ role: 'user', content: [...(opts.image?.length ? [imageBlock(opts.image)] : []), { type: 'text', text: prompt }] }],
     },
     opts.signal ? { signal: opts.signal } : undefined,
   )

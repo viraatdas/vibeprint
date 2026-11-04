@@ -1,0 +1,119 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 647.5258400890207,
+    "y": 190.37507418397627,
+    "z": 0.46224538783348196
+  },
+  "text": [
+    {
+      "text": "Crumb: how are changes in a running Chrome session saved back to the\nvault?",
+      "renderedSize": 14.791852410671423
+    },
+    {
+      "text": "New engineers · A running state-mode supervisor: autosave timer, crumb sync/close signals, snapshot, merge, encrypted write.",
+      "renderedSize": 8.782662368836156
+    },
+    {
+      "text": "Local machine",
+      "renderedSize": 10.169398532336603
+    },
+    {
+      "text": "Local, user-run processes and files",
+      "renderedSize": 8.782662368836156
+    },
+    {
+      "text": "crumb CLI",
+      "renderedSize": 11.556134695837049
+    },
+    {
+      "text": "sync/close signal\nthe supervisor",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 11.556134695837049
+    },
+    {
+      "text": "Detached process\nthat autosaves the\nsession",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 11.556134695837049
+    },
+    {
+      "text": "Browser context the\nagent uses",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "Session vault",
+      "renderedSize": 11.556134695837049
+    },
+    {
+      "text": "Encrypted\nper-account session\nfiles",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "Run handle",
+      "renderedSize": 11.556134695837049
+    },
+    {
+      "text": "Plaintext pid, CDP\nURL, lastSavedAt",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient,\nresponse included; dashed = async; solid = sync; dotted = local command/I/O. Flow type is also written on each arrow.",
+      "renderedSize": 9.244907756669638
+    },
+    {
+      "text": "When saves happen",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "setInterval every --autosave s (default\n30; 0 disables), SIGUSR2 (crumb\nsync), final save on SIGINT/SIGTERM.\nClosing Chrome directly exits with no\nfinal save.",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.320416981002674
+    },
+    {
+      "text": "Merge, skip, best effort",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "Unchanged snapshots are skipped;\noverlapping saves share one in-flight\nsave. Changes are 3-way merged\nonto the vault's latest copy, written\nvia temp+rename. Errors are only\nlogged.",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.320416981002674
+    },
+    {
+      "text": "Sync and close confirmation",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "crumb sync polls the handle up to 10s\nfor a new lastSavedAt and returns\nwithout error if nothing changed.\ncrumb close waits 30s, then SIGKILLs,\nwhich skips the final save.",
+      "renderedSize": 9.70715314450312
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 8.320416981002674
+    },
+    {
+      "text": "Outside this view: Launch, inject and handle startup handshake (launchDetached); Profile mode, login, capture and check flows.",
+      "renderedSize": 7.858171593169193
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.395926205335711
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

@@ -5,6 +5,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { WebSocketServer } from 'ws'
+import { z } from 'zod'
 import { gitHead } from '../core/git-head.js'
 import { FILES, VIBEPRINT_DIR, VibeprintCore, VibeprintError } from '../core/core.js'
 import { readDaemonInfo } from '../core/daemon-client.js'
@@ -15,14 +16,16 @@ import { mapCode, mapState } from '../core/map.js'
 import { detectMapper, mapWithModel, schemaWithModel, type Mapper } from '../interpret/code-map.js'
 import { nodeLabel } from '../shared/graph.js'
 import { scanRepo } from '../core/repo-scan.js'
-import { CanvasRoom } from './canvas.js'
+import { CanvasRoom, shapeSchema } from './canvas.js'
+import { cleanupWithModel } from '../interpret/cleanup.js'
+import { architectureFingerprint, canvasFingerprint, cleanupPlan, finishCleanupBackup, latestCleanup, restoreCleanup, saveCleanupBackup } from '../core/cleanup.js'
 import { GitCheckpointer } from './git.js'
 import { connectRelay, type RelayClient } from './relay.js'
 import { interpretHeuristic } from '../interpret/heuristic.js'
 import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/claude.js'
 
-export const AGENT_COLOR = '#2e5bff'
-export const INK_COLOR = '#1d1d1f'
+import { AGENT_COLOR, INK_COLOR, extractSketch, type Shape } from '../shared/canvas.js'
+export { AGENT_COLOR, INK_COLOR }
 const VERSION = '0.7.0'
 
 export interface DaemonOptions {
@@ -287,6 +290,44 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   const mapper = opts.mapper === undefined ? detectMapper() : opts.mapper
   core.setMapper({ mode: mapper?.kind ?? 'none', label: mapper?.label })
   let reading: AbortController | null = null
+  let cleaning: AbortController | null = null
+  core.setCleanup({ undoId: latestCleanup(core) })
+  const cleanUp = async (source: Shape[], image: Buffer) => {
+    if (!mapper) throw new VibeprintError('Install Claude Code or Codex, or set ANTHROPIC_API_KEY, to clean up with AI.', 422)
+    const ctrl = new AbortController()
+    cleaning = ctrl
+    const baseline = architectureFingerprint(core)
+    const lastChat = core.chat.at(-1)?.id
+    const sourceStamp = canvasFingerprint(source)
+    core.setCleanup({ active: true, startedAt: new Date().toISOString(), finishedAt: undefined, outcome: undefined, lastError: undefined, summary: undefined })
+    try {
+      const reply = await cleanupWithModel(root, { shapes: source, image, architecture: core.architecture(), chat: structuredClone(core.chat) }, mapper, { model: claude.model, signal: ctrl.signal })
+      if (ctrl.signal.aborted) return
+      if (canvasFingerprint(canvas.list()) !== sourceStamp || architectureFingerprint(core) !== baseline || core.chat.at(-1)?.id !== lastChat) {
+        core.setCleanup({ outcome: 'kept', lastError: 'The canvas, architecture or conversation changed while AI was working. Your edits are safe; tap Clean up again when ready.' })
+        return
+      }
+      const plan = cleanupPlan(core, source, reply)
+      const backup = saveCleanupBackup(core, source)
+      core.recordSubmission(extractSketch(new Map(plan.put.map(s => [s.id, s]))), undefined, undefined, { source: 'cleanup' })
+      core.applyInterpretation(plan.result, mapper.author, { quiet: true })
+      canvas.apply(plan.put, plan.del)
+      canvas.save()
+      core.flush()
+      fs.rmSync(core.file(FILES.sketchPng), { force: true })
+      finishCleanupBackup(core, backup, canvas.list())
+      core.addChat('agent', mapper.author, `Cleaned up the canvas. ${reply.summary}`)
+      core.checkpoint('vibeprint: reconcile and clean up canvas')
+      core.setCleanup({ outcome: 'cleaned', summary: reply.summary, undoId: backup.id, shapeIds: plan.focusIds })
+    } catch (err) {
+      if (!ctrl.signal.aborted) core.setCleanup({ outcome: 'failed', lastError: String((err as Error).message).slice(0, 500) })
+    } finally {
+      if (cleaning === ctrl) {
+        cleaning = null
+        core.setCleanup({ active: false, finishedAt: new Date().toISOString() })
+      }
+    }
+  }
   const drawMap = (map: RepoMap, author: string, chat?: string) => {
     const plan = mapCode(core, canvas.list(), map, author, chat ? { chat } : {})
     canvas.apply(plan.put, plan.del)
@@ -534,6 +575,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         return send(res, 200, { seq: sketch.seq, interpreter: core.interpreter.mode })
       }
       case 'POST /api/map': {
+        if (core.cleanup.active) throw new VibeprintError('AI is cleaning up the canvas. Wait for it to finish.', 409)
         // Draw the code's architecture: sent by a coding agent that read the code, or a quick
         // scan drawn at once and then redrawn from a model's reading of the code.
         const body = await readJson<{ author?: string; map?: RepoMap }>(req)
@@ -564,8 +606,33 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         })
       }
       case 'POST /api/schema': {
+        if (core.cleanup.active) throw new VibeprintError('AI is cleaning up the canvas. Wait for it to finish.', 409)
         const body = await readJson<{ target?: string }>(req)
         return send(res, 200, showSchema(body.target || undefined))
+      }
+      case 'POST /api/cleanup': {
+        if (core.cleanup.active || core.mapper.active || core.interpreter.active) throw new VibeprintError('Wait for the current AI task to finish, then clean up.', 409)
+        if (!mapper) throw new VibeprintError('Install Claude Code or Codex, or set ANTHROPIC_API_KEY, to clean up with AI.', 422)
+        const checked = z.object({ source: z.array(shapeSchema).min(1).max(5000), image: z.string().min(1).max(32 * 1024 * 1024) }).safeParse(await readJson(req))
+        if (!checked.success) throw new VibeprintError('Cleanup needs the current canvas and a PNG preview (up to 5,000 shapes).', 422)
+        const source = checked.data.source as Shape[]
+        if (canvasFingerprint(source) !== canvasFingerprint(canvas.list())) throw new VibeprintError('The canvas is still syncing or changed. Wait a moment and tap Clean up again.', 409)
+        const image = Buffer.from(checked.data.image, 'base64')
+        if (!image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))) throw new VibeprintError('Cleanup needs a valid PNG preview.', 422)
+        void cleanUp(source, image)
+        return send(res, 202, { started: true })
+      }
+      case 'POST /api/cleanup/undo': {
+        if (core.cleanup.active || core.mapper.active || core.interpreter.active) throw new VibeprintError('Wait for the current AI task to finish first.', 409)
+        const body = await readJson<{ id?: string }>(req)
+        const current = canvas.list()
+        const original = restoreCleanup(core, current, body.id ?? '')
+        const ids = new Set(original.map(s => s.id))
+        canvas.apply(original, current.filter(s => !ids.has(s.id)).map(s => s.id))
+        canvas.save()
+        core.flush()
+        core.setCleanup({ undoId: undefined, outcome: 'restored', summary: undefined, shapeIds: original.map(s => s.id), finishedAt: new Date().toISOString() })
+        return send(res, 200, { restored: true })
       }
       case 'POST /api/interpretation': {
         const body = await readJson<{ author?: string; result: InterpretationResult }>(req)
@@ -717,6 +784,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     for (const w of waiters) w.done({ events: [], cursor: cursor(), timedOut: true })
     for (const s of streams) s.end()
     running?.abort()
+    cleaning?.abort()
     stopReading()
     core.flush()
     canvas.close()

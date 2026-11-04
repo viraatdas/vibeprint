@@ -1,12 +1,13 @@
-/* Vibeprint: your ink is graphite and sacred; the agent is a second pen in blue. */
+/* Vibeprint: your ink is blue; the agent is a second pen in red. */
 :root {
   --vp-paper: #f3f5f7;
   --vp-surface: #ffffff;
-  --vp-ink: #1d1d1f;
+  --vp-ink: #2e5bff;
+  --vp-ui-ink: #1d1d1f;
   --vp-muted: #656b76;
   --vp-line: #d8dce2;
-  --vp-agent: #2e5bff;
-  --vp-agent-ink: #1f3fd1;
+  --vp-agent: #d94040;
+  --vp-agent-ink: #b52d2d;
   --vp-ok: #2a9d62;
   --vp-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --vp-hand: 'VP Hand', 'Comic Sans MS', cursive;
@@ -26,7 +27,7 @@ body,
   height: 100%;
   overflow: hidden;
   background: var(--vp-paper);
-  color: var(--vp-ink);
+  color: var(--vp-ui-ink);
   font: 15px/1.45 var(--vp-ui);
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
@@ -44,7 +45,7 @@ button:disabled {
   opacity: 0.4;
 }
 :focus-visible {
-  outline: 2px solid var(--vp-agent);
+  outline: 2px solid var(--vp-ink);
   outline-offset: 2px;
 }
 
@@ -172,19 +173,19 @@ button:disabled {
 .vp-text-input.is-on {
   opacity: 1;
   pointer-events: auto;
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--vp-agent) 7%, transparent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--vp-ink) 7%, transparent);
   border-radius: 2px;
-  background: color-mix(in srgb, var(--vp-agent) 7%, transparent);
+  background: color-mix(in srgb, var(--vp-ink) 7%, transparent);
 }
 .vp-sel {
   fill: none;
-  stroke: var(--vp-agent);
+  stroke: var(--vp-ink);
   stroke-width: 1.5;
   stroke-dasharray: 5 4;
 }
 .vp-marquee {
-  fill: color-mix(in srgb, var(--vp-agent) 8%, transparent);
-  stroke: var(--vp-agent);
+  fill: color-mix(in srgb, var(--vp-ink) 8%, transparent);
+  stroke: var(--vp-ink);
   stroke-width: 1;
 }
 
@@ -203,7 +204,7 @@ button:disabled {
 .vp-gate h1 {
   margin: 0;
   font: 400 34px/1.1 var(--vp-hand);
-  color: var(--vp-agent);
+  color: var(--vp-ink);
 }
 .vp-gate p {
   margin: 0;
@@ -225,6 +226,8 @@ button:disabled {
   left: 0;
   right: 0;
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   justify-content: space-between;
   align-items: center;
   padding: calc(10px + var(--vp-safe-t)) 14px 10px;
@@ -239,9 +242,22 @@ button:disabled {
   align-items: center;
   gap: 8px;
 }
+.vp-top-left {
+  min-width: 0;
+}
+.vp-top-right {
+  margin-left: auto;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 .vp-project {
   font-weight: 600;
   font-size: 14px;
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .vp-branch {
   display: inline-flex;
@@ -266,9 +282,9 @@ button:disabled {
   height: 28px;
   padding: 0 10px;
   border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--vp-agent) 45%, white);
+  border: 1px solid color-mix(in srgb, var(--vp-ink) 45%, white);
   background: var(--vp-surface);
-  color: var(--vp-agent-ink);
+  color: var(--vp-ink);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -1076,4 +1092,15 @@ li.is-removed .vp-spec-label {
     border-left: 0;
     border-top: 1px solid var(--vp-line);
   }
+}
+
+/* Generated shapes remain editable, with the agent’s pen color. */
+.vp-shape[data-author="agent"],
+.vp-text-input[data-author="agent"] {
+  --vp-ink: var(--vp-agent);
+}
+
+.vp-map-action {
+  color: var(--vp-agent-ink);
+  border-color: color-mix(in srgb, var(--vp-agent) 45%, white);
 }

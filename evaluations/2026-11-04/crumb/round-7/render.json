@@ -1,0 +1,142 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 1191.2859529970324,
+    "y": 271.66083086053413,
+    "z": 0.3239333389404881
+  },
+  "text": [
+    {
+      "text": "Crumb: how does `crumb launch` restore a saved session into a live browser?",
+      "renderedSize": 10.365866846095619
+    },
+    {
+      "text": "New engineers · The crumb launch path: detached supervisor, vault decrypt and inject, handle file, CDP URL and autosave back to\nthe vault.",
+      "renderedSize": 6.154733439869274
+    },
+    {
+      "text": "crumb host",
+      "renderedSize": 7.126533456690738
+    },
+    {
+      "text": "Local, self-hosted Node procs + files",
+      "renderedSize": 6.154733439869274
+    },
+    {
+      "text": "Chrome process",
+      "renderedSize": 7.126533456690738
+    },
+    {
+      "text": "Same host; local\nChromium, CDP 127.0.0.1",
+      "renderedSize": 6.154733439869274
+    },
+    {
+      "text": "OS key store",
+      "renderedSize": 7.126533456690738
+    },
+    {
+      "text": "Same host OS service:\nkeychain/secret-tool",
+      "renderedSize": 6.154733439869274
+    },
+    {
+      "text": "crumb CLI",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "Spawns supervisor,\npolls for handle",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "Detached\n__supervise process\nowning browser",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Run dir",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "Handle/error JSON,\nlog, temp profile",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Session vault",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "Encrypted\nper-account session\nstate",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Key store",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "Vault key; or\nCRUMB_KEY env /\nkey file",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 8.098333473512202
+    },
+    {
+      "text": "System Chrome or\nPlaywright\nChromium",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external\nservice. Arrows: caller → recipient, response included; dotted = local command/I/O; solid = sync. Flow type is also written on\neach arrow.",
+      "renderedSize": 6.478666778809762
+    },
+    {
+      "text": "Startup gates and failure",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "A live handle is returned with no new\nspawn. Missing account →\nNOT_FOUND; empty → NEEDS_LOGIN.\nSupervisor errors (e.g.\nKEY_UNAVAILABLE) go to the error\nfile; exit or 60s → INTERNAL.",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 5.830800100928785
+    },
+    {
+      "text": "Autosave is best-effort",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "Every 30s (configurable, 0 = off), on\nSIGUSR2 (crumb sync) and\nSIGTERM/SIGINT it saves a merged\nsnapshot; errors are only logged.\nClosing the window exits with no final\nsave.",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 5.830800100928785
+    },
+    {
+      "text": "Unauthenticated CDP port",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "Chrome runs with\n--remote-debugging-port on 127.0.0.1,\nand the handle stores its http/ws\nURLs. Any local process that can reach\nthe port can drive the logged-in\nbrowser.",
+      "renderedSize": 6.8026001177502495
+    },
+    {
+      "text": "Source: src/browser.ts",
+      "renderedSize": 5.830800100928785
+    },
+    {
+      "text": "Outside this view: login, capture, check, close and transfer commands; Agent-side CDP use after the handle is returned.",
+      "renderedSize": 5.506866761988298
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 5.1829334230478095
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,154 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 523.6727649006623,
+    "y": 308.0836092715232,
+    "z": 0.4868808189915763
+  },
+  "text": [
+    {
+      "text": "Threadline: what happens when the owner clicks Send on an approved draft?",
+      "renderedSize": 15.580186207730442
+    },
+    {
+      "text": "New engineers · sendMessage only: claim the draft, run the gates, then send by Gmail or start a LinkedIn run on the worker.",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "[ Owner device ]",
+      "renderedSize": 11.198258836806255
+    },
+    {
+      "text": "Local: owner's own\nbrowser",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Owner",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "client · Clicks\nSend on Today or a\nconversation",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "[ Web app host ]",
+      "renderedSize": 11.198258836806255
+    },
+    {
+      "text": "Hosted: Next.js app on\nVercel",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Web app",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "service ·\nsendMessage: claims\ndraft, gates, sends",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "[ Fly.io worker ]",
+      "renderedSize": 11.198258836806255
+    },
+    {
+      "text": "Hosted: self-run Fly\ncontainer",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Browser worker",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "worker · Serial\nruns; Chromium\nagent on LinkedIn",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "[ Third parties ]",
+      "renderedSize": 11.198258836806255
+    },
+    {
+      "text": "External: DB and vendor\nservices",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "database ·\nMessages, people,\ncampaigns, settings",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "external · Reply\nand in-touch\nchecks, email send",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "LinkedIn",
+      "renderedSize": 12.172020474789408
+    },
+    {
+      "text": "external · Reached\nvia owner's\nTailscale exit node",
+      "renderedSize": 9.25073556083995
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; boxes = named runtime units with type. Arrows: caller → recipient (response included).\nSolid = sync; dashed = async; dotted = local I/O. All generated ink is AI red; user additions are blue.",
+      "renderedSize": 9.737616379831525
+    },
+    {
+      "text": "F1 · Web app → Browser worker: start / poll (async)",
+      "renderedSize": 9.737616379831525
+    },
+    {
+      "text": "Gates before send",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "Draft claimed once as sending; daily\nlimit checked. Reply check fails open\n(.catch→0); in-touch check fails\nclosed.",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 8.763854741848373
+    },
+    {
+      "text": "LinkedIn waits for home exit",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "Runs wait for Tailscale exit node and\nnon-Fly egress; rechecked every 60s,\nfailed after 24h.",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 8.763854741848373
+    },
+    {
+      "text": "Single serial worker",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "One lock, one run at a time; app waits\n75s, later polls sending rows. Mid-run\nrestarts are failed, not retried.",
+      "renderedSize": 10.224497198823103
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 8.763854741848373
+    },
+    {
+      "text": "Outside this view: Finding, researching and drafting prospects (Exa, Apollo, LLM); X DMs: owner sends by hand in X; app only marks sent.",
+      "renderedSize": 8.276973922856797
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.790093103865221
+    }
+  ],
+  "errors": []
+}

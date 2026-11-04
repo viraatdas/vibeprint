@@ -1,0 +1,193 @@
+{
+  "title": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+  "audience": "New engineers",
+  "scope": "The sketch path from iPad to the local daemon, interpretation, .vibeprint/ state, and the agent's MCP server.",
+  "omissions": [
+    "Map this repo / cleanup code-reading via headless Claude Code/Codex",
+    "vibeprint init setup and git checkpoints"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "device",
+      "label": "iPad / browser",
+      "description": "Local user device running the canvas web app"
+    },
+    {
+      "id": "hosted",
+      "label": "Hosted relay",
+      "description": "Hosted Vibeprint relay on Fly.io; optional, forwards only"
+    },
+    {
+      "id": "machine",
+      "label": "Developer machine",
+      "description": "Local self-hosted daemon, agent, MCP server and repo state"
+    },
+    {
+      "id": "external",
+      "label": "External APIs",
+      "description": "External managed model API, used only with an API key"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "canvas",
+      "label": "Canvas app",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/",
+      "description": "iPad/laptop drawing canvas for sketches and marks",
+      "group": "device"
+    },
+    {
+      "id": "relay",
+      "label": "Relay",
+      "kind": "service",
+      "tags": [
+        "Fly.io"
+      ],
+      "path": "relay/",
+      "description": "Forwards iPad requests to the daemon across networks",
+      "group": "hosted"
+    },
+    {
+      "id": "daemon",
+      "label": "Daemon",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "HTTP"
+      ],
+      "path": "src/server/",
+      "description": "vibeprint serve: canvas sync, token check, interpretation",
+      "group": "machine"
+    },
+    {
+      "id": "state",
+      "label": ".vibeprint state",
+      "kind": "storage",
+      "tags": [
+        "JSON files"
+      ],
+      "path": ".vibeprint/",
+      "description": "Sketch, architecture graph, runtime port and token",
+      "group": "machine"
+    },
+    {
+      "id": "mcp",
+      "label": "MCP server",
+      "kind": "service",
+      "tags": [
+        "MCP",
+        "stdio"
+      ],
+      "path": "src/mcp/",
+      "description": "vibeprint mcp: architecture tools for the agent",
+      "group": "machine"
+    },
+    {
+      "id": "agent",
+      "label": "Coding agent",
+      "kind": "client",
+      "tags": [
+        "Claude Code",
+        "Codex"
+      ],
+      "path": "",
+      "description": "Reads architecture and proposes marks before building",
+      "group": "machine"
+    },
+    {
+      "id": "claude",
+      "label": "Claude API",
+      "kind": "external",
+      "tags": [
+        "Anthropic"
+      ],
+      "path": "",
+      "description": "Reads handwriting when ANTHROPIC_API_KEY is set",
+      "group": "external"
+    }
+  ],
+  "edges": [
+    {
+      "from": "canvas",
+      "to": "daemon",
+      "label": "HTTP+token: sketch sync (LAN)",
+      "mode": "sync"
+    },
+    {
+      "from": "canvas",
+      "to": "relay",
+      "label": "HTTPS: sketch sync (remote)",
+      "mode": "sync"
+    },
+    {
+      "from": "daemon",
+      "to": "relay",
+      "label": "Outbound tunnel connection",
+      "mode": "async"
+    },
+    {
+      "from": "relay",
+      "to": "daemon",
+      "label": "Forwarded requests",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "claude",
+      "label": "HTTPS: sketch interpretation",
+      "mode": "sync"
+    },
+    {
+      "from": "daemon",
+      "to": "state",
+      "label": "FS: sketch + graph",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "mcp",
+      "label": "MCP stdio: tool calls",
+      "mode": "local"
+    },
+    {
+      "from": "mcp",
+      "to": "daemon",
+      "label": "HTTP 127.0.0.1: read/marks",
+      "mode": "sync"
+    },
+    {
+      "from": "mcp",
+      "to": "state",
+      "label": "FS: fallback when no daemon",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Token on every request",
+      "text": "The relay keeps nothing; the daemon still checks the access token on each forwarded request. --no-relay keeps traffic on the local network.",
+      "source": "README.md"
+    },
+    {
+      "title": "Works without the daemon",
+      "text": "MCP finds the daemon via runtime/daemon.json port+token; if it is down it reads and writes .vibeprint/ directly and the canvas picks it up later.",
+      "source": "src/core/daemon-client.ts"
+    },
+    {
+      "title": "Approval gate",
+      "text": "The agent rule says to propose structural changes as marks and wait for approval; MCP reports 'Waiting for the user…' progress in daemon mode.",
+      "source": "src/mcp/server.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:08:40.767Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

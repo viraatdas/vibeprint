@@ -1,0 +1,103 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 345.63672106824924,
+    "y": 161.5008902077152,
+    "z": 0.5448886373741865
+  },
+  "text": [
+    {
+      "text": "crumb: how does a running state-mode session autosave storage state to the vault?",
+      "renderedSize": 17.436436395973967
+    },
+    {
+      "text": "New engineers · Timer-driven saves in supervise(): snapshot cookies, localStorage and IndexedDB, merge with the vault entry, rewrite it.",
+      "renderedSize": 10.352884110109542
+    },
+    {
+      "text": "Local machine",
+      "renderedSize": 11.987550022232103
+    },
+    {
+      "text": "Local host; all three as one OS user",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 13.622215934354662
+    },
+    {
+      "text": "Detached; 4: merge\nbefore→after in\nmemory",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 13.622215934354662
+    },
+    {
+      "text": "Owned child, temp\nprofile; close skips\nsave",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Vault files",
+      "renderedSize": 13.622215934354662
+    },
+    {
+      "text": "Per-account files in\n~/.crumb/vault, no\nlock",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included;\ndashed (async) = event/stream; solid (sync) = awaited request/reply; dotted (local) = file/IPC.",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Timer, skip, retry",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Default 30s; --autosave 0 = no timer. Ticks\njoin an in-flight save; unchanged snapshot\nskips. Errors only go to run/<id>.log; before\nadvances on success, so next tick retries.",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Merge in memory, no lock",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Step 4: cookies and localStorage merge per\nkey (before→after diff) onto the fresh read;\nIndexedDB is copied whole per snapshot\norigin. No lock: writes in the 3→5 window are\nlost.",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Source: src/vault.ts",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Key cached; partly plaintext",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Key cached at startup (CRUMB_KEY or\nconfig.json keyStore); missing key fails\nlaunch. Only entry bodies are AES-256-GCM;\nheader and run/ handle (lastSavedAt) are\nplaintext.",
+      "renderedSize": 11.442661384857916
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Outside this view: Launch/handshake, signal-driven saves (crumb sync, crumb close); Profile mode (same timer, persistent profile), agent CDP,\nlogin/check.",
+      "renderedSize": 10.89777274748373
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 + local edits · Owner: Viraat Das · Live runtime NOT verified",
+      "renderedSize": 10.89777274748373
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

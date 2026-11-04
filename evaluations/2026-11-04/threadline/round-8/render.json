@@ -1,0 +1,119 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 59.66972765027322,
+    "y": 110.05071357012747,
+    "z": 0.8044280054591503
+  },
+  "text": [
+    {
+      "text": "Outbound: how is a draft claimed so a double click can't send it twice?",
+      "renderedSize": 25.74169617469281
+    },
+    {
+      "text": "New engineers · The owner's Send click, the sendAction server action, and the atomic UPDATE…RETURNING claim in Postgres.",
+      "renderedSize": 15.284132103723856
+    },
+    {
+      "text": "Owner device",
+      "renderedSize": 17.697416120101305
+    },
+    {
+      "text": "Local: owner's web\nbrowser",
+      "renderedSize": 15.284132103723856
+    },
+    {
+      "text": "Vercel",
+      "renderedSize": 17.697416120101305
+    },
+    {
+      "text": "Hosted, managed: Next.js\napp server",
+      "renderedSize": 15.284132103723856
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 17.697416120101305
+    },
+    {
+      "text": "Hosted database; provider\nnot verified",
+      "renderedSize": 15.284132103723856
+    },
+    {
+      "text": "Web browser",
+      "renderedSize": 20.11070013647876
+    },
+    {
+      "text": "Today or\nconversation view;\nSend button",
+      "renderedSize": 16.088560109183007
+    },
+    {
+      "text": "App server",
+      "renderedSize": 20.11070013647876
+    },
+    {
+      "text": "sendAction →\nsendMessage claims\nthe row",
+      "renderedSize": 16.088560109183007
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 20.11070013647876
+    },
+    {
+      "text": "messages rows:\ndraft/failed →\nsending",
+      "renderedSize": 16.088560109183007
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response\nincluded; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 16.088560109183007
+    },
+    {
+      "text": "Atomic claim",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "One UPDATE sets status 'sending' and\nsaves any edited body/subject, WHERE\nid matches, direction 'out', status in\ndraft/failed. No returned row → skipped:\n'Already sent or no longer a draft.'",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 14.479704098264705
+    },
+    {
+      "text": "Suppression, not exactly-once",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "The claim stops a second click or tab\nfrom sending. Later guards reset the\nrow to failed (no person, daily limit) or\nskipped (closed stage, already replied).\nDelivery is not guaranteed.",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 14.479704098264705
+    },
+    {
+      "text": "Crash after claim",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "A row stuck in 'sending' can't be\nclaimed again; only draft/failed rows\nqualify. The health check flags LinkedIn\nrows stuck over 3h. The code shows no\nautomatic recovery for email.",
+      "renderedSize": 16.892988114642154
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 14.479704098264705
+    },
+    {
+      "text": "Outside this view: Guard checks, Gmail/LinkedIn delivery and reply detection after claim; Drafting, enrollment, cron jobs and the LinkedIn browser worker.",
+      "renderedSize": 13.675276092805555
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.870848087346404
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

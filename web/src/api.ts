@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ClientConfig, MapResult } from '@shared/api'
 import type { Decision, VibeprintState } from '@shared/types'
+import type { Shape } from '@shared/canvas'
 
 export class ApiError extends Error {
   constructor(
@@ -37,6 +38,8 @@ export const api = {
   chat: (text: string) => call('POST', '/api/chat', { text }),
   /** Scan the repo and draw what is already built. */
   mapRepo: () => call<MapResult>('POST', '/api/map', {}),
+  cleanUp: (source: Shape[], image: string) => call<{ started: boolean }>('POST', '/api/cleanup', { source, image }),
+  undoCleanup: (id: string) => call('POST', '/api/cleanup/undo', { id }),
   showSchema: (target?: string) => call<{ reading: string; target?: string }>('POST', '/api/schema', target ? { target } : {}),
 }
 

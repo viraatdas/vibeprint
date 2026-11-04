@@ -66,7 +66,7 @@ function translateShape(s: Shape, dx: number, dy: number, moving: ReadonlySet<st
       const end = (e: ArrowEnd, at: Point): ArrowEnd =>
         e.id && moving.has(e.id) ? { ...e, x: r2(e.x + dx), y: r2(e.y + dy) } : { x: r2(at.x + dx), y: r2(at.y + dy) }
       const pts = ends ?? { a: s.start, b: s.end }
-      return { ...s, start: end(s.start, pts.a), end: end(s.end, pts.b) }
+      return { ...s, start: end(s.start, pts.a), end: end(s.end, pts.b), ...(s.route ? { route: s.route.map(p => ({ x: r2(p.x + dx), y: r2(p.y + dy) })) } : {}), ...(s.labelAt ? { labelAt: { x: r2(s.labelAt.x + dx), y: r2(s.labelAt.y + dy) } } : {}) }
     }
   }
 }

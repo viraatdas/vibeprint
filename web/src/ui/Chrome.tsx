@@ -9,6 +9,7 @@ import { exportSketchPng } from '../canvas/png'
 import { setCollapsed, toast, ui, useUi } from '../store'
 import { computeLayout } from '../agent/layout'
 import { useFocusMark } from './MarkPopover'
+import { CleanupActions } from './CleanupActions'
 
 const I = {
   draw: <path d="M4 20c2.5-.4 4-1.6 5.6-3.4L19 7.2a2 2 0 0 0-2.8-2.8l-9.4 9.4C5 15.6 4.4 17.2 4 20z M14.5 6l3 3" />,
@@ -105,8 +106,8 @@ export function SubmitButton() {
         toast('Draw something first, then submit.')
         return
       }
-      const ink = getComputedStyle(document.documentElement).getPropertyValue('--vp-ink').trim() || '#1d1d1f'
-      const image = await exportSketchPng(editor.doc, ink)
+      const ink = getComputedStyle(document.documentElement).getPropertyValue('--vp-ink').trim() || '#2e5bff'
+      const image = await exportSketchPng(editor.doc, ink, getComputedStyle(document.documentElement).getPropertyValue('--vp-agent').trim() || undefined)
       const res = await api.submit({ shapes, image })
       toast(`Sent sketch #${res.seq} to your agent.`)
     } catch (err) {
@@ -183,7 +184,7 @@ export function EmptyStart() {
       <div className="vp-start-card">
         <p className="vp-start-title">Sketch the system you want to build.</p>
         <p className="vp-start-body">Already have code? Map it first, then draw your changes on top.</p>
-        <button className="vp-btn vp-btn-ink" onClick={run} disabled={mapping} onPointerDown={(e) => e.stopPropagation()}>
+        <button className="vp-btn vp-btn-agent" onClick={run} disabled={mapping} onPointerDown={(e) => e.stopPropagation()}>
           <Icon name="map" />
           <span>{mapping ? 'Mapping the code…' : 'Map this repo'}</span>
         </button>
@@ -208,6 +209,7 @@ export function TopBar() {
   const { mapping, run: mapRepo } = useMapRepo()
   const reader = vp?.mapper
   const reading = !!reader?.active
+  const cleaning = !!vp?.cleanup?.active
   // Say how the reading ended, once.
   const [wasReading, setWasReading] = useState(false)
   useEffect(() => {
@@ -248,14 +250,15 @@ export function TopBar() {
           </span>
         ))}
         <button
-          className={`vp-pill${reading ? ' is-reading' : ''}`}
+          className={`vp-pill vp-map-action${reading ? ' is-reading' : ''}`}
           onClick={mapRepo}
-          disabled={mapping || reading}
+          disabled={mapping || reading || cleaning}
           title={reading ? `${reader?.label} is reading the code${reader?.task === 'schema' ? ' for the tables' : ' to redraw the map'}` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
         >
           <Icon name="map" />
           <span className="vp-pill-label">{mapping ? 'Mapping…' : reading ? 'Reading the code…' : 'Map this repo'}</span>
         </button>
+        <CleanupActions />
         <button className={`vp-pill${collapsed ? '' : ' is-on'}`} onClick={() => setCollapsed(!collapsed)} aria-pressed={!collapsed} title="Show or hide everything the agent drew">
           <Icon name={collapsed ? 'eyeOff' : 'eye'} />
           <span>{collapsed ? 'Agent ink hidden' : 'Agent ink'}</span>

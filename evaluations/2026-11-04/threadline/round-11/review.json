@@ -1,0 +1,72 @@
+{
+  "project": "threadline",
+  "round": 11,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:18:08.490Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks one exact question: 'Outbound: how does the draft claim suppress a concurrent double Send?' The subtitle names the audience ('New engineers') and the scope (two Today tabs, separate sendAction calls, a conditional Postgres UPDATE). The level of detail suits engineers: READ COMMITTED, row lock and file:line sources."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Every box is a runtime actor at the same level: two browser tabs, one Next.js server and one Postgres store, each inside a deployment frame. Code-level detail stays in the notes and does not mix with the boxes. No zoom-in view is needed for a focused race diagram."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "It shows only what the race needs: both tabs, the server action path, the conditional claim, the loser's outcome, what 'suppression' does and does not guarantee, and the stranded-row edge case. The omissions are stated in the image: 'Outside this view: Guards and Gmail/LinkedIn/X delivery after a successful claim; Conversation Send: each click inserts its own row, so no shared claim.' The second matches sendReply's insert at lib/engine.ts:1209-1223. Optional: the claimed status value 'sending' appears only in note 3, not on the core path."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "There are three directed arrows, one meaning each, and the legend defines them: 'caller → recipient, response included; solid (sync) = awaited request/reply'. Each label says what flows: 'id+edits → ActionResult (sync)' from each tab as its own call, and '2× claim UPDATE → row/0 (sync)' to Postgres. The race outcome is stated on the nodes ('either may win', 'First draft|failed UPDATE wins, per attempt'). The winner's order (claim, then guards, then a delivery try) is given in note 2."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Three labelled frames, and the legend says frames are trust/deployment zones: 'Owner's browser — Local client: two tabs, one session'; 'Vercel — Hosted, managed: Vercel functions, sfo1'; 'AWS RDS — Hosted, managed: us-west-1, TLS per docs'. The server is marked 'owner-gated'. Local vs hosted and managed is explicit. Matches vercel.json regions [sfo1] and AGENTS.md:203-204 (RDS us-west-1, TLS required)."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Unmet condition: tidy and readable at the real viewing size. It reads left to right with no crossings and aligned frames, but there are small flaws at 1194x834. The server text breaks mid-word ('sendAction→sendMe / ssage'). The edge lines run through their own labels ('___id+edits →___'). Frame sublabels, note sources and the footer (omissions and verification stamp) are about 8-9px, so these key lines are the hardest to read. The browser and Vercel frames have large empty areas while the notes are dense. Effect: still readable, but a new engineer has to squint at the boundary and freshness details."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "The visible key explains every convention: frames = trust/deployment zones, box = runtime actor/process, cylinder = stored state, arrow direction and response, solid/(sync). Shape and text carry the meaning, so the single authorship colour is fine. Names are real and match the code: Today tab / DraftCard (components/today.tsx:138), sendAction (app/(app)/actions.ts:363), sendMessage (lib/engine.ts:1339), Postgres."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Failure behaviour and state are explicit. The loser waits on the row lock under READ COMMITTED autocommit, gets 0 rows, is skipped, and its edits are dropped. It is 'Suppression, not exactly-once': guard failures and errors inside the try reset the row to failed even after Gmail accepted, so it can be sent again. A crash after the claim strands the row in 'sending': maxDuration 300, Send/Skip blocked, the row counts toward the 24h limit, and only LinkedIn gets a 3h alert. Owner 'Unassigned' is stated openly. Delivery dependencies are deliberately out of scope."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The stamp is visible: 'Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified'. Every claim I checked matches the source: claim UPDATE at lib/engine.ts:1346-1358, fail() at 1360-1366, markSent inside the try at 1435 → catch at 1462-1466, sentInLastDay counting 'sending' at 1316-1329, 3h LinkedIn alert at 2010-2022, maxDuration at app/(app)/page.tsx:4, no isolation override in lib/db/client.ts:9-20, skipped → card hides at components/today.tsx:174-176. Capped at 3 because only source was reviewed, not the running production system."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "A newcomer can correctly retell it from the image alone. Each tab separately calls sendAction on the owner-gated Vercel server. Each call runs a conditional UPDATE in RDS. Only the first draft|failed match gets the row; the other gets 0 rows, returns skipped, loses its edits and hides its card. The winner then runs guards and delivery, can fail back to a re-sendable state, and can be stranded in 'sending' by a crash. The legend and notes stop the main misreading (thinking this is exactly-once)."
+    }
+  ],
+  "coldRead": "The owner has the same Today draft open in two browser tabs. Both tabs belong to one owner session on their own machine. Clicking Send in either tab makes its own synchronous server-action call (sendAction) to the Next.js app on Vercel (sfo1). The call carries the draft id and that tab's edited body, plus the subject for a first email. The server checks that the caller is the owner, then runs sendMessage. Its first step is one autocommitting conditional UPDATE against Postgres on AWS RDS (us-west-1). The UPDATE only matches if the row is still 'draft' or 'failed', and it claims the row by moving it to 'sending'. When both clicks land together, Postgres's default READ COMMITTED makes the second UPDATE wait on the row lock and then re-check the condition. The row no longer matches, so it gets 0 rows. That tab is told 'skipped', its edits are discarded and its card hides. The winning tab goes on to the guards and a delivery attempt, which are deliberately out of this view. This blocks a double send but is not exactly-once. If a guard fails or anything inside the delivery try throws, the row resets to 'failed' and can be sent again. That holds even if Gmail already accepted the email and only the follow-up markSent write failed. If the function times out (300s) or a query outside the try throws, the row is stuck in 'sending'. It can't be sent or skipped, it counts toward the daily email/LinkedIn limit for 24h, and only LinkedIn rows trigger a 3-hour alert. Conversation Sends don't share this claim, because each click inserts its own row. The diagram comes from a source review of f467a33 with local edits. It has no owner and was not checked against the live system.",
+  "inaccuracies": [],
+  "improvements": [
+    "Put the claim mechanism on the main path, not only in the notes. Label the Postgres edge or node 'SET status=sending WHERE id=? AND status IN (draft, failed)'. Split '2× claim UPDATE → row/0' into the two results: 'first: 1 row → guards/delivery' and 'second: 0 rows → skipped'. The key state would then be visible without reading note 3 (lib/engine.ts:1346-1358).",
+    "Fix the readability problems at 1194x834. Widen or re-wrap the server node so it doesn't break 'sendMe/ssage'. Move edge labels off the lines. Raise the frame sublabels, source lines and footer (omissions, verification stamp) from about 9px to 11px or more, using the empty space inside the browser and Vercel frames.",
+    "Make note 2 and note 3 more precise, then check against production to lift freshness. When a guard fails, the winner resolves without any delivery attempt. LinkedIn sends can also return 'pending' and stay in 'sending' on purpose (resolveLinkedinSend, lib/engine.ts:1531-1532), and the 3h alert exists for those rows, so 'sending' does not always mean a crash. Then confirm RDS default_transaction_isolation, the deployed revision and the Vercel region in the live system, and name an owner."
+  ],
+  "total": 38,
+  "verdict": "Excellent"
+}

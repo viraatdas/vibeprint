@@ -1,0 +1,111 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 302.8768175074183,
+    "y": 155.1979228486647,
+    "z": 0.5670178980797947
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch survive a page reload?",
+      "renderedSize": 18.144572738553432
+    },
+    {
+      "text": "New engineers · Same-Wi-Fi link only (--no-relay or LAN URL): page reload, token cookie, WS snapshot, ink ops, canvas.json load/save.",
+      "renderedSize": 10.7733400635161
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "Same Wi-Fi; holds HttpOnly\ntoken cookie",
+      "renderedSize": 9.639304267356511
+    },
+    {
+      "text": "Developer machine",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "Local, self-run; token-gated LAN HTTP/WS",
+      "renderedSize": 9.639304267356511
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 14.175447451994868
+    },
+    {
+      "text": "Draws ink; unacked\nops in page memory\nonly",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "vibeprint serve",
+      "renderedSize": 14.175447451994868
+    },
+    {
+      "text": "Token-gated; acks\nops in memory,\nsaves later",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "canvas.json",
+      "renderedSize": 14.175447451994868
+    },
+    {
+      "text": "Read only at start;\nunparseable JSON\naborts",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included;\ndotted (local) = file/IPC; solid (sync) = awaited request/reply; dashed (async) = event/stream.",
+      "renderedSize": 11.340357961595895
+    },
+    {
+      "text": "Acked is not saved",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "Ack means daemon memory only.\ncanvas.json is rewritten (temp file +\nrename) after 800ms with no op from any\nclient, or on SIGINT/SIGTERM; a crash loses\nacked edits since the last pause.",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 10.206322165436305
+    },
+    {
+      "text": "Reconnect replays; reload drops",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "Unacked ops live only in page memory: a\nreconnect (500ms–10s backoff) replays\nthem on a fresh snapshot; a full reload loses\nthem. Rejected ops (invalid/full) drop; page\nresnapshots.",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "Source: web/src/canvas/sync.ts",
+      "renderedSize": 10.206322165436305
+    },
+    {
+      "text": "Token gate on reload",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "/ needs no token; /api/config and /api/canvas\nWS need the ?t= link's 1-year HttpOnly\ncookie (token kept across restarts). Without\nit: 401, fixed 'needs the link' page, no retry.",
+      "renderedSize": 11.907375859675689
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 10.206322165436305
+    },
+    {
+      "text": "Outside this view: Default hosted relay link (QR uses it when up), MCP, AI, git commits; Marks/chat/graph files, pasted images, other clients' live ops.",
+      "renderedSize": 9.639304267356511
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+      "renderedSize": 9.072286369276716
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

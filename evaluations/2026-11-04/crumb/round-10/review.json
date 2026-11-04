@@ -1,0 +1,79 @@
+{
+  "project": "crumb",
+  "round": 10,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:09:24.709Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one exact question: \"crumb: how does a running state-mode session autosave its cookies to the vault?\". The subtitle names the audience (\"New engineers\") and the scope (snapshot Chrome, merge with the latest vault entry, rewrite it). Three nodes plus three notes is about the right depth for new engineers. One wording problem: the title says \"cookies\" when more than cookies is saved (see inaccuracies)."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "All three shapes are at the same runtime level: the Supervisor process, the Chrome child process, and the vault files. Code details (AAD, temp file + rename, ticks joining a save already in progress) go into the source-cited notes, not into boxes. The key store is left out of the drawing, which is reasonable because `vaultKey()` caches the key for the life of the process (src/crypto.ts:13,53), so autosave ticks never touch it."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Only the three parts needed are shown, and the \"Outside this view\" line deliberately lists what is out of scope (launch, handle files, sync/close signal saves, profile mode, agent CDP). But the timer, which is what starts every autosave, appears only in text. The map's sup→sup timer edge is missing from the render. The key-custody note is a little off the autosave question. \"Errors only logged\" does not say where (~/.crumb/run/<site>__<account>.log)."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is labeled, numbered (1 storageState; 2 read, 3 merge + rename) and marked with its type in words and line style. The separately started Chrome self-close is drawn as its own dashed async arrow (\"close → exit, no save\"), which is good. Points off: no visible trigger, so the numbering starts at 1 with nothing causing it. \"3 merge\" sits on the vault arrow even though `mergeState` runs in the Supervisor's memory (src/session.ts:204-205). Read and write share one arrow."
+    },
+    {
+      "id": "boundaries",
+      "score": 2,
+      "evidence": "There is one frame, \"Local machine: Local self-managed host, same OS user\". That is a real trust statement, since 0600 files only protect against other users. Nothing separates the OS-managed key stores (Keychain/Secret Service, mentioned only in a note), the third-party Chrome binary run as a Playwright child, or the ~/.crumb file tree. The frame also leaves loopback CDP exposure unmarked, as a boundary or as a deliberate omission. Most grouping is implied."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "No arrows cross, but there is no clear main direction (Supervisor left-centre, Chrome upper right, Vault lower right). The drawing uses only the middle ~48% of the 1194px width, and the bottom third of the frame is empty. At 1194x834 the node text and edge labels are about 8–10px, and the subtitle, \"Outside this view\" and the provenance footer are about 7–8px. That is hard to read on an iPad. Edge labels sit on the lines: the dotted stroke runs into \"merge +\", and the arrowhead nearly touches \"rename (local)\"."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a visible key: frames = trust/deployment zones, box = actor/process, cylinder = stored state, solid/dotted/dashed = sync/local I/O/async, and it notes that \"Flow type is also written on each arrow\". So meaning does not depend on colour, and the drawing is monochrome anyway. Weaknesses: the legend mixes two axes. Vault I/O is also synchronous (readFileSync/renameSync), while storageState is an awaited async Playwright call. The step numbers are not explained. Labels are generic (\"Supervisor\", \"Vault files\") rather than code names or paths (`supervise()`, ~/.crumb/vault/<site>/<account>.crumb)."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes and node text give the important local failure behaviour: --autosave 0 means no timer, ticks join an in-flight save, unchanged snapshots skip, errors are only logged, Chrome self-close exits with no final save (up to one interval lost), SIGTERM/SIGINT save first, there is no lock so writes between read and rename are lost, files are swapped by temp-file rename, and the key is cached. Missing: where errors go, KEY_UNAVAILABLE/NOT_FOUND cases, and the fact that a failed save is retried on the next tick because `before` is not advanced (src/session.ts:208). The notes are also tiny and not tied to the elements they describe."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The visible footer reads \"Source review 2026-11-04 · revision 557acd4 · Owner: Viraat Das · Live runtime NOT verified\". The owner matches package.json \"author\" and the git user. The notes match src/session.ts:198-241, src/vault.ts:108-147,206-223 and src/crypto.ts:52-85. Capped at 3 because nothing was checked against a running system. Small inaccuracy: \"cookies\" leaves out localStorage and IndexedDB."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A new engineer could explain the loop correctly from the subtitle plus the three notes: snapshot, re-read, three-way merge, atomic rewrite, no lock, no save when Chrome self-closes. But the trigger exists only in text, merge looks like a vault-side operation, and much of the useful text is 7–9px at the target viewport. They would get it right only after reading closely, not at a glance."
+    }
+  ],
+  "coldRead": "This diagram shows how crumb keeps a running browser's login current. When you `crumb launch` a state-mode account, a background Node \"Supervisor\" process starts and owns a Chrome child running on a throwaway temp profile. The Supervisor saves on a timer, every 30s by default (`--autosave 0` turns the timer off). Each save works like this: (1) ask Chrome for its storageState over Playwright and get the cookies back; (2) read the account's current vault entry; (3) do a three-way merge, applying only what changed in this browser since the last save onto whatever is in the vault now, then write a temp file and rename it over the entry. If nothing changed, the save is skipped. If a tick fires during a save, it joins that save. Errors are only logged. The vault entry is a 0600 file whose header is plain text and whose session body is AES-256-GCM encrypted, with the account id as additional authenticated data (AAD). The key comes from CRUMB_KEY or from the OS keychain/Secret Service/~/.crumb/key and is cached per process. Two risks: there is no file lock, so anything another writer saves between the read and the rename is lost; and if the user closes Chrome themselves, the Supervisor exits without a final save, so changes since the last tick are lost. A SIGTERM/SIGINT (e.g. `crumb close`) saves first. Everything runs on one machine as one OS user. Launch, `crumb sync`, profile mode and agent CDP use are out of scope.",
+  "inaccuracies": [
+    "The map's \"timer tick, default 30s\" self-loop on Supervisor does not appear in the image. Visible steps start at \"1\" with no trigger, although the timer is the core of the question (`setInterval(save, …)` at src/session.ts:222).",
+    "The title says \"autosave its cookies\" and edge 1 says \"storageState → cookies\". The snapshot is actually `context.storageState({ indexedDB: true })` (src/browser.ts:123-125), and `mergeState` also merges per-origin localStorage and IndexedDB (src/vault.ts:206-223). Full storage state is saved, not just cookies.",
+    "\"3 merge\" is on the Supervisor→Vault arrow, which makes it look like a vault-side operation. The merge happens in the Supervisor's memory (`mergeState(latest.state, before, after)` at src/session.ts:205). Only reading and the temp-file write + rename (`atomicWrite`, src/vault.ts:108-113) are file I/O. The write path also re-reads the entry header (`readEntry` in `writeSession`, src/vault.ts:135), so header-only updates such as `touchHeader` from `crumb check` (src/session.ts:342) can also be lost in the unlocked window.",
+    "The legend contrasts \"solid = sync\" with \"dotted = local command/I/O\", but the vault I/O is fully synchronous (readFileSync/writeFileSync/renameSync, src/vault.ts:108-119). The storageState call is an awaited async Playwright request. The legend mixes transport and synchrony on one axis.",
+    "\"Errors only logged\" leaves out the destination. The supervisor's stderr is redirected to ~/.crumb/run/<site>__<account>.log (src/session.ts:142-148, 212). It also hides that a failed save is effectively retried on the next tick, because `before` only advances on success (src/session.ts:208).",
+    "The verification metadata says dirty:false, but the working tree has an untracked DECISIONS.md. Source files are unaffected, but the provenance claim is a little loose."
+  ],
+  "improvements": [
+    "Draw the trigger and split the steps. Add a visible \"0 timer tick (setInterval, 30s; --autosave 0 = off)\" self-loop or a timer element on Supervisor. Then show '2 readSession (decrypt)' as Supervisor→Vault, '3 mergeState(latest, before, after)' inside Supervisor, and '4 writeSession: temp file + rename' as a separate write arrow, so ordering and the unlocked read-to-rename window can be read directly from the arrows.",
+    "Make it readable at 1194x834. Scale the drawing to fill the width, raise node, edge-label, subtitle and footer text to at least 12px, remove the empty bottom of the frame, move edge labels off the strokes, and attach the three notes to the elements they describe with numbered callouts.",
+    "Make the names and boundaries accurate. Replace \"cookies\" with \"storage state (cookies + localStorage + IndexedDB)\", use real names and paths (`supervise()` in src/session.ts, ~/.crumb/vault/<site>/<account>.crumb, ~/.crumb/run/<id>.log for errors), and split the local frame into Node supervisor, Chrome child (third-party binary, temp profile), ~/.crumb files and the OS key store, marking loopback CDP exposure as a deliberate omission."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

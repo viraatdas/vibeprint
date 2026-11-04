@@ -1,0 +1,119 @@
+{
+  "title": "Vibeprint: how does an iPad sketch survive a page reload?",
+  "audience": "New engineers",
+  "scope": "Direct LAN only: iPad browser ink ops, daemon memory, canvas.json startup read and debounced save, reconnect snapshot.",
+  "omissions": [
+    "Hosted relay (on by default), MCP server, AI mapping, git commits",
+    "Marks/chat/graph files, image assets, other browsers' live ops"
+  ],
+  "owner": "Viraat Das (package.json author)",
+  "groups": [
+    {
+      "id": "ipad",
+      "label": "iPad",
+      "description": "iPad on same LAN; holds HttpOnly cookie"
+    },
+    {
+      "id": "dev",
+      "label": "Developer machine",
+      "description": "Local, self-run; token-gated LAN HTTP/WS"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "iPad browser",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/src/",
+      "description": "Draws ink; keeps unacked ops in page memory",
+      "group": "ipad"
+    },
+    {
+      "id": "daemon",
+      "label": "Local daemon",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "vibeprint serve"
+      ],
+      "path": "src/server/",
+      "description": "Holds canvas in memory; acks before saving",
+      "group": "dev"
+    },
+    {
+      "id": "canvasfile",
+      "label": "canvas.json",
+      "kind": "storage",
+      "tags": [
+        "JSON"
+      ],
+      "path": ".vibeprint/canvas.json",
+      "description": "Saved shapes; read only at daemon start",
+      "group": "dev"
+    }
+  ],
+  "edges": [
+    {
+      "from": "daemon",
+      "to": "canvasfile",
+      "label": "A. startup read → shapes",
+      "mode": "local"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "B1. token WS open/reopen",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "B2. snapshot from memory",
+      "mode": "async"
+    },
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "C1/B3. ink ops; replay",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "C2. ack: in memory only",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "canvasfile",
+      "label": "C3. save 800ms idle/stop",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Acked is not saved",
+      "text": "Acks mean daemon memory only; canvas.json is rewritten 800ms after the last op or on SIGINT/SIGTERM, so a crash can lose acked edits. Unparseable JSON stops startup; bad shapes are skipped.",
+      "source": "src/server/canvas.ts"
+    },
+    {
+      "title": "Reconnect replays; reload drops",
+      "text": "After a drop it reconnects (500ms–10s backoff), takes a daemon-memory snapshot that replaces the page, then replays unacked ops. Those live only in page memory: a full reload drops them.",
+      "source": "web/src/canvas/sync.ts"
+    },
+    {
+      "title": "Token gate on reload",
+      "text": "LAN WS upgrades need the token; the ?t= link sets a 1-year HttpOnly cookie that reloads resend, and the token survives daemon restarts. Without it: 401, page shows offline and retries.",
+      "source": "src/server/daemon.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:07:23.210Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

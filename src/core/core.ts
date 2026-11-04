@@ -12,6 +12,7 @@ import {
   type ArchitectureView,
   type Batch,
   type ChatMessage,
+  type CleanupInfo,
   type Decision,
   type Graph,
   type GraphEdge,
@@ -90,6 +91,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   sketch: Sketch | null = null
   interpreter: InterpreterInfo = { mode: 'heuristic', active: false }
   mapper: MapperInfo = { mode: 'none', active: false }
+  cleanup: CleanupInfo = { active: false }
   update: { latest: string; current: string; command: string } | null = null
   agents: Record<string, string> = {}
 
@@ -196,6 +198,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       },
       interpreter: this.interpreter,
       mapper: this.mapper,
+      cleanup: this.cleanup,
       ...(this.update ? { update: this.update } : {}),
       agents: this.agents,
     }
@@ -295,7 +298,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   // Submit + interpretation
   // -------------------------------------------------------------------------
 
-  recordSubmission(shapes: SketchShape[], image?: Buffer, note?: string, opts: { source?: 'map' } = {}): Sketch {
+  recordSubmission(shapes: SketchShape[], image?: Buffer, note?: string, opts: { source?: 'map' | 'cleanup' } = {}): Sketch {
     if (!Array.isArray(shapes)) throw new VibeprintError('shapes must be an array')
     const sketch: Sketch = {
       seq: (this.sketch?.seq ?? 0) + 1,
@@ -377,6 +380,20 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     )
     this.emit('checkpoint', `vibeprint: interpret sketch #${this.sketch.seq} (${by})`)
     return { graph, questions }
+  }
+
+  /** Restore a cleanup snapshot without rolling back graph versions or the submit counter. */
+  restoreArchitecture(state: { graph: Graph; marks: Mark[]; batches: Batch[] }): void {
+    this.graph = { ...structuredClone(state.graph), version: this.graph.version + 1, sketchSeq: this.sketch?.seq ?? 0, updatedAt: isoNow() }
+    this.marks = structuredClone(state.marks)
+    this.batches = structuredClone(state.batches)
+    this.markDirty('graph', 'marks')
+    this.changed('graph', 'marks')
+  }
+
+  setCleanup(info: Partial<CleanupInfo>): void {
+    this.cleanup = { ...this.cleanup, ...info }
+    this.changed('interpreter')
   }
 
   /** Mark components as already built (mapped from the code). Not a mark: nothing to review. */

@@ -1,0 +1,73 @@
+{
+  "project": "threadline",
+  "round": 3,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:19:06.203Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks one clear question ('how does an owner-approved message reach a prospect?'), and the subtitle gives the audience (new engineers) and the scope."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "The boxes are mostly runtime units. 'Home exit node' is a machine sitting next to services, and the Web app box names a code file (lib/engine.ts). There are no zoom-in views."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The send path is covered and omissions are listed in the 'Outside this view' line. Draft prompts to OpenRouter aren't part of the send question, so they're noise. The send preconditions (daily limits, stage checks) are missing."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Edges are labeled, but the path to LinkedIn is hard to trace: SOCKS5 traffic runs from the worker back left to the exit node, then page actions runs all the way right to LinkedIn, crossing the Fly frame. At this size I can't tell whether 'queue run, poll' is dashed for async. The Gmail edge's 'reply check, send' doesn't show order."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Four labeled frames describe local vs hosted-managed vs self-hosted vs vendor. The owner frame mixes a browser with an always-on proxy machine, and the Tailscale trust link isn't shown."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Columns go left to right, but long orthogonal edges cross several frames and each other (page-actions, SOCKS5, draft prompts, agent steps). The 'SQL: claim+status' label collides with the arrow. Box description text and the notes are small at 1194x834."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "There is a reading key, but at viewing size solid, dashed and dotted lines are hard to tell apart. Everything is the same red, so the 'AI red; your additions blue' key has nothing to point to. Box types are shown in text, which is a good non-color signal."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Three notes cover the fail-closed claim, the exit-node SPOF with its 24h TTL, and async confirmation. However, the fail-closed note is contradicted by the code, and daily limits aren't shown."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "It is dated with revision f467a33 + local edits, the owner is 'Unassigned', and the footer says the runtime was not verified. Most names match the code, but the fail-closed claim is wrong."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer would get the overall send path. They would likely misread the LinkedIn routing, and the inaccurate fail-closed note would mislead them."
+    }
+  ],
+  "coldRead": "The owner reviews drafts in a Next.js app on Vercel and clicks Send. The server claims the message row in RDS Postgres by changing draft to sending. For email, it checks Gmail for replies and then sends through the Gmail API. For LinkedIn, it queues a run on a browser-use worker on Fly and polls it. The worker drives Chromium with OpenRouter model steps, and its traffic goes over SOCKS5 through the owner's home Tailscale exit node to LinkedIn. If that node is down, runs stay queued and expire after 24h. LinkedIn sends that don't confirm within 30s stay 'sending' until a refresh confirms them. OpenRouter also drafts messages.",
+  "inaccuracies": [
+    "The 'Single send path, fail-closed' note says nothing is sent if the reply check fails. In lib/engine.ts:1383 the call is `checkReplies([person]).catch(() => 0)`, so a failed Gmail check counts as zero replies and the send goes ahead. That is fail-open. The check also only runs when person.lastContactedAt is set and there is no reply.",
+    "The send preconditions in lib/engine.ts:1370-1381 are not shown: the stage gate (replied/meeting/closed) and the daily LinkedIn/email limits.",
+    "Draft prompts to OpenRouter happen at drafting time, not on the send path the title asks about."
+  ],
+  "improvements": [
+    "Correct the fail-closed note to match lib/engine.ts:1383 (the reply check fails open and only runs once the person has been contacted), or change the code if fail-closed is what's intended. Add the stage and daily-limit gates.",
+    "Reroute the LinkedIn path so it reads in one direction, e.g. put the exit node between the Fly worker and LinkedIn or draw Tailscale as its own lane. Number the send steps (claim → reply check → Gmail send / queue worker) and use clearly distinguishable dashed async lines.",
+    "Make the text readable at 1194x834: bigger box and note text, fewer crossings, labels that don't overlap arrows. Either use the blue/red convention or drop it from the key, and name an accountable owner."
+  ],
+  "total": 27,
+  "verdict": "Mediocre"
+}

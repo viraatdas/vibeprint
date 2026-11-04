@@ -1,0 +1,72 @@
+{
+  "project": "vibeprint",
+  "round": 11,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:17:13.156Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Visible one-line title asks an exact question: 'Vibeprint: how does an iPad sketch survive a page reload?'. The subtitle names the audience ('New engineers') and scope ('Same-Wi-Fi link only (--no-relay or LAN URL)…'). The detail (cookie, WS snapshot, ack vs save) suits a new engineer."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Three nodes at one runtime level: client runtime (iPad browser), process (vibeprint serve), stored file (canvas.json). Both frames are device/deployment zones. No code classes, teams or concepts mixed in. With three nodes, no zoom-in view is needed."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "Shows everything needed to answer the reload question: startup read, cookie-gated config, WS snapshot from memory, ops/ack, debounced save. The 'Outside this view' line explicitly lists what was left out (relay, MCP, AI, git commits, marks/chat/graph, images, other clients' ops). No noise nodes."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Every arrow is directed and labelled with what flows. Letters A, B1–B3, C1–C3 give the order, and each label also says sync/async/local. The legend states 'caller → recipient, response included'. Server-initiated WS messages (B3 snapshot, C2 ack/reject) are drawn as separate arrows, which is correct because they are separately sent messages (canvas.ts:125, 143–149)."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Two labelled frames match the legend ('frames = trust/deployment zones'). The iPad frame reads 'Same Wi-Fi; holds HttpOnly token cookie'; the Developer machine frame reads 'Local, self-run; token-gated LAN HTTP/WS'. So the self-hosted status, the network and the trust gate are all stated. No managed or external service is in scope, and the relay is noted as omitted."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Left-to-right direction, no crossings, aligned nodes. But at 1194x834 the edge labels sit on top of their dashed or solid lines: the line runs between the two label lines and reads like a strike-through (C2, C1, B3, B2, B1). Group descriptions, note sources and the provenance footer are about 9px. The iPad frame is mostly empty space while the text stays small. The elbowed diagonal routes look a little awkward. Readable, but cluttered in places."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "The visible key defines frames, box (runtime actor/process), cylinder (stored state), and dotted/solid/dashed for local/sync/async. Line style plus '(sync)/(async)/(local)' text means meaning does not depend on colour, so a single colour is fine. Real names are used: vibeprint serve, canvas.json, /api/config, /api/canvas."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The notes spell out failure and state behaviour. Ack means memory only, and a crash loses acked edits since the last 800ms pause; writes use a temp file plus rename. Reconnect uses 500ms–10s backoff with replay; a reload drops unacked ops. Rejected ops drop and the page resnapshots. A missing cookie gives a 401 and a fixed page with no retry. Unparseable JSON aborts startup. The token survives restarts. All are confirmed in canvas.ts:146–176, sync.ts:100–131, daemon.ts:175–185, 513, 523, 746 and App.tsx:69."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The visible footer gives date (2026-11-04), revision 'dca6c85 + local edits', owner 'Viraat Das (package.json author)' (package.json:7) and 'Live runtime NOT verified'. Names match the code. Score is capped at 3 because only source was reviewed; the running system was not checked."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "A newcomer can explain the reload path and the 'acked ≠ saved' / 'unacked lost on reload' distinction from the arrows, the letter ordering, the key and the three notes alone. The legend's response convention prevents misreading the A arrow's direction. Node text is about 11–14px and readable."
+    }
+  ],
+  "coldRead": "This covers a Vibeprint sketch made on an iPad over the same Wi-Fi (LAN link, relay off). There are two trust zones: the iPad, whose browser holds an HttpOnly token cookie, and the developer's machine, which runs `vibeprint serve` and keeps `.vibeprint/canvas.json`. (A) When the daemon starts, it reads canvas.json into memory once; if the JSON can't be parsed, startup aborts. On a page reload, the static page `/` needs no token. (B1) The browser sends a synchronous GET to /api/config with the cookie. (B2) It opens a token-checked WebSocket to /api/canvas. (B3) The daemon pushes a snapshot of the shapes it holds in memory. (C1) While you draw, the browser streams ink ops and replays any it hasn't had acknowledged after a reconnect. (C2) The daemon applies each op in memory and acks or rejects it. (C3) About 800ms after the last op from any client, or on SIGINT/SIGTERM, the daemon writes canvas.json atomically. So a sketch survives a reload because the daemon re-sends its in-memory copy. But 'acked' means 'in daemon memory', not 'on disk': a daemon crash loses edits since the last pause, and a reload loses ops that were never acked. Reconnects back off from 500ms to 10s. Rejected ops are dropped and the page fetches a fresh snapshot. Without the 1-year cookie from the ?t= link, the API returns 401 and the page shows a fixed 'needs the link' message with no retry.",
+  "inaccuracies": [],
+  "improvements": [
+    "Make the text easier to read at 1194x834. Move each edge label off its line, onto a background patch above the line, so the line no longer strikes through it. Raise the ~9px group descriptions, note sources and footer to at least 11px, using the empty space in the iPad frame.",
+    "Show the token gate as a step in the diagram, not only in a note. Add a B0 arrow for the static GET / (no token) and the one-time ?t= → 302 Set-Cookie sign-in (daemon.ts:507–516), or put a visible gate marker on the Developer-machine frame where B1/B2 enter. The reload sequence would then start at the true first request.",
+    "Record a live check of the runtime behaviour to move freshness past source review. For example: draw, kill -9 the daemon within 800ms, restart, reload, and note the result with date and revision. Also add a short note that C3 has further save triggers outside this view (git checkpoint beforeCommit, daemon.ts:190–193; daemon-applied changes, canvas.ts:161), so the 'since the last pause' crash window isn't read as the complete list of save triggers."
+  ],
+  "total": 38,
+  "verdict": "Excellent"
+}

@@ -1,0 +1,116 @@
+{
+  "title": "Outbound: how does the draft claim suppress a concurrent double Send?",
+  "audience": "New engineers",
+  "scope": "Two Today tabs sending one draft, the Next.js server action, and the conditional Postgres claim on its row.",
+  "omissions": [
+    "Guards and Gmail/LinkedIn/X delivery that run after a successful claim",
+    "Conversation Send: each click inserts its own row, so no shared claim"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "browser",
+      "label": "Owner's browser",
+      "description": "Local client: two tabs, one session"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel",
+      "description": "Hosted, managed: Vercel functions, sfo1"
+    },
+    {
+      "id": "aws",
+      "label": "AWS RDS",
+      "description": "Hosted, managed: RDS Postgres, us-west-1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tabA",
+      "label": "Today tab A",
+      "kind": "client",
+      "tags": [
+        "React 19"
+      ],
+      "path": "components/today.tsx",
+      "description": "DraftCard Send with the edited text",
+      "group": "browser"
+    },
+    {
+      "id": "tabB",
+      "label": "Today tab B",
+      "kind": "client",
+      "tags": [
+        "React 19"
+      ],
+      "path": "components/today.tsx",
+      "description": "Same draft, second tab; same Send call",
+      "group": "browser"
+    },
+    {
+      "id": "server",
+      "label": "Next.js server",
+      "kind": "service",
+      "tags": [
+        "Next.js 16",
+        "Drizzle"
+      ],
+      "path": "app/(app)/actions.ts",
+      "description": "run(): assertOwner, Zod, then sendMessage",
+      "group": "vercel"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [
+        "Postgres 17"
+      ],
+      "path": "",
+      "description": "First draft|failed→sending UPDATE wins race",
+      "group": "aws"
+    }
+  ],
+  "edges": [
+    {
+      "from": "tabA",
+      "to": "server",
+      "label": "Send+edits → SendOutcome",
+      "mode": "sync"
+    },
+    {
+      "from": "tabB",
+      "to": "server",
+      "label": "Send+edits → SendOutcome",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "claim UPDATE → row/none",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "The claim is one conditional UPDATE",
+      "text": "UPDATE sets sending, clears error, stamps sentAt/updatedAt, saves edits WHERE id, out, status IN (draft,failed) RETURNING. A concurrent UPDATE then matches 0 rows → skipped.",
+      "source": "lib/engine.ts:1346-1358"
+    },
+    {
+      "title": "Suppression, not exactly-once",
+      "text": "Winner's outcome arrives after guards/delivery. Throws and most guards set failed, claimable again, even if markSent throws after Gmail accepted; closed/replied set skipped.",
+      "source": "lib/engine.ts:1360-1466"
+    },
+    {
+      "title": "Crash after claim strands the row",
+      "text": "If the function dies after the claim, the row stays 'sending': Send/Skip match only draft|failed; refresh only resolves LinkedIn rows with a run id. Today shows it 'Queued on LinkedIn'.",
+      "source": "lib/engine.ts:1755-1759; components/today.tsx:107-116"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:04:43.827Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "title": "Vibeprint: how does an iPad sketch survive a page reload?",
+  "audience": "New engineers",
+  "scope": "Direct LAN canvas sync only: iPad browser, local vibeprint daemon, and .vibeprint/canvas.json on disk.",
+  "omissions": [
+    "MCP agent tools, AI map redraws and the Fly relay path",
+    "Marks/chat persistence, image assets and git checkpoints"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "ipad",
+      "label": "iPad",
+      "description": "Local device on LAN, user-managed"
+    },
+    {
+      "id": "dev",
+      "label": "Developer machine",
+      "description": "Local, self-hosted daemon + repo files"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "browser",
+      "label": "iPad browser",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/src/canvas/",
+      "description": "Canvas editor; keeps unacked ops in memory",
+      "group": "ipad"
+    },
+    {
+      "id": "daemon",
+      "label": "Daemon",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "WebSocket"
+      ],
+      "path": "src/server/",
+      "description": "Token-gated LAN server; owns live canvas",
+      "group": "dev"
+    },
+    {
+      "id": "canvas",
+      "label": "canvas.json",
+      "kind": "storage",
+      "tags": [
+        "JSON"
+      ],
+      "path": ".vibeprint/canvas.json",
+      "description": "Canvas shapes on disk in the repo",
+      "group": "dev"
+    }
+  ],
+  "edges": [
+    {
+      "from": "browser",
+      "to": "daemon",
+      "label": "1. WS shape ops",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "op acks",
+      "mode": "async"
+    },
+    {
+      "from": "daemon",
+      "to": "canvas",
+      "label": "2. 800ms debounced save",
+      "mode": "local"
+    },
+    {
+      "from": "canvas",
+      "to": "daemon",
+      "label": "shapes read at start",
+      "mode": "local"
+    },
+    {
+      "from": "daemon",
+      "to": "browser",
+      "label": "snapshot on connect",
+      "mode": "async"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Loss window",
+      "text": "The daemon acks an op once it is applied in memory. The save runs on an 800ms timer after the last edit, so a daemon crash before the timer fires loses the latest edits.",
+      "source": "src/server/canvas.ts"
+    },
+    {
+      "title": "Reload vs reconnect",
+      "text": "If the socket drops, the browser retries with backoff (500ms up to 10s). On the new snapshot it replays its unacked ops, but those live only in page memory, so a full reload drops them.",
+      "source": "web/src/canvas/sync.ts"
+    },
+    {
+      "title": "Corrupt file stops loading",
+      "text": "If canvas.json won't parse or isn't a Vibeprint canvas, loading throws and says to restore it from git. A single unreadable shape is skipped and logged.",
+      "source": "src/server/canvas.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:57:31.263Z",
+    "revision": "dca6c85",
+    "dirty": true
+  }
+}

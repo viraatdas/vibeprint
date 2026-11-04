@@ -1,0 +1,166 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 202.38902077151351,
+    "y": 133.3839762611277,
+    "z": 0.6597494126859826
+  },
+  "text": [
+    {
+      "text": "Crumb: how does `crumb launch` restore a saved session into a browser an agent can drive?",
+      "renderedSize": 21.111981205951444
+    },
+    {
+      "text": "New engineers · State-mode launch on one machine: agent, CLI, detached supervisor, vault, run files, and Chrome over CDP.",
+      "renderedSize": 12.53523884103367
+    },
+    {
+      "text": "Agent",
+      "renderedSize": 14.514487079091618
+    },
+    {
+      "text": "Local agent process, same\nhost",
+      "renderedSize": 12.53523884103367
+    },
+    {
+      "text": "Agent",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "Runs crumb launch,\nthen drives Chrome",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Crumb processes",
+      "renderedSize": 14.514487079091618
+    },
+    {
+      "text": "Local Node CLI + detached\nsupervisor",
+      "renderedSize": 12.53523884103367
+    },
+    {
+      "text": "Crumb CLI",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "Checks entry, spawns\nsupervisor, polls run",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "Decrypts, launches,\ninjects, autosaves",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Crumb data dir",
+      "renderedSize": 14.514487079091618
+    },
+    {
+      "text": "Local disk, same host",
+      "renderedSize": 12.53523884103367
+    },
+    {
+      "text": "Vault",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "Encrypted sessions;\nkey via OS key store",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Run files",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "Plaintext 0600 handle,\nerror, log; temp dir",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Browser",
+      "renderedSize": 14.514487079091618
+    },
+    {
+      "text": "Local Chrome child, same\nhost",
+      "renderedSize": 12.53523884103367
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 16.493735317149564
+    },
+    {
+      "text": "System Chrome child,\nCDP on 127.0.0.1",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; solid = sync;\ndotted = local command/I/O; dashed = async. Flow type is also written on each arrow.",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "F1 · Crumb CLI → Supervisor: 3. spawn __supervise (async)",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "F2 · Supervisor → Vault: 4. decrypt; 8. save (local)",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "F3 · Crumb CLI → Run files: poll handle / .error (local)",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "F4 · Agent → Chrome: 7. CDP commands (sync)",
+      "renderedSize": 13.194988253719654
+    },
+    {
+      "text": "Checks before and after spawn",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "No entry → NOT_FOUND, empty → NEEDS_LOGIN\npre-spawn; later errors go to run/<id>.error;\n60s poll then INTERNAL",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 11.875489428347688
+    },
+    {
+      "text": "Autosave is best-effort",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "Every 30s, SIGUSR2 and SIGTERM merge\nchanged state into vault; failures only logged.\nClosing Chrome skips final save",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 11.875489428347688
+    },
+    {
+      "text": "Unauthenticated local CDP",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "Handle exposes CDP http/ws URLs on\n127.0.0.1; any local process can drive the\nlogged-in browser",
+      "renderedSize": 13.854737666405635
+    },
+    {
+      "text": "Source: src/browser.ts",
+      "renderedSize": 11.875489428347688
+    },
+    {
+      "text": "Outside this view: crumb login, capture, check, sync, close and transfer flows; Profile mode (persistent user-data dir) beyond notes.",
+      "renderedSize": 11.215740015661705
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.555990602975722
+    }
+  ],
+  "errors": []
+}

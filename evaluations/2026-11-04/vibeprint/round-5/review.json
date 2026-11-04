@@ -1,0 +1,77 @@
+{
+  "project": "vibeprint",
+  "round": 5,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:42:19.572Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Visible title asks a specific question, the subtitle names the audience (new engineers) and the scope, and the level of detail suits onboarding."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Nodes are mostly runtime processes, but a storage directory and a module-level MCP server sit beside a whole external agent product. There is no linked zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The core path is complete and the omissions are stated (interpret/, CLI, git checkpoints). It doesn't show how the agent's marks or chat get back to the iPad, so the return trip is only implied."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is labelled and the legend says what direction means. At this size, dashed and dotted lines are hard to tell apart. The MCP→daemon 'HTTP: tools' line runs along the agent frame's edge, so its start point is unclear. 'LAN canvas' is drawn from the iPad frame, not from the browser box."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Four frames separate the iPad, the hosted relay, and two dev-machine zones, and they are labelled local, self-hosted, opt-in or external. The two 'Dev machine' frames are drawn separately, which hides that they are one host and one trust zone."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The flow reads left to right with no crossings, and the text is readable at 1194x834. Edges hug frame borders, the LAN line wraps around under the relay, and the labels are small and crowded at the frame edges."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "There is a legend for shapes and line styles, but everything is drawn in one red. The only cues are dashed vs dotted lines and a double border, and these are hard to tell apart at this viewport. Without colour, the sync/async/local distinction is hard to read."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Notes explain the relay fallback, files mode when the daemon is down, and that wait_for_user returns immediately without the daemon. These match src/mcp/backend.ts lines 3, 117, 252 and 275. Token gating is mentioned. Nothing covers concurrency or file locks (files.lock), and no retry details are drawn."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Dated 2026-11-04 with revision dca6c85 plus local edits. States 'Owner: Unassigned' and says the live runtime was not verified. The cap is 3 without production verification."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer could explain the relay/LAN choice, the daemon state and the agent→MCP→daemon/files path. The line-style semantics and the edge start points would still need a walkthrough."
+    }
+  ],
+  "coldRead": "Vibeprint links an iPad drawing canvas to a coding agent running on your machine. The iPad browser (a React web app) sends canvas strokes, along with a token, to a local daemon started by `vibeprint serve`. It reaches the daemon either directly over the LAN or through an opt-in hosted relay. In the relay case, the daemon keeps an outgoing WebSocket tunnel open to the relay. The daemon stores canvas, graph and relay-identity state as plain JSON files in .vibeprint/. On the agent side, Claude Code or Codex runs an MCP server as a stdio child process, with tools such as get_sketch, marks and wait_for_user. Each tool call goes to the daemon over HTTP if a daemon is running. Otherwise it reads and writes the .vibeprint/ files directly, and in that case wait_for_user can't block and returns immediately. Sketch interpretation and the CLI or git features are deliberately left out of this view.",
+  "inaccuracies": [
+    "The 'LAN canvas' edge starts at the iPad frame and runs under the relay frame, not from the 'iPad browser' node. This is a small mismatch with map edge browser→daemon.",
+    "Showing 'Dev machine: daemon' and 'Dev machine: agent' as separate frames suggests two separate zones. Both run on the same developer host; src/mcp/backend.ts reads the local .vibeprint/ directly.",
+    "The diagram doesn't show the files-mode lock (FILES.runtime/files.lock, defined at src/mcp/backend.ts:106), so it implies that MCP writing files directly has no coordination.",
+    "The HTTP: tools line's start point sits on the agent frame's border, so it isn't clear that the MCP server (src/mcp/), and not the coding agent, makes the call."
+  ],
+  "improvements": [
+    "Add a second non-colour cue, such as a line weight or an arrowhead style, plus colour per mode, so sync, async and local edges can be told apart at iPad size.",
+    "Put both dev-machine zones inside one 'Developer machine' trust frame. Start every edge from a node, not a frame: LAN canvas from the iPad browser, HTTP: tools from the MCP server.",
+    "Show the return path (marks or chat reaching the iPad through the daemon) and the files.lock coordination note, so the full loop and the concurrency behaviour are visible."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

@@ -1,0 +1,74 @@
+{
+  "project": "crumb",
+  "round": 3,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:19:05.790Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Visible title states the exact question ('how does an AI agent get a logged-in browser for a saved account?'), and the subtitle names the audience (new engineers) and the scope."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Most boxes are runtime units (agent, CLI, supervisor, Chrome, vault, key store). The 'Vault guard' hook is a module-level item in a host frame, and the vault box mixes encrypted entries with run handle files."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Covers the launch path, and the omissions (transfer.ts, interactive login) are listed under 'Outside this view'. It is missing the agent getting the CDP endpoint/handle from CLI stdout, and how the guard's block verdict reaches the agent. The note 'AI red; your additions blue' is authoring noise."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Edges are labelled, but most are dashed or dotted, so the line styles are hard to tell apart at this size. 'encrypted session' points one way only, although the supervisor both reads and writes the vault. No return path shows the CLI printing the handle that the agent then uses for CDP. Order is not numbered."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Three labelled frames (agent host, crumb processes, local state/OS) with self-hosted/user-run descriptors. The key store is an external OS service but sits in the same frame as the local vault files, with no visual distinction between them."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Left-to-right columns, but body text is small at 1194x834. The 'CDP automation' arrow runs down the agent frame edge and crosses into the middle frame. Labels overlap lines ('encrypted session', 'spawn __supervise', 'vault·key·lookup' sitting on the frame edge). A frame title wraps an orphaned ']'. There is a lot of empty margin."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "There is a reading key, but it promises a solid/dashed/dotted distinction that is hard to read in the hand-drawn style. Every element is red, so color carries no meaning, and the 'AI red; your additions blue' line describes an authoring convention. Names match the code."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Notes state that a missing key fails closed (KEY_UNAVAILABLE, confirmed at src/crypto.ts:60-104), the 30s/SIGUSR2/SIGTERM autosave with merge (session.ts:235), and the 60s start timeout with a .error file. Not shown: Chrome crash or orphaned-supervisor behaviour, and what the guard does on a block."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Dated 2026-11-04 at revision 557acd4. Names (__supervise at session.ts:143 and cli.ts:302, KEY_UNAVAILABLE) match the code. The owner is 'Unassigned' and the live runtime is explicitly not verified, so the score is capped at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain the agent → CLI → detached supervisor → Chrome flow, with the vault and key behind it. The missing handle-return step and the ambiguous line styles could lead to misreading how the agent finds the CDP endpoint."
+    }
+  ],
+  "coldRead": "An AI agent (Claude Code or Codex) runs `crumb launch <id>`. The Crumb CLI spawns a detached supervisor (`__supervise`) and then polls the vault directory for a run handle file. The supervisor gets the vault key from the OS key store (Keychain or secret-tool, falling back to CRUMB_KEY or a key file) and decrypts the saved session. It injects the cookies and state into a local Chrome over CDP and autosaves every 30s, on SIGUSR2 and on SIGTERM, merging changes so concurrent runs don't overwrite each other. The agent then drives Chrome directly over CDP. A PreToolUse hook (Vault guard) blocks agent tool calls that touch ~/.crumb. If the key is missing, crumb fails closed instead of creating a new key. If startup takes longer than 60s, it reports the supervisor's .error file, or INTERNAL if there isn't one.",
+  "inaccuracies": [
+    "The CLI→vault edge is labelled 'poll handle file', but nothing shows the CLI printing the handle/CDP endpoint back to the agent, which is how the agent reaches Chrome (src/session.ts, src/cli.ts).",
+    "The 'encrypted session' edge goes one way only (supervisor→vault), but the supervisor both loads and autosaves sessions (src/session.ts autosave around line 212).",
+    "The supervisor→keystore edge is drawn as a one-way sync lookup. src/crypto.ts also falls back to CRUMB_KEY or a key file and can store a newly created key (crypto.ts:84), so the store is not only read.",
+    "The legend line 'AI red; your additions blue' describes an authoring workflow, not the system, and the image contains no blue."
+  ],
+  "improvements": [
+    "Add numbered steps and an explicit return edge (CLI → agent: 'prints CDP endpoint/handle'), so the order of the flow and how the agent finds Chrome can be read without a walkthrough.",
+    "Re-route 'CDP automation' so it doesn't run along the frame edge, keep labels off the lines, fix the wrapped ']' in the frame title, and use the empty margin to enlarge the body text for 1194x834.",
+    "Make the notation actually distinguishable: use clearly different line styles or a second color for sync vs local-IO edges, give the external OS key store its own visual treatment, drop the 'AI red/blue' text, and note what happens when Chrome or the supervisor crashes."
+  ],
+  "total": 28,
+  "verdict": "Good"
+}

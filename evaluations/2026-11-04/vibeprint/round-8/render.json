@@ -1,0 +1,111 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 208.81137347181016,
+    "y": 126.12789317507418,
+    "z": 0.6977045107528272
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch survive a page reload?",
+      "renderedSize": 22.326544344090472
+    },
+    {
+      "text": "New engineers · Direct LAN canvas sync only: iPad browser, local vibeprint daemon, and .vibeprint/canvas.json on disk.",
+      "renderedSize": 13.256385704303717
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 15.349499236562199
+    },
+    {
+      "text": "Local device on LAN,\nuser-managed",
+      "renderedSize": 13.256385704303717
+    },
+    {
+      "text": "Developer machine",
+      "renderedSize": 15.349499236562199
+    },
+    {
+      "text": "Local, self-hosted daemon + repo files",
+      "renderedSize": 13.256385704303717
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 17.44261276882068
+    },
+    {
+      "text": "Canvas editor;\nkeeps unacked ops\nin memory",
+      "renderedSize": 13.954090215056546
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 17.44261276882068
+    },
+    {
+      "text": "Token-gated LAN\nserver; owns live\ncanvas",
+      "renderedSize": 13.954090215056546
+    },
+    {
+      "text": "canvas.json",
+      "renderedSize": 17.44261276882068
+    },
+    {
+      "text": "Canvas shapes on\ndisk in the repo",
+      "renderedSize": 13.954090215056546
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient,\nresponse included; dashed = async; dotted = local command/I/O. Flow type is also written on each arrow.",
+      "renderedSize": 13.954090215056546
+    },
+    {
+      "text": "Loss window",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "The daemon acks an op once it is\napplied in memory. The save runs on\nan 800ms timer after the last edit, so\na daemon crash before the timer fires\nloses the latest edits.",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 12.55868119355089
+    },
+    {
+      "text": "Reload vs reconnect",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "If the socket drops, the browser\nretries with backoff (500ms up to\n10s). On the new snapshot it replays\nits unacked ops, but those live only in\npage memory, so a full reload drops\nthem.",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "Source: web/src/canvas/sync.ts",
+      "renderedSize": 12.55868119355089
+    },
+    {
+      "text": "Corrupt file stops loading",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "If canvas.json won't parse or isn't a\nVibeprint canvas, loading throws and\nsays to restore it from git. A single\nunreadable shape is skipped and\nlogged.",
+      "renderedSize": 14.651794725809372
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 12.55868119355089
+    },
+    {
+      "text": "Outside this view: MCP agent tools, AI map redraws and the Fly relay path; Marks/chat persistence, image assets and git checkpoints.",
+      "renderedSize": 11.860976682798062
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 11.163272172045236
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

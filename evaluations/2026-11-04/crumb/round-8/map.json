@@ -1,0 +1,129 @@
+{
+  "title": "Crumb: how are changes in a running Chrome session saved back to the vault?",
+  "audience": "New engineers",
+  "scope": "A running state-mode supervisor: autosave timer, crumb sync/close signals, snapshot, merge, encrypted write.",
+  "omissions": [
+    "Launch, inject and handle startup handshake (launchDetached)",
+    "Profile mode, login, capture and check flows"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "host",
+      "label": "Local machine",
+      "description": "Local, user-run processes and files"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node.js"
+      ],
+      "path": "src/cli.ts",
+      "description": "sync/close signal the supervisor",
+      "group": "host"
+    },
+    {
+      "id": "sup",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node.js",
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Detached process that autosaves the session",
+      "group": "host"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "Chromium"
+      ],
+      "path": "src/browser.ts",
+      "description": "Browser context the agent uses",
+      "group": "host"
+    },
+    {
+      "id": "vault",
+      "label": "Session vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Encrypted per-account session files",
+      "group": "host"
+    },
+    {
+      "id": "handle",
+      "label": "Run handle",
+      "kind": "storage",
+      "tags": [
+        "JSON"
+      ],
+      "path": "src/session.ts",
+      "description": "Plaintext pid, CDP URL, lastSavedAt",
+      "group": "host"
+    }
+  ],
+  "edges": [
+    {
+      "from": "cli",
+      "to": "sup",
+      "label": "SIGUSR2 / SIGTERM",
+      "mode": "async"
+    },
+    {
+      "from": "sup",
+      "to": "chrome",
+      "label": "snapshot cookies+storage",
+      "mode": "sync"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "read latest, write merge",
+      "mode": "local"
+    },
+    {
+      "from": "sup",
+      "to": "handle",
+      "label": "lastSavedAt",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "handle",
+      "label": "poll lastSavedAt",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "When saves happen",
+      "text": "setInterval every --autosave s (default 30; 0 disables), SIGUSR2 (crumb sync), final save on SIGINT/SIGTERM. Closing Chrome directly exits with no final save.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Merge, skip, best effort",
+      "text": "Unchanged snapshots are skipped; overlapping saves share one in-flight save. Changes are 3-way merged onto the vault's latest copy, written via temp+rename. Errors are only logged.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Sync and close confirmation",
+      "text": "crumb sync polls the handle up to 10s for a new lastSavedAt and returns without error if nothing changed. crumb close waits 30s, then SIGKILLs, which skips the final save.",
+      "source": "src/session.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:57:26.318Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

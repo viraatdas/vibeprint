@@ -1,0 +1,76 @@
+{
+  "project": "vibeprint",
+  "round": 9,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:00:14.712Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks one clear question (how does a sketch survive a reload). The subtitle names the audience (new engineers) and the scope (direct LAN only)."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "There are three nodes and all are at the same level: a client process, a daemon process and a stored file. The frames are deployment zones."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "Everything shown serves the reload question. The omissions (relay, MCP, AI maps, checkpoints, marks/chat) are listed in the footer."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Edges are numbered 0-4, labelled with what flows, and marked sync/async/local. But step 3 is solid while its own label says 'token WS open (sync)', and WS ops are dashed. A WebSocket open is not really sync in the HTTP sense. Step 4 is a separate event, so drawing it separately is correct."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "There are clear iPad and Developer machine frames, and the token gate is described in text. The trust boundary itself (the token check) is not drawn as a separate control, and the LAN between the frames is implicit."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The flow runs left to right and is readable at 1194x834. Edge labels are small (about 9px). Edges 1 and 3 leave the browser at odd diagonal kinks, and the 0/2 labels crowd the daemon-to-file curves."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "A key explains frames, boxes, cylinders and the dotted/dashed/solid line styles, and the flow type is also written on each arrow. Everything is drawn in a single red, so the distinction depends on dash patterns that are subtle at this size."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Three notes cover the ack-before-durability window, the reconnect backoff and replay, reload dropping pending ops, the 401 token gate, and corrupt-file handling. Each note cites its source file."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The diagram shows a date, a revision (dca6c85 + local edits) and an owner of Unassigned. It states that the live runtime was not verified. The 800ms debounce (canvas.ts:166) and 500ms backoff (sync.ts:28) match the code. Freshness is capped at 3 without production verification, and there is no accountable owner."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "Using the numbered steps and the notes, a newcomer could correctly explain persistence, the reload path and the loss windows without help."
+    }
+  ],
+  "coldRead": "The iPad browser sends drawing ops over a WebSocket to a local Node daemon on the developer machine. The daemon acks each op once it is in memory. It writes canvas.json 800ms after the last edit and also flushes on shutdown. On a page reload, the browser reopens a token-authenticated WebSocket and gets a full snapshot from the daemon's memory. canvas.json is read only when the daemon starts. Data can be lost in two cases: a daemon crash inside the 800ms window, or a page reload before the daemon has acked pending ops. Socket drops retry with backoff and replay unacked ops. LAN access needs a ?t= token or the cookie it sets. A corrupt canvas.json stops the daemon from starting.",
+  "inaccuracies": [
+    "Edge 3 is labelled 'sync' and drawn solid, but a WebSocket open followed by an async snapshot (edge 4) is not synchronous request/response. The key's 'solid = sync' meaning blurs here (web/src/canvas/sync.ts).",
+    "Owner is 'Unassigned', so there is no accountable owner.",
+    "The diagram does not show the shutdown flush as its own path. It appears only in note text (src/server/canvas.ts save timer at line 166)."
+  ],
+  "improvements": [
+    "Draw the token gate as an explicit boundary or marker on the daemon's ingress, and label the LAN link between the frames.",
+    "Show the reconnect path (and replay of unacked ops) as an edge from the browser to the daemon. Make edge 3's mode consistent with WS semantics, or justify 'sync'.",
+    "Use a second non-red colour or heavier line weights so dotted, dashed and solid are easy to tell apart, enlarge the edge labels, and straighten the kinked browser edges."
+  ],
+  "total": 35,
+  "verdict": "Good"
+}

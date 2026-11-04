@@ -1,0 +1,74 @@
+{
+  "project": "threadline",
+  "round": 2,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:09:08.055Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 3,
+      "evidence": "Clear visible title question plus an audience/scope subtitle. Undermined by the broken rendering, which makes the answer hard to read off the body."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Seven boxes, all at the runtime-unit level (owner, web app, Postgres, cron, worker, Gmail, LinkedIn). The 'home exit node' appears only as prose inside the LinkedIn box and the Third parties frame, not as its own unit."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are stated deliberately ('Outside this view…'). The Vercel daily 15:00 cron is missing (vercel.json:7). The cron's hourly fillPipeline is shown only as 'refresh', with no note that it also sources and drafts."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "Edge labels collide and can't be read: '[sync] HTTPS: bearer /[sync] HTTPS: refresh reply scan', 'claim draft, [as[sync] HTTPS: poll run status'. The cron→web arrow appears to run left to right toward Gmail, so its direction is misleading. Two web→gmail edges stack on top of each other, and the arrowheads to the worker are unclear."
+    },
+    {
+      "id": "boundaries",
+      "score": 1,
+      "evidence": "The frames are drawn as huge curved, distorted shapes that cross into each other and over node text. They label zones but don't show clear containment. The Fly frame is labeled 'self-hosted' and the Vercel frame 'managed', which helps a little."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "Left-to-right columns are aligned, but the frame strokes slash through every box. Labels overprint each other ('Chromium via Tailscale SOCKS5' over 'external · Invites'), and much of the canvas is empty top whitespace. At 1194x834 the body text is small and partly hidden."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "There is a visible reading key explaining frames, boxes and [sync]/[async] tags. Everything is red, and the one 'blue' convention is unused. Node shapes don't differ by kind, and the frame artifacts contradict the key's 'frames' meaning."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The three visible notes give real failure behavior: fail-closed pre-send checks, the single send path, and worker exit-node gating with no replay. There is nothing on Gmail token expiry, LinkedIn session revocation, or the cron time bound (~230s)."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "Dated, with revision f467a33 + local edits and 'Live runtime NOT verified' stated. Owner Unassigned. Mostly matches AGENTS.md:241-242 (Fly hourly machine), but it omits the Vercel daily cron and isn't production-verified."
+    },
+    {
+      "id": "comprehension",
+      "score": 2,
+      "evidence": "The title, notes and key carry the story. The diagram body itself can't be read without the JSON or a walkthrough because of the overlapping labels and frame artifacts."
+    }
+  ],
+  "coldRead": "The owner clicks Send on the Today page. The Next.js app on Vercel claims the draft in Postgres (RDS), runs fail-closed checks (24h limits, a fresh Gmail reply check, in-touch status), then either sends the email through the Gmail API or queues a LinkedIn run on a Fly.io browser worker and polls it for status. The worker drives Chromium into LinkedIn only through a home Tailscale exit node. A Fly machine calls /api/cron every hour to refresh replies and confirm queued actions; it never sends. Prospect finding and AI drafting are out of scope.",
+  "inaccuracies": [
+    "vercel.json:7 defines a Vercel cron for /api/cron daily at 15:00 UTC. The diagram shows only the Fly hourly cron.",
+    "AGENTS.md:154: the hourly cron also runs fillPipeline (sourcing/drafting). 'Hourly cron … to refresh' understates this, and the out-of-scope note doesn't say that it's triggered here.",
+    "The cron→web arrow renders as a long left-to-right line ending at Gmail API, so the visible direction and target are misleading.",
+    "The home exit node (the Jetson, per the worker's Tailscale setup in browser/worker.py) is grouped under 'Third parties / external managed services', but it is owner-run hardware."
+  ],
+  "improvements": [
+    "Fix the renderer: draw frames as plain rectangles that fully contain their nodes, and route edge labels so they never overlap each other or node text. Merge the two web→gmail edges into one labeled edge.",
+    "Route cron→web visibly into the Web app box (for example from below), and add the Vercel daily 15:00 cron as a second trigger. Note that the hourly run also fills the pipeline.",
+    "Show the home exit node as its own self-hosted node between the worker and LinkedIn. Use a non-color signal for async (dashed lines) and different shapes for the DB and external nodes, and put the most likely failure points on the edges (Gmail token, LinkedIn session revoked)."
+  ],
+  "total": 21,
+  "verdict": "Mediocre"
+}

@@ -1,0 +1,158 @@
+{
+  "title": "Crumb: how does `crumb launch` restore a saved session for an agent?",
+  "audience": "New engineers",
+  "scope": "State-mode crumb launch: detached supervisor, decrypt and inject session, CDP handle file, autosave",
+  "omissions": [
+    "login, capture, check, close and sync commands",
+    "profile mode (persistent user-data dir, nothing injected)"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "caller",
+      "label": "Caller",
+      "description": "Local: agent and short-lived CLI"
+    },
+    {
+      "id": "runtime",
+      "label": "Browser runtime",
+      "description": "Local: detached supervisor and Chromium"
+    },
+    {
+      "id": "disk",
+      "label": "Crumb data dir",
+      "description": "Local disk, self-managed"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "Agent process",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Runs crumb launch, then drives CDP",
+      "group": "caller"
+    },
+    {
+      "id": "cli",
+      "label": "crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node.js"
+      ],
+      "path": "src/cli.ts",
+      "description": "Spawns supervisor, polls, prints handle",
+      "group": "caller"
+    },
+    {
+      "id": "supervisor",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node.js",
+        "playwright-core"
+      ],
+      "path": "src/session.ts",
+      "description": "Hidden __supervise; restores and autosaves",
+      "group": "runtime"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "Chromium"
+      ],
+      "path": "src/browser.ts",
+      "description": "Temp profile, 127.0.0.1 debugging port",
+      "group": "runtime"
+    },
+    {
+      "id": "vault",
+      "label": "Encrypted vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Sessions; key from OS store/file/CRUMB_KEY",
+      "group": "disk"
+    },
+    {
+      "id": "rundir",
+      "label": "Run files",
+      "kind": "storage",
+      "tags": [],
+      "path": "src/paths.ts",
+      "description": "Plaintext run/<id>.json, .error, .log",
+      "group": "disk"
+    }
+  ],
+  "edges": [
+    {
+      "from": "agent",
+      "to": "cli",
+      "label": "handle JSON",
+      "mode": "sync"
+    },
+    {
+      "from": "cli",
+      "to": "supervisor",
+      "label": "spawn detach",
+      "mode": "async"
+    },
+    {
+      "from": "supervisor",
+      "to": "vault",
+      "label": "session r/w",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "chrome",
+      "label": "launch+state",
+      "mode": "sync"
+    },
+    {
+      "from": "supervisor",
+      "to": "rundir",
+      "label": "handle/error",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "rundir",
+      "label": "poll handle",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "chrome",
+      "label": "CDP commands",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Startup fails closed",
+      "text": "CLI polls every 150ms, 60s default. Error file, child exit or timeout raises an error that points to the log.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Missing key blocks restore",
+      "text": "If the configured key store or CRUMB_KEY can't supply the key, decryption throws KEY_UNAVAILABLE and launch fails.",
+      "source": "src/crypto.ts"
+    },
+    {
+      "title": "Autosave is best-effort",
+      "text": "Saves every 30s by default, on SIGUSR2 and on SIGTERM/SIGINT. Failures are only logged. Closing the window skips a final save.",
+      "source": "src/session.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:41:40.092Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

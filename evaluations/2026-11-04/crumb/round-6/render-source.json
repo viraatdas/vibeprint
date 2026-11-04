@@ -1,0 +1,9 @@
+{
+  "src/core/map-presentation.ts": "0e500f6ca140e55fa385703626989bc95124cdb67ae4b30d37f633f09f295748",
+  "src/core/map-routing.ts": "194eead26d508f552e25d81eb209498ef0b66e4db9a5ef0d1d06a498ec4d3d8c",
+  "src/shared/canvas.ts": "0df05ea829b88bdb0d5b669501042789b41d09a2a5daa153e0b4796b9ceebcb9",
+  "web/src/canvas/Board.tsx": "9abe1f358e6ee89b789bcf87a94b43ebd13bb823baa96ab03c216991faf2cb69",
+  "web/src/canvas/png.ts": "2aa0c7cd46fdd8afe0ee9507d8e90fc791883e1db69d6b010464f7dcdd88738c",
+  "web/src/canvas/editor.ts": "c1b66abb55d0d4b872b42bfbd7a6468c096d37a89c1db505a5c36b1fdd583fb6",
+  "web/src/styles.css": "b001c38d515acbff3394dff717933e6e25ab2f584986def5188fae4e3d7f89d3"
+}

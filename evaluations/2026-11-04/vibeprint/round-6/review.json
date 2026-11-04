@@ -1,0 +1,77 @@
+{
+  "project": "vibeprint",
+  "round": 6,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:51:22.958Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks one specific question (how an iPad sketch over the LAN reaches the local coding agent). The subtitle names the audience (new engineers) and the scope (direct LAN path only). The level of detail suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Three processes and one state store, all at the same runtime level. 'Agent MCP' is described by its role ('Process the coding agent runs for tools') while the coding agent itself is not drawn, so the endpoint of the question is implied rather than shown."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are deliberate and listed at the bottom (relay path, Claude API quick map). Missing: daemon→browser pushes over the WebSocket (marks and chat from the agent), even though the browser 'shows chat'. Also missing: the coding agent itself, which is the end of the question."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Edges are numbered and labelled, and their sync/async/local mode is written out. But two edges are moved into footnotes (F1, F2), so the reader has to look them up. The dotted F2 line runs along the daemon's right edge right next to edge 4's arrowhead, so it is unclear what F2 connects. Ordering is muddled: '4. wait/marks' is a long-poll that MCP starts independently, not step 4 after the save. Daemon-initiated WS pushes to the browser, a separately initiated event, are absent."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Two frames, iPad and Developer machine, are labelled 'user-managed' and 'one local host'. The token gate is described in a note, but the LAN/trust crossing is not drawn as its own boundary, and the frames don't separate local-trusted callers from token-gated ones."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Left-to-right direction with one crossing region. Edge labels are about 10px at 1194x834. The '3. debounced save (local)' label sits on top of its own arrow. The F1/F2 tags are tiny, and the footer text is smaller still. The F2 dotted route hugs the daemon box. There is a lot of empty space while the labels are cramped."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The key explains frames, boxes and the cylinder, and says solid = sync, dashed = async, dotted = local, with the response included. Line style is a non-colour signal, but everything is one red hue and dashed vs dotted is hard to tell apart at this size. The F-footnote convention is an extra layer of indirection."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes give real failure behaviour with sources: 401 and refused WS upgrades for callers without a token, the files-mode lock (5s wait then 503, locks stale after 10s), and the single-daemon probe (800ms). The notes don't say what happens when the daemon dies mid-session, or how the iPad recovers if the WS drops."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The diagram is dated and gives the revision (dca6c85 + local edits), and says the live runtime was not verified. Claims match the code: LOCK_STALE_MS=10_000 and LOCK_WAIT_MS=5_000 (src/mcp/backend.ts:107-108); the 800ms health probe (src/server/daemon.ts:162); the 401 responses (daemon.ts:523, 747). The owner is unassigned, and without production verification this caps at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 2,
+      "evidence": "A newcomer gets the gist: the browser talks to the daemon, the daemon saves files, and MCP queries the daemon or falls back to the files. But the footnoted edges, the ambiguous F2 route, the missing push from the daemon to the browser and the missing agent mean they would need a walkthrough to explain correctly how the agent's replies get back to the iPad."
+    }
+  ],
+  "coldRead": "The iPad's browser (a React app from web/) runs on the same LAN as the developer machine. It opens the daemon's link containing ?t=token, and the daemon swaps the token for a cookie. After that, the browser sends canvas operations to the daemon over a WebSocket. The daemon (src/server/) is the only process that owns state, and it writes canvas, marks, chat and token to plaintext files under .vibeprint/ on a short debounce. The coding agent runs an MCP server (src/mcp/). That server calls the daemon to wait for marks and to turn them into shapes. If no daemon is running, it reads and writes .vibeprint/ itself under a lock file: it waits up to 5s and then fails with 503, and treats locks older than 10s as stale. Callers that aren't local and lack the token get a 401. A new daemon checks /api/health first and reuses an existing daemon if one is alive. The relay for iPads off the LAN and the model-drawn quick map are out of scope.",
+  "inaccuracies": [
+    "Edge 4 is numbered as if it follows step 3, but /api/wait is a long-poll that MCP starts independently (src/core/daemon-client.ts:116). It is not a step that comes after the debounced save.",
+    "The daemon→browser WebSocket pushes (agent marks and chat reaching the iPad) are not drawn. With only browser-initiated arrows, the agent's output never visibly gets back to the iPad.",
+    "'Debounced save' is shown without its interval. The code uses 800ms (src/server/canvas.ts:166), which is minor but not stated.",
+    "The F2 dotted route visually ends next to the Daemon box's right edge and edge 4's arrowhead, so it can be read as touching the daemon. It actually runs MCP→.vibeprint in files mode (src/mcp/backend.ts:106-139), and only when no daemon is running; the diagram doesn't show that condition on the line."
+  ],
+  "improvements": [
+    "Draw F1 and F2 inline with their own labels, and route the files-mode edge clear of the Daemon box, labelled 'only if no daemon: locked file I/O'.",
+    "Add the daemon→browser WS push (marks/chat), and show the coding agent above Agent MCP connected by stdio, so the question's endpoint and the return path are both visible.",
+    "Make the edge labels at least 12px, stop the 'debounced save' label overlapping its arrow, and make dashed and dotted lines clearly different (or use a second colour) so they can be told apart at iPad size."
+  ],
+  "total": 28,
+  "verdict": "Good"
+}

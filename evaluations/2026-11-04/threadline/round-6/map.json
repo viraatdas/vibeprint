@@ -1,0 +1,128 @@
+{
+  "title": "Outbound: how does an approved email draft get checked and sent through Gmail?",
+  "audience": "New engineers",
+  "scope": "Owner clicks Send on an email draft: row claim, guard checks, Gmail send, and recording the outcome.",
+  "omissions": [
+    "LinkedIn sends via the browser worker; X DMs sent by hand in X",
+    "Prospect finding, research, enrollment and drafting"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "owner",
+      "label": "Owner device",
+      "description": "Local browser of the owner"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel",
+      "description": "Hosted, managed Next.js app"
+    },
+    {
+      "id": "data",
+      "label": "Postgres",
+      "description": "Hosted database for app state"
+    },
+    {
+      "id": "google",
+      "label": "Google",
+      "description": "External managed Gmail API"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ui",
+      "label": "Web app",
+      "kind": "client",
+      "tags": [
+        "React"
+      ],
+      "path": "app/(app)/",
+      "description": "Today/conversation view with Send button",
+      "group": "owner"
+    },
+    {
+      "id": "server",
+      "label": "App server",
+      "kind": "service",
+      "tags": [
+        "Next.js"
+      ],
+      "path": "lib/engine.ts",
+      "description": "Server action running sendMessage checks",
+      "group": "vercel"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [],
+      "path": "",
+      "description": "Messages, people, campaigns, settings",
+      "group": "data"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Mailbox history and outgoing email",
+      "group": "google"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ui",
+      "to": "server",
+      "label": "1. Send + edits",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "2. claim → sending",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "gmail",
+      "label": "3. reply/in-touch check",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "gmail",
+      "label": "4. send → msg/thread id",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "5. mark sent/failed",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Single send path, claimed once",
+      "text": "Only out draft/failed rows flip to 'sending'; a double click or second tab returns 'skipped'.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Skipped vs failed",
+      "text": "Closed stage or already replied → skipped. No person, daily limit, in-touch, bad email, Gmail error → failed.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Mixed fail modes",
+      "text": "Reply check errors count as no reply (sends). In-touch check errors block send. Replies/override skip it.",
+      "source": "lib/engine.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:45:00.843Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "project": "crumb",
+  "round": 2,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:09:11.481Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 3,
+      "evidence": "Clear question-style title and audience/scope subtitle are visible. The rendering mangles the content below them, so the title promises more than the picture delivers."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Boxes are mostly runtime units: agent, CLI, supervisor, Chrome, vault, key store, sites. Vault guard is a hook script (hooks/guard.mjs) placed next to processes, which is a small mix of levels."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The right components are present for the launch flow, and the omissions (transfer, check, capture) are written on the image. The guard→agent relationship is reduced to a single unclear arrow."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "Edges carry [sync]/[async]/[local] labels, but in the image those labels collide with node text (for example '[sync] CDP: browser control' runs over the Vault guard and Supervisor text, and '[local] Read/merge-write session' runs over the Chrome text). Arrowheads point at empty space (the Fetch vault key and HTTPS arrows end at frame edges). There is no step ordering."
+    },
+    {
+      "id": "boundaries",
+      "score": 1,
+      "evidence": "The four zone frames render as skewed, curved shapes that cross each other and nodes. The 'Local crumb processes' header text overprints its own description. Internal vs. external is stated only in the small subtitle text."
+    },
+    {
+      "id": "layout",
+      "score": 0,
+      "evidence": "At 1194x834 the drawing is a mess of distorted shapes. Text overlaps in many places (Coding agent/CLI label, Supervisor/CDP label, Chrome/vault label). Fonts are about 8px. About a third of the canvas above the title is empty."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "A reading key explains the frames, boxes and [sync]/[async]/[local] tags, and real names are used. The shapes themselves are broken and inconsistent. Everything is red, so there is no non-colour distinction between kinds."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Notes cover the autosave interval and signals, the 60s startup handshake with its error file, and the key store failing closed. Chrome crashes and orphaned supervisors are not shown."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "Revision 557acd4, the date and 'Owner: Unassigned' appear, and the image says the live runtime was not verified. The checked claims match the source. Because there is no owner and nothing was checked against a running system, this can't score higher."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "The notes and title are readable. The core flow can't be followed because arrows and labels overlap or end nowhere, so a newcomer would need someone to walk them through it."
+    }
+  ],
+  "coldRead": "A coding agent runs `crumb launch site:account`. The short-lived CLI spawns a detached supervisor and polls ~/.crumb for a run handle (pid + CDP URLs) for up to 60s, or for an error file. The supervisor gets the vault key from the OS keychain or secret-tool (or CRUMB_KEY), decrypts the AES-GCM session, and starts Chrome with launchPersistentContext, injecting the saved cookies and storage. The agent then drives Chrome directly over CDP, and Chrome talks to the target sites with the saved cookies. The supervisor saves the session back into the vault every 30s, on SIGUSR2 (crumb sync) and on SIGTERM (crumb close). A PreToolUse hook stops agent tool calls that mention ~/.crumb. If the key is missing, crumb fails closed with KEY_UNAVAILABLE.",
+  "inaccuracies": [
+    "Chrome is launched from src/browser.ts:95 (launchPersistentContext), but the Supervisor box suggests src/session.ts does it directly.",
+    "Vault guard is labelled as being under 'hooks/', but the actual file is hooks/guard.mjs, registered through hooks/hooks.json. The 'Tool call vetted pre-run' arrow points from the agent to the guard. In practice the agent host calls the hook before each tool call, and the hook can block it, which the arrow doesn't show.",
+    "The 'Fetch vault key' and 'HTTPS with saved cookies' arrowheads end at frame edges, not at the OS key store and Target sites boxes, so what they connect to is visually wrong.",
+    "The key note cites src/crypto.ts, but the rendered source line reads 'src/cryptats' (garbled)."
+  ],
+  "improvements": [
+    "Fix the renderer. Use straight, axis-aligned rectangles for frames and nodes, and route edge labels so they don't overlap node text. Every arrow should end on its target box. Remove the empty band at the top.",
+    "Number the launch steps (1 spawn, 2 fetch key, 3 decrypt, 4 start Chrome, 5 write handle, 6 CLI returns CDP URL, 7 agent drives over CDP). Then a reader can follow the order without the notes.",
+    "Raise node and label text to at least 12px at 1194x834. Distinguish node kinds and internal vs. external zones with shape or line style, not only red. Name an owner."
+  ],
+  "total": 19,
+  "verdict": "Mediocre"
+}

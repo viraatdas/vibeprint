@@ -1,0 +1,78 @@
+{
+  "project": "crumb",
+  "round": 4,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:38:37.543Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one precise question: how does `crumb launch` give an agent a logged-in Chrome? The subtitle names the audience (new engineers) and the scope (one machine, launch through CDP control and autosave)."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All six boxes are runtime units: an agent, two Node processes, Chrome, files and a key store. 'Vault files' merges two different things, encrypted sessions and plaintext run handles, which blurs the two dotted edges into it. There is no linked zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are stated in the footer. Missing: the handle JSON (with the CDP ws URL) going back to the agent is never labelled, even though it is how the agent finds Chrome. The page navigation to the home URL and SIGINT handling are also missing."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Edges are mostly labelled, but the 'storage state' label floats between Supervisor and CLI. Its arrow leaves a vertical bundle shared with vault key and state+handle, so it could read as CLI→Chrome. 'spawn' is dotted, which the legend defines as local I/O, so the notation is wrong for that edge. 'state+handle' merges two separate writes (session saves and handle writes). The order (spawn → poll ↔ handle write) is only partly explained by a note. The agent→Chrome CDP edge loops over the top through the Crumb frame."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Four labelled frames separate the agent, Crumb's self-hosted Node processes, local Chrome on 127.0.0.1, and local state. The OS key store is marked 'external'. There is no outer 'single machine / same user' trust boundary, and the frames carry deployment zones only, not trust levels. Even so, this is proportionate for a local tool."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Columns run cleanly left to right, but at 1194x834 the edge labels (F1, spawn, poll·handle, state+handle, vault·key, CDP commands) are about 7px and hard to read. The orthogonal routes bundle on one vertical line next to the CLI and Supervisor, and the dashed poll and state lines run through the Browser frame. The tall frames are mostly empty and the top fifth of the canvas is blank."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "A legend explains frames, boxes, arrow direction (response included) and the solid/dashed/dotted line styles, giving a non-colour signal. Real names are used. The spawn edge breaks the legend's dotted = local I/O rule, 'dashed = async' is never used visibly, and the 'AI red / user blue' colour convention adds no information."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Three grounded notes cover the 150ms/60s handshake with error-file failure, autosave every 30s plus SIGTERM/SIGUSR2 with the gap when Chrome closes, and KEY_UNAVAILABLE failing closed. The notes are not tied to specific edges, and they omit the swallowed autosave errors (session.ts:211-212), the 15s DevTools port timeout (browser.ts:78) and the detached-orphan behaviour."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer gives the date, revision 557acd4, Owner: Unassigned and 'Live runtime NOT verified'. The claims match session.ts:148-164 and 222-241 and crypto.ts. This is capped at 3: there is no production verification and no accountable owner."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can mostly retell the launch flow, but would likely misread the storage-state source and miss how the agent obtains the CDP endpoint (from the printed handle JSON), so a short walkthrough is still needed."
+    }
+  ],
+  "coldRead": "A coding agent runs `crumb launch`. The Crumb CLI spawns a detached Supervisor process. The Supervisor gets the vault key from the OS key store (Keychain, secret-tool, CRUMB_KEY or a key file) and reads the encrypted session from the vault files. It then starts Chrome (system Chrome or Playwright Chromium), injects the saved storage state, and writes a run handle file. Meanwhile the CLI polls for that handle every 150ms for up to 60s. It fails if an error file appears or the Supervisor exits; otherwise it prints the handle JSON. The agent then drives Chrome directly over CDP on 127.0.0.1. While the session runs, the Supervisor saves cookie/storage diffs back into the encrypted vault every 30s and on SIGTERM/SIGUSR2. If Chrome closes on its own, the Supervisor exits without a final save. A missing or wrong key fails closed with KEY_UNAVAILABLE.",
+  "inaccuracies": [
+    "The spawn edge is drawn dotted, which the legend defines as local I/O. It is a detached process spawn: src/session.ts:148 spawn(process.execPath, ..., {detached:true}).",
+    "Because 'storage state' is placed and routed ambiguously, the arrow can read as CLI→Chrome. In fact the Supervisor calls inject(b.context, session.state) at src/session.ts:175.",
+    "'state+handle' merges two separate writes from src/session.ts: writeSession for session state (line 207) and writeHandle for run/<id>.json (lines 194-195, 210). Only the session data is encrypted, yet 'Vault files' is tagged with encryption as a whole.",
+    "Nothing labels how the agent learns the CDP endpoint. The handle written at src/session.ts:190 contains cdp.http/ws, and the CLI prints it, but the F1 edge mentions only 'crumb launch'.",
+    "The autosave note leaves out SIGINT, which also triggers stop() and a final save (src/session.ts:234). It also leaves out that autosave failures are only logged (lines 211-212)."
+  ],
+  "improvements": [
+    "Fix the edge semantics. Use a distinct 'spawns process' style rather than the dotted local-I/O style, anchor 'storage state' clearly to Supervisor→Chrome, and split 'state+handle' into 'encrypted session save' (to the vault) and 'run handle JSON' (to the run dir, a separate box or sub-box).",
+    "Make the return path visible. Label F1 as 'crumb launch → handle JSON {cdp.ws}', and number the steps in order (1 spawn, 2 key, 3 inject, 4 write handle, 5 poll, 6 CDP) so the sequence reads without the notes.",
+    "Make the diagram legible at 1194x834. Raise edge-label font size, use the blank top area and the empty frame space, route the poll/state lines so they don't cross the Browser frame, and attach each failure note to its edge with a marker."
+  ],
+  "total": 29,
+  "verdict": "Good"
+}

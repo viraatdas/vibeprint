@@ -1,0 +1,78 @@
+{
+  "project": "crumb",
+  "round": 7,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:54:53.106Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks exactly one question (\"how does `crumb launch` restore a saved session into a live browser?\"). The subtitle names the audience (new engineers) and the scope. The detail level suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Every box is a runtime process or a stored artifact, so the level is mostly consistent. Two things are muddled: 'Key store' is drawn as an external service, but its body text also covers the CRUMB_KEY env var and a key file. 'Run dir' combines handle/error files with the temp profile."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The footer states what is left out (other commands, agent-side CDP use), and there is little noise. Missing: the CLI reads the vault itself before spawning (readEntry gates in src/session.ts:133-137), and profile-mode sessions use a persistent profileDir instead of inject."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Edges are numbered (1–6) and labelled, and the legend says solid = sync and dotted = local command/IO. '3/6 decrypt/save' combines a startup read with a recurring asynchronous write on one arrow. The CLI→vault gate read and the CLI's initial running-handle check are not drawn."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "There are three labelled frames: crumb host, Chrome process and OS key store. Each frame says it runs on the same host, and external nodes have a double border. The unauthenticated CDP trust exposure appears only in a note, not as a boundary. The env/key-file fallback sits inside the 'OS key store' frame, which blurs that boundary."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "The diagram uses only about 420 px in the middle of the 1194 px viewport. Most text, including edge labels, node descriptions, legend and notes, renders at roughly 5–6 px and can barely be read on an iPad. The 'exec: get vault key' edge runs down through the Chrome frame to reach the Key store, crossing the Chrome arrow. There is a lot of empty space."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The visible key explains frames, boxes, cylinders, double borders, arrow direction and dotted vs solid lines. Shape and line style give signals that don't rely on color, and names match the code. The whole drawing is a single color, and the legend text is tiny."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes cover the startup gates (NOT_FOUND, NEEDS_LOGIN, KEY_UNAVAILABLE to the error file, 60s timeout to INTERNAL), best-effort autosave including the missing final save when the window closes, and the unauthenticated CDP port. These are relevant and correct. They live only in prose and are not attached to the edges they describe."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "The footer shows the source review date, revision 557acd4, 'Owner: Unassigned' and 'Live runtime NOT verified'. Claims checked against src/session.ts and src/crypto.ts are mostly correct. There is no owner and no production verification, and the small omissions listed under inaccuracies remain."
+    },
+    {
+      "id": "comprehension",
+      "score": 2,
+      "evidence": "The numbered steps and notes would support a correct two-minute explanation if the text could be read. At the intended viewport the small text makes that hard, and the combined 3/6 edge and the missing CLI gate read invite misreading."
+    }
+  ],
+  "coldRead": "Running `crumb launch` makes the CLI spawn a detached `__supervise` Node process (step 1). The supervisor gets the vault key from the OS keychain or secret-tool, falling back to CRUMB_KEY or a key file (step 2). It decrypts the account's AES-256-GCM session state from the vault (step 3), launches local Chrome and injects the state, which exposes a CDP endpoint on 127.0.0.1 (step 4). It then writes a handle JSON with the CDP http/ws URLs to the run dir, or an error JSON if something failed (step 5). Meanwhile the CLI checks the run dir every 150 ms and returns the handle. If an error file appears, or the supervisor exits, or 60 s pass, the CLI fails. While the browser is running, the supervisor saves merged snapshots back to the vault every 30 s, when it receives SIGUSR2, and on SIGTERM/SIGINT (step 6). Save errors are only logged, and closing the window skips the final save. Any local process can drive the logged-in browser through the CDP port.",
+  "inaccuracies": [
+    "src/session.ts:133-137: before spawning, the CLI process checks for a running handle in the run dir and reads the vault entry itself (readEntry) to return NOT_FOUND or NEEDS_LOGIN. The diagram shows no CLI→vault or initial CLI→run-dir read, so it looks as if all vault access belongs to the supervisor.",
+    "src/session.ts:172-175: injection happens only in 'state' mode. 'profile' mode uses a persistent profileDir, not the temp profile the 'Run dir' node implies, and has no inject step. The label 'launch+inject' leaves this out.",
+    "src/session.ts:178-195: the handle is written only after navigation to the home URL, and touchHeader also writes to the vault at startup. Neither appears in the steps.",
+    "The edge '3/6 decrypt/save state' combines a one-time startup read with a recurring timer- or signal-driven write that the supervisor starts separately. Drawing two edges would match the actual control flow better.",
+    "src/crypto.ts: the 'OS key store' frame also contains the CRUMB_KEY env / key-file fallbacks, which are not OS services."
+  ],
+  "improvements": [
+    "Make the diagram fill the 1194x834 viewport and raise every font to at least about 11 px, especially edge labels, the legend and the notes. Move the Key store frame next to the supervisor so its edge no longer cuts through the Chrome frame.",
+    "Split edge 3/6 into 'decrypt state (startup)' and 'autosave merged snapshot (every 30s / SIGUSR2 / SIGTERM, async)'. Add the CLI's pre-spawn gate reads (running handle, vault entry → NOT_FOUND/NEEDS_LOGIN).",
+    "Name an owner, and attach the failure and security callouts to their edges (error file on step 5, CDP exposure on step 4). Note the profile-mode vs state-mode difference."
+  ],
+  "total": 27,
+  "verdict": "Mediocre"
+}

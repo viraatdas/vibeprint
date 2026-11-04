@@ -1,0 +1,180 @@
+{
+  "title": "Outbound: how does an owner-approved message reach a prospect?",
+  "audience": "New engineers",
+  "scope": "Owner click on Today through the Vercel app, Postgres, Gmail and the Fly LinkedIn browser worker, plus the refresh cron.",
+  "omissions": [
+    "Prospect finding: scout CLI, YC/HN/GitHub/Exa/Apollo sources",
+    "AI research, drafting and the OpenRouter model calls"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "owner",
+      "label": "Owner",
+      "description": "External: the single allowlisted owner in their browser"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel + AWS",
+      "description": "Hosted, managed: Next.js on Vercel sfo1, RDS Postgres us-west-1"
+    },
+    {
+      "id": "fly",
+      "label": "Fly.io worker",
+      "description": "Hosted on Fly, self-hosted: browser worker and hourly cron caller"
+    },
+    {
+      "id": "external",
+      "label": "Third parties",
+      "description": "External managed services: Gmail API, LinkedIn, home exit node"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "owner",
+      "label": "Owner",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Approves each message by clicking Send on Today",
+      "group": "owner"
+    },
+    {
+      "id": "web",
+      "label": "Web app",
+      "kind": "service",
+      "tags": [
+        "Next.js",
+        "Auth.js"
+      ],
+      "path": "app/",
+      "description": "Owner-only pages, actions and engine; only send path",
+      "group": "vercel"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [
+        "RDS",
+        "Drizzle"
+      ],
+      "path": "",
+      "description": "Prospects, drafts, message status, sealed credentials",
+      "group": "vercel"
+    },
+    {
+      "id": "cron",
+      "label": "Hourly cron",
+      "kind": "worker",
+      "tags": [
+        "Fly.io"
+      ],
+      "path": "",
+      "description": "Fly machine that GETs /api/cron hourly to refresh",
+      "group": "fly"
+    },
+    {
+      "id": "worker",
+      "label": "Browser worker",
+      "kind": "worker",
+      "tags": [
+        "browser-use",
+        "Starlette"
+      ],
+      "path": "browser/",
+      "description": "Queued one-at-a-time LinkedIn agent runs in Chromium",
+      "group": "fly"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Sends threaded emails and reports replies and bounces",
+      "group": "external"
+    },
+    {
+      "id": "linkedin",
+      "label": "LinkedIn",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Invites, messages and inbox, reached via home exit node",
+      "group": "external"
+    }
+  ],
+  "edges": [
+    {
+      "from": "owner",
+      "to": "web",
+      "label": "HTTPS: Send click",
+      "mode": "sync"
+    },
+    {
+      "from": "web",
+      "to": "db",
+      "label": "SQL: claim draft, mark sent",
+      "mode": "sync"
+    },
+    {
+      "from": "web",
+      "to": "gmail",
+      "label": "HTTPS: reply check + send",
+      "mode": "sync"
+    },
+    {
+      "from": "web",
+      "to": "worker",
+      "label": "HTTPS: queue LinkedIn run",
+      "mode": "async"
+    },
+    {
+      "from": "web",
+      "to": "worker",
+      "label": "HTTPS: poll run status",
+      "mode": "sync"
+    },
+    {
+      "from": "worker",
+      "to": "linkedin",
+      "label": "Chromium via Tailscale SOCKS5",
+      "mode": "sync"
+    },
+    {
+      "from": "cron",
+      "to": "web",
+      "label": "HTTPS: bearer /api/cron",
+      "mode": "sync"
+    },
+    {
+      "from": "web",
+      "to": "gmail",
+      "label": "HTTPS: refresh reply scan",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Owner click is the only send",
+      "text": "sendMessage in lib/engine.ts is the only path that contacts a prospect; crons draft, detect replies and confirm queued LinkedIn actions but never send.",
+      "source": "AGENTS.md"
+    },
+    {
+      "title": "Fail-closed pre-send checks",
+      "text": "Send claims the row (draft|failed→sending), checks 24h limits, re-checks Gmail replies and in-touch status; a failed check sends nothing.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Worker exits only via home node",
+      "text": "Runs stay queued unless Tailscale exit node is online and proxied IP differs from Fly's; a restart mid-run fails it instead of replaying.",
+      "source": "browser/worker.py"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:08:40.390Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

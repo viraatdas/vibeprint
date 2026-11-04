@@ -1,0 +1,116 @@
+{
+  "title": "Outbound: how does one approved email draft get sent through Gmail?",
+  "audience": "New engineers",
+  "scope": "Owner clicks Send on an email draft; sendMessage claims it, runs checks, sends via Gmail and records it.",
+  "omissions": [
+    "LinkedIn sends via browser worker; X DMs sent by hand",
+    "Discovery, research, enrollment and AI drafting"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "local",
+      "label": "Owner device",
+      "description": "Local: the owner's web browser"
+    },
+    {
+      "id": "app",
+      "label": "Web app",
+      "description": "Hosted Next.js server"
+    },
+    {
+      "id": "data",
+      "label": "Database",
+      "description": "Postgres; hosting not verified"
+    },
+    {
+      "id": "ext",
+      "label": "Google",
+      "description": "External, vendor-managed"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "ui",
+      "label": "Web browser",
+      "kind": "client",
+      "tags": [
+        "React"
+      ],
+      "path": "app/",
+      "description": "Today/conversation views with Send button",
+      "group": "local"
+    },
+    {
+      "id": "server",
+      "label": "Next.js server",
+      "kind": "service",
+      "tags": [
+        "Next.js"
+      ],
+      "path": "lib/engine.ts",
+      "description": "sendMessage: the only send path",
+      "group": "app"
+    },
+    {
+      "id": "pg",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [],
+      "path": "",
+      "description": "Messages, people, settings, send status",
+      "group": "data"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "History checks; sends email in thread",
+      "group": "ext"
+    }
+  ],
+  "edges": [
+    {
+      "from": "ui",
+      "to": "server",
+      "label": "Send + edits",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "pg",
+      "label": "claim, sent",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "gmail",
+      "label": "checks, send",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Claim prevents double send",
+      "text": "1) Row set to 'sending' only if draft/failed and outbound; a second click gets 'skipped'.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Checks: open vs closed",
+      "text": "2) Daily limit, 3) reply check (errors ignored, fails open), 4) in-touch check (errors block send).",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Gmail errors, no retry",
+      "text": "If Gmail is unconnected or send throws, row becomes 'failed' + error recorded; owner must click again.",
+      "source": "lib/engine.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:41:25.758Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

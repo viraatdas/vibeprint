@@ -1,0 +1,135 @@
+{
+  "nodes": [
+    {
+      "id": "web",
+      "label": "Web canvas",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "web/",
+      "description": "Whiteboard UI where the user draws and sees the architecture map"
+    },
+    {
+      "id": "cli",
+      "label": "CLI",
+      "kind": "client",
+      "tags": [
+        "CLI"
+      ],
+      "path": "src/cli.ts",
+      "description": "Entry point that starts the daemon and MCP server"
+    },
+    {
+      "id": "server",
+      "label": "Daemon",
+      "kind": "service",
+      "tags": [
+        "HTTP",
+        "WebSocket"
+      ],
+      "path": "src/server/",
+      "description": "Local server that serves the canvas, stores boards and syncs clients"
+    },
+    {
+      "id": "mcp",
+      "label": "MCP server",
+      "kind": "module",
+      "tags": [
+        "MCP"
+      ],
+      "path": "src/mcp/",
+      "description": "Exposes the board to coding agents as MCP tools"
+    },
+    {
+      "id": "core",
+      "label": "Core",
+      "kind": "module",
+      "tags": [],
+      "path": "src/core/",
+      "description": "Board model, repo scan, map layout and cleanup logic"
+    },
+    {
+      "id": "interpret",
+      "label": "Interpret",
+      "kind": "module",
+      "tags": [],
+      "path": "src/interpret/",
+      "description": "Reads sketches and code to produce maps, heuristic or via Claude"
+    },
+    {
+      "id": "relay",
+      "label": "Relay",
+      "kind": "service",
+      "tags": [
+        "WebSocket",
+        "Fly.io"
+      ],
+      "path": "relay/",
+      "description": "Public relay so remote devices like an iPad reach the local daemon"
+    },
+    {
+      "id": "claude",
+      "label": "Claude API",
+      "kind": "external",
+      "tags": [
+        "Anthropic SDK"
+      ],
+      "path": "",
+      "description": "Model that interprets drawings and redraws the code map"
+    }
+  ],
+  "edges": [
+    {
+      "from": "web",
+      "to": "server",
+      "label": "HTTP/WS"
+    },
+    {
+      "from": "cli",
+      "to": "server",
+      "label": ""
+    },
+    {
+      "from": "cli",
+      "to": "mcp",
+      "label": ""
+    },
+    {
+      "from": "mcp",
+      "to": "server",
+      "label": "HTTP"
+    },
+    {
+      "from": "server",
+      "to": "core",
+      "label": ""
+    },
+    {
+      "from": "server",
+      "to": "interpret",
+      "label": ""
+    },
+    {
+      "from": "interpret",
+      "to": "core",
+      "label": ""
+    },
+    {
+      "from": "interpret",
+      "to": "claude",
+      "label": "API"
+    },
+    {
+      "from": "server",
+      "to": "relay",
+      "label": "WebSocket"
+    },
+    {
+      "from": "web",
+      "to": "relay",
+      "label": "WebSocket"
+    }
+  ]
+}

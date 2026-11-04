@@ -1,0 +1,158 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 122.24371373307542,
+    "y": 248.92698259187614,
+    "z": 0.6544303797468355
+  },
+  "text": [
+    {
+      "text": "Outbound: how does an owner-approved message reach a prospect?",
+      "renderedSize": 20.941772151898736
+    },
+    {
+      "text": "New engineers · Owner click on Today through the Vercel app, Postgres, Gmail and the Fly LinkedIn browser worker, plus the refresh cron.",
+      "renderedSize": 12.434177215189875
+    },
+    {
+      "text": "[ Owner ]",
+      "renderedSize": 15.051898734177216
+    },
+    {
+      "text": "External: the single\nallowlisted owner in their\nbrowser",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Owner",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "client · Approves each\nmessage by clicking Send\non Today",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "[ Vercel + AWS ]",
+      "renderedSize": 15.051898734177216
+    },
+    {
+      "text": "Hosted, managed: Next.js on\nVercel sfo1, RDS Postgres\nus-west-1",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Web app",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "service · Owner-only\npages, actions and engine;\nonly send path",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "database · Prospects,\ndrafts, message status,\nsealed credentials",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "[ Fly.io worker ]",
+      "renderedSize": 15.051898734177216
+    },
+    {
+      "text": "Hosted on Fly, self-hosted:\nbrowser worker and hourly cron\ncaller",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Hourly cron",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "worker · Fly machine that\nGETs /api/cron hourly to\nrefresh",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Browser worker",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "worker · Queued\none-at-a-time LinkedIn\nagent runs in Chromium",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "[ Third parties ]",
+      "renderedSize": 15.051898734177216
+    },
+    {
+      "text": "External managed services:\nGmail API, LinkedIn, home exit\nnode",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "external · Sends threaded\nemails and reports replies\nand bounces",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "LinkedIn",
+      "renderedSize": 15.706329113924053
+    },
+    {
+      "text": "external · Invites,\nmessages and inbox,\nreached via home exit node",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "READING KEY · Frames: deployment / trust zones. Boxes: named runtime units (type below name). Arrows: initiator → recipient; a request includes its response. [sync]\nrequest/response · [async] event/stream · [local] disk/IPC. AI ink is red; your additions are blue.",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Owner click is the only send",
+      "renderedSize": 13.743037974683546
+    },
+    {
+      "text": "sendMessage in lib/engine.ts is the only path that\ncontacts a prospect; crons draft, detect replies\nand confirm queued LinkedIn actions but never\nsend.",
+      "renderedSize": 11.779746835443039
+    },
+    {
+      "text": "Source: AGENTS.md",
+      "renderedSize": 10.470886075949368
+    },
+    {
+      "text": "Fail-closed pre-send checks",
+      "renderedSize": 13.743037974683546
+    },
+    {
+      "text": "Send claims the row (draft|failed→sending), checks\n24h limits, re-checks Gmail replies and in-touch\nstatus; a failed check sends nothing.",
+      "renderedSize": 11.779746835443039
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.470886075949368
+    },
+    {
+      "text": "Worker exits only via home node",
+      "renderedSize": 13.743037974683546
+    },
+    {
+      "text": "Runs stay queued unless Tailscale exit node is\nonline and proxied IP differs from Fly's; a\nrestart mid-run fails it instead of replaying.",
+      "renderedSize": 11.779746835443039
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 10.470886075949368
+    },
+    {
+      "text": "Outside this view: Prospect finding: scout CLI, YC/HN/GitHub/Exa/Apollo sources; AI research, drafting and the OpenRouter model calls.",
+      "renderedSize": 11.125316455696204
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.470886075949368
+    }
+  ],
+  "errors": []
+}

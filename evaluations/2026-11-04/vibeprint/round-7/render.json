@@ -1,0 +1,126 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 353.08489293768525,
+    "y": 180.67744807121653,
+    "z": 0.4870558054667318
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch reach the local coding agent and back?",
+      "renderedSize": 15.585785774935417
+    },
+    {
+      "text": "New engineers · Direct LAN path: iPad browser, local daemon, .vibeprint/ files, and the agent's stdio MCP child process.",
+      "renderedSize": 9.254060303867904
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 10.7152277202681
+    },
+    {
+      "text": "Local network device\nrunning the browser",
+      "renderedSize": 9.254060303867904
+    },
+    {
+      "text": "Dev machine",
+      "renderedSize": 10.7152277202681
+    },
+    {
+      "text": "Local, self-hosted processes and files",
+      "renderedSize": 9.254060303867904
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 12.176395136668294
+    },
+    {
+      "text": "Canvas UI where the\nsketch is drawn",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 12.176395136668294
+    },
+    {
+      "text": "Holds live state;\nserves HTTP and\nWebSocket",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": ".vibeprint files",
+      "renderedSize": 12.176395136668294
+    },
+    {
+      "text": "Canvas, marks and\nchat saved in the\nrepo",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": "MCP server",
+      "renderedSize": 12.176395136668294
+    },
+    {
+      "text": "Agent's child\nprocess exposing\nsketch tools",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": "Agent CLI",
+      "renderedSize": 12.176395136668294
+    },
+    {
+      "text": "Local coding agent,\ne.g. Claude Code",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; dashed = async; dotted =\nlocal command/I/O; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 9.741116109334635
+    },
+    {
+      "text": "Long-poll, not a pipeline step",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "The MCP wait tool long-polls GET /api/wait on its\nown schedule (timeout clamped to 1s–600s, default\n120s). The save doesn't trigger it.",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 8.767004498401171
+    },
+    {
+      "text": "Files mode when no daemon",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "With no daemon, MCP writes .vibeprint/ directly\nunder runtime/files.lock. After 5s of waiting it fails\nwith 503 'Another process is writing'. Locks older\nthan 10s are removed.",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 8.767004498401171
+    },
+    {
+      "text": "Corrupt canvas fails closed",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "If .vibeprint/canvas.json won't parse (e.g. merge\nconflicts) or isn't a Vibeprint canvas, the daemon\nthrows and asks you to restore it from git. It does\nnot overwrite it.",
+      "renderedSize": 10.228171914801367
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 8.767004498401171
+    },
+    {
+      "text": "Outside this view: Hosted relay path for off-LAN iPads; Model interpretation of sketches and git checkpoint commits.",
+      "renderedSize": 8.27994869293444
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.792892887467708
+    }
+  ],
+  "errors": []
+}

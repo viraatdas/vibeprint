@@ -1,0 +1,134 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 390.10984471810104,
+    "y": 156.8789317507419,
+    "z": 0.5609421164329408
+  },
+  "text": [
+    {
+      "text": "Outbound: how does an approved email draft get sent through Gmail?",
+      "renderedSize": 17.950147725854105
+    },
+    {
+      "text": "New engineers · Email branch of sendMessage: owner clicks Send, row is claimed, guards run, Gmail sends, status is written.",
+      "renderedSize": 10.657900212225876
+    },
+    {
+      "text": "Owner device",
+      "renderedSize": 12.340726561524697
+    },
+    {
+      "text": "Local: owner's web\nbrowser",
+      "renderedSize": 10.657900212225876
+    },
+    {
+      "text": "Vercel",
+      "renderedSize": 12.340726561524697
+    },
+    {
+      "text": "Hosted, managed: Next.js\napp",
+      "renderedSize": 10.657900212225876
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 12.340726561524697
+    },
+    {
+      "text": "Hosted database",
+      "renderedSize": 10.657900212225876
+    },
+    {
+      "text": "Google",
+      "renderedSize": 12.340726561524697
+    },
+    {
+      "text": "External, managed: Gmail\nAPI",
+      "renderedSize": 10.657900212225876
+    },
+    {
+      "text": "Web browser",
+      "renderedSize": 14.02355291082352
+    },
+    {
+      "text": "Today/conversation\nUI with Send button",
+      "renderedSize": 11.218842328658816
+    },
+    {
+      "text": "App server",
+      "renderedSize": 14.02355291082352
+    },
+    {
+      "text": "Server action runs\nsendMessage\nguards+send",
+      "renderedSize": 11.218842328658816
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 14.02355291082352
+    },
+    {
+      "text": "Messages, people,\ncampaigns, settings",
+      "renderedSize": 11.218842328658816
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 14.02355291082352
+    },
+    {
+      "text": "Reply/in-touch\nchecks; sends the\nemail",
+      "renderedSize": 11.218842328658816
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external service.\nArrows: caller → recipient, response included; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 11.218842328658816
+    },
+    {
+      "text": "Atomic claim on click",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "Only draft/failed outbound rows are\nclaimed as 'sending' (edits saved);\nothers return skipped, so a double click\nsends once. A crash mid-send can leave\na row stuck in 'sending'.",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.096958095792933
+    },
+    {
+      "text": "Mixed guard failure modes",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "Daily limit fails the row. The prior-reply\ncheck is fail-open (errors count as 0).\nThe Gmail in-touch check fails closed,\nskipped for replies or owner override;\nhits are saved.",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.096958095792933
+    },
+    {
+      "text": "Failure paths are retryable",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "No usable/bounced email, no Gmail\nconnection, or a send error marks the\nrow failed (send errors also recorded as\na Gmail connection error). Failed rows\ncan be claimed again.",
+      "renderedSize": 11.779784445091757
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.096958095792933
+    },
+    {
+      "text": "Outside this view: LinkedIn sends via the browser worker; X DMs marked sent by hand; Finding, research, enrollment and the reply-check cron.",
+      "renderedSize": 9.536015979359993
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.975073862927053
+    }
+  ],
+  "errors": []
+}

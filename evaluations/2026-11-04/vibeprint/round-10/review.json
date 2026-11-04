@@ -1,0 +1,79 @@
+{
+  "project": "vibeprint",
+  "round": 10,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:10:30.626Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title is a single question, 'Vibeprint: how does an iPad sketch survive a page reload?'. The subtitle names the audience ('New engineers') and the narrowed scope ('Direct LAN only: ink ops, daemon memory, canvas.json startup read and debounced save, reconnect snapshot'). The level of detail (ack semantics, 800ms debounce, backoff, cookie) suits new engineers who need to reason about losing data."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "All three nodes sit at the same runtime level: two processes (iPad browser, Local daemon) and one stored file (canvas.json, drawn as a cylinder). The two frames are machines. Infrastructure, code modules and teams are not mixed together. Each note cites its source file, which works as a zoom-in pointer. A three-node view does not need separate linked diagrams."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Persistence, ack, save and reconnect are all present, and omissions are stated ('Outside this view: Hosted relay (on by default), MCP server, AI mapping, git commits…'). But a page reload starts with an ungated static GET and a token-gated GET /api/config, and neither appears. B1 makes the WebSocket look like the first contact. The omission line, which says the relay is on by default, is in roughly 8px footer text. Rejected ops (canvas full or invalid), another way to lose an edit, are not shown."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is directed and labelled with what flows. The letters A / B1–B3 / C1–C3 give an order, and dashed (async WebSocket) is distinct from dotted (local I/O). Weaknesses: 'C1/B3. ink ops; replay' merges two phases on one arrow. The key says 'response included', yet ack (C2) and snapshot (B2) get their own reverse arrows; they are separate WebSocket messages, but the key doesn't say so. There is no HTTP leg for the reload."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "There are two labelled frames, 'iPad — on same LAN; holds HttpOnly cookie' and 'Developer machine — Local, self-run; token-gated LAN HTTP/WS', and the key calls frames trust/deployment zones. The self-hosted nature is stated. The token gate exists only as subtitle text and is not drawn where arrows cross into the daemon. The LAN itself is not drawn as a zone. Large parts of both frames are empty."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The diagram reads left to right with no crossings. The nodes share a baseline and the three notes are in aligned columns. At 1194x834 the provenance and omission footer lines are about 8px and edge labels about 10px, small for an iPad. C2 and B1 detour through diagonal hexagon-like routes, and A and C3 form two chevrons into the cylinder. The bottom halves of both frames are wasted space that could have held larger text."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a visible key: frames are zones, boxes are actors, the cylinder is stored state, dotted is local and dashed is async, and the flow type is also written on each arrow, so meaning doesn't depend on colour. The single red colour is consistent, though it is also the usual error colour. Gaps: the 'response included' rule is contradicted by the separate ack and snapshot arrows, the 'C1/B3' label notation is not explained, and nodes don't show real identifiers (vibeprint serve, CanvasRoom, web/src/canvas/sync.ts)."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes state the key failure behaviour: acked means in memory only, so a crash can lose acked edits. They also cover the flush on SIGINT/SIGTERM, startup halting on unparseable JSON while bad shapes are skipped, 500ms–10s reconnect backoff, unacked ops being lost on a full reload, a 1-year cookie, and the token surviving restarts. Missing: each new op restarts the debounce, so the loss window can be far longer than 800ms; saves are atomic (no torn file); rejected ops are dropped and trigger a resnapshot. The 401 behaviour is described wrongly (see inaccuracies)."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer gives 'Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified'. The owner is backed by package.json:7. Most claims match src/server/canvas.ts, web/src/canvas/sync.ts and src/server/daemon.ts. No production verification was done, so the score is capped at 3. It is held at the cap despite one material error in the reload token note."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer could correctly explain that the daemon's memory is the source of truth, that an ack doesn't mean saved, that canvas.json is written about 800ms after activity stops, and that reconnect brings a snapshot plus a replay. They would likely get two things wrong: they would expect a missing cookie to show 'offline and retries', and they would assume the iPad normally talks to the daemon directly over the LAN, when the default QR link goes through the hosted relay."
+    }
+  ],
+  "coldRead": "The diagram shows how ink drawn on an iPad survives a reload when the iPad talks directly to `vibeprint serve` on the same LAN. The iPad browser opens a token-authenticated WebSocket to the Local daemon on the developer machine (B1). The daemon answers with a snapshot of the whole canvas from its memory, which replaces what the page shows (B2). Each pen stroke goes to the daemon as an 'ops' message (C1). The daemon applies it in memory and acks it straight away (C2), but that ack only means 'in memory'. The daemon writes .vibeprint/canvas.json about 800ms after things go quiet, or when it shuts down on SIGINT/SIGTERM (C3). It reads that file only once, at startup (A). So a daemon crash can lose edits that were already acked, and a corrupt canvas.json stops the daemon from starting. In the browser, unacked strokes live only in page memory. After a dropped connection the page reconnects with 500ms–10s backoff, takes a fresh snapshot and replays them. A full page reload throws them away. On reload, the 1-year HttpOnly cookie set by the ?t= link sends the token again, so the page gets back in; the token stays the same across daemon restarts. Not shown: the hosted relay (which the footer says is on by default), MCP, AI mapping, git commits, and other browsers' live ops. The diagram was checked against source at dca6c85 plus local edits; the running system was not checked.",
+  "inaccuracies": [
+    "The 'Token gate on reload' note says 'Without it: 401, page shows offline and retries.' On a reload with no cookie, web/src/App.tsx:57-73 first calls GET /api/config. The daemon returns 401 for that (src/server/daemon.ts:523), and App shows a fixed gate: 'This device needs the link printed by vibeprint serve…'. No WebSocket is opened and nothing retries. The offline-and-retry path (web/src/canvas/sync.ts:124-131, App.tsx:30-37) applies only when the WebSocket fails after config loaded, and after 3 failures it shows 'Can't open the canvas… then reload.'",
+    "'LAN WS upgrades need the token' and edge B1 suggest the WebSocket is the first gated contact on reload. In fact the static page is served without a token (src/server/daemon.ts:521), and every /api/* and /files/* HTTP request is token-gated (daemon.ts:520-523) before CanvasSync is even created (App.tsx:80). The reload's HTTP leg is missing from the diagram.",
+    "The scope is 'Direct LAN only', but the default iPad path goes through the hosted relay. relayEnabled returns DEFAULT_RELAY unless it is turned off (src/server/relay.ts:58-62; src/cli.ts:10), and the QR code and the 'iPad' banner line use the relay URL when it is available (src/server/daemon.ts:841-845). The diagram says this only in the roughly 8px footer, so the path shown is the --no-relay / same-Wi-Fi link, not what a new user usually hits.",
+    "'canvas.json is rewritten 800ms after the last op' is literally true, but scheduleSave restarts the timer on every op from any client (src/server/canvas.ts:164-167). Continuous drawing can therefore put the save off indefinitely, and a crash can lose acked edits back to the last 800ms pause, not just the last 800ms.",
+    "The diagram implies every op an iPad sends ends with an ack. In fact the daemon can send 'rejected' instead, for an invalid op or a full canvas (src/server/canvas.ts:139-146). The client then drops that op and closes the socket to resnapshot (web/src/canvas/sync.ts:117-121), which is another way to lose ink that isn't shown.",
+    "Node labels use generic names ('Local daemon', 'iPad browser'). The real identifiers (vibeprint serve, CanvasRoom in src/server/canvas.ts, CanvasSync in web/src/canvas/sync.ts) and the endpoint /api/canvas (daemon.ts:745) are not visible, even though the map JSON has tags and paths for them."
+  ],
+  "improvements": [
+    "Fix the reload path: before B1, add an HTTP leg: page reload → GET / (no token needed) → GET /api/config with the cookie. Rewrite the token note to say that a missing or expired cookie gives a 401 on /api/config and shows the fixed message 'needs the link printed by vibeprint serve' with no retry, and that offline-and-retry happens only when the daemon is unreachable after config has loaded.",
+    "Make the diagram readable at 1194x834. Raise the footer (omissions, date, revision, owner, 'NOT verified') and edge labels to at least 11px, using the empty space in both frames. Replace the diagonal detours on C2 and B1 with straight parallel horizontal arrows. Split the merged 'C1/B3' label into clear steps, or add a small numbered sequence strip.",
+    "Be more honest about where data can be lost and which path is the default. Add a short callout that the default QR link goes through the hosted relay, and say the diagram shows the --no-relay / same-Wi-Fi link. Say the loss window is 'since the last 800ms pause', because the debounce restarts on every op. Mention rejected ops (canvas full or invalid) being dropped, and that saves are atomic so a crash can't leave a half-written canvas.json."
+  ],
+  "total": 32,
+  "verdict": "Good"
+}

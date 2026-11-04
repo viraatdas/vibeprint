@@ -1,0 +1,50 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 568.6042549668874,
+    "y": 293.164536423841,
+    "z": 0.5146776873588684
+  },
+  "text": [
+    {
+      "text": "Scout CLI",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Web app",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Engine",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Sources",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "LinkedIn browser",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Apollo / Exa",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "OpenRouter",
+      "renderedSize": 12.352264496612843
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 12.352264496612843
+    }
+  ],
+  "errors": []
+}

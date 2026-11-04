@@ -1,0 +1,77 @@
+{
+  "project": "crumb",
+  "round": 5,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:42:16.196Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks a specific question ('how does `crumb launch` restore a saved session for an agent?'). The subtitle names the audience (new engineers) and the scope (state mode), and the detail level suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All six boxes are runtime actors or stores at the same level. 'Agent process' is a generic actor next to code-backed components. The Run files store merges handle, error and log files, which are all different artifacts. There is no linked zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are listed in the footer (login, capture, check, close, sync, profile mode). Missing: the CLI first reads the account entry and fails with NOT_FOUND or NEEDS_LOGIN before spawning (src/session.ts:135-137), and the CLI also creates the .log file and deletes a stale .error file (src/session.ts:139-142)."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are labelled and the legend states 'caller → recipient (response included)'. But the Agent→CLI edge is labelled 'handle JSON', which is the response rather than the invocation. Dashed and dotted lines are hard to tell apart at this size. There is no ordering: the steps spawn → decrypt → launch → inject → write handle → poll are never numbered."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Three labelled frames (Caller, Browser runtime, Crumb data dir) separate the process and disk zones, marked local and self-managed. The trust implication is not drawn: the plaintext CDP port on 127.0.0.1 is open to any local process. The 0600 file permissions also go unmentioned."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Flow runs left to right, but the diagram fills only the middle ~55% of the 1194x834 frame. Edge labels ('spawn·detach', 'session r/w', 'handle/error', 'poll handle') are roughly 8px and hard to read. The CDP and spawn lines overlap along the Caller frame edge. The 'handle/error' label floats away from its line, and 'poll handle' detours around the bottom of everything."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "The legend explains frames, boxes, cylinders and line styles. It also defines 'double border = external service', which nothing in the diagram uses. Everything is drawn in a single red, and the dashed/dotted distinction is the only non-color signal, which is weak at this size. Real names are used (__supervise, run/<id>.json, CRUMB_KEY)."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Three notes cover failure behaviour: fail-closed startup with the 150ms/60s polling, KEY_UNAVAILABLE blocking restore, and best-effort autosave (30s, SIGUSR2/SIGTERM/SIGINT, no save when the window is closed). All match src/session.ts:152-163 and 222-241. Not shown: the .error file path being written on failure, concurrent-launch or port conflicts, and the temp profile being deleted on exit."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows the date, revision 557acd4, 'Owner: Unassigned' and 'Live runtime NOT verified'. The claims I checked match the source. Capped at 3 because the running system was not verified and there is no owner."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can get the main path from the diagram plus the notes. The order of steps and the 'handle JSON' direction need a short walkthrough, and the tiny edge labels slow reading."
+    }
+  ],
+  "coldRead": "An agent runs `crumb launch`. The short-lived CLI spawns a detached hidden `__supervise` Node process and then polls the run directory. The supervisor reads the account's session from the AES-256-GCM vault (the key comes from the OS store, a key file or CRUMB_KEY) and launches Chromium with a temporary profile and a debugging port on 127.0.0.1. It injects the saved cookies and storage, then writes run/<id>.json, which holds the CDP endpoints. The CLI sees that file and prints it as the handle JSON. The agent then drives Chrome directly over CDP. If something goes wrong, the supervisor writes an .error file, or the child exits, or the 60s timeout hits; in each case the CLI fails and points to the .log file. A missing key fails the launch with KEY_UNAVAILABLE. While running, the supervisor autosaves every 30s, on SIGUSR2 and on SIGTERM/SIGINT. Autosave failures are only logged, and closing the window skips the final save.",
+  "inaccuracies": [
+    "The Agent→CLI edge is labelled 'handle JSON', which is the CLI's output. The request is the `crumb launch` invocation, so under the stated 'caller → recipient' convention the label describes the wrong direction (src/cli.ts, src/session.ts:155).",
+    "The CLI is shown only polling Run files. It also reads the vault entry header before spawning, which can fail with NOT_FOUND or NEEDS_LOGIN (src/session.ts:135-137). It also creates the .log file and removes a stale .error file (src/session.ts:139-142).",
+    "The legend defines 'double border = external service', but no node uses it.",
+    "Run files are described as 'Plaintext' without noting they are written with mode 0600 and that run/<id>.json is deleted on shutdown (src/session.ts:194, 218-221)."
+  ],
+  "improvements": [
+    "Scale the diagram to fill the 1194x834 viewport and enlarge the edge labels to at least 11-12px. Reroute the CDP and poll edges so they don't overlap frame borders or detour around the bottom.",
+    "Number the steps (1 launch → 2 spawn → 3 decrypt → 4 launch Chrome + inject → 5 write handle → 6 CLI polls and prints → 7 agent drives CDP). Relabel Agent→CLI as 'crumb launch → handle JSON'.",
+    "Add a second visual channel (colors or arrowheads per line style) and remove the unused double-border legend entry. Note the local trust boundary: the CDP port on 127.0.0.1 is reachable by any local process, and run files are 0600."
+  ],
+  "total": 29,
+  "verdict": "Good"
+}

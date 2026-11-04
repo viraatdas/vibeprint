@@ -1,0 +1,181 @@
+{
+  "title": "Crumb: how does an AI agent get a logged-in browser for a saved account?",
+  "audience": "New engineers",
+  "scope": "The crumb launch flow: agent CLI call, detached supervisor, Chrome over CDP, encrypted vault, and OS key store.",
+  "omissions": [
+    "Session import/export via src/transfer.ts",
+    "Interactive login and capture from an existing browser"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "agent",
+      "label": "Agent host",
+      "description": "Local coding agent and its hook, user-run"
+    },
+    {
+      "id": "crumb",
+      "label": "Crumb local processes",
+      "description": "Local self-hosted Node CLI, supervisor and Chrome"
+    },
+    {
+      "id": "disk",
+      "label": "Local state and OS",
+      "description": "Local filesystem vault and OS key store"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "AI agent",
+      "kind": "client",
+      "tags": [
+        "Claude Code",
+        "Codex"
+      ],
+      "path": "",
+      "description": "Runs crumb commands, drives the browser via CDP",
+      "group": "agent"
+    },
+    {
+      "id": "guard",
+      "label": "Vault guard",
+      "kind": "module",
+      "tags": [
+        "PreToolUse"
+      ],
+      "path": "hooks/",
+      "description": "Blocks agent tool calls that reference ~/.crumb",
+      "group": "agent"
+    },
+    {
+      "id": "cli",
+      "label": "Crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node"
+      ],
+      "path": "src/",
+      "description": "Starts the supervisor, waits for handle, prints it",
+      "group": "crumb"
+    },
+    {
+      "id": "supervisor",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Detached process: injects state, autosaves session",
+      "group": "crumb"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "Chromium"
+      ],
+      "path": "src/browser.ts",
+      "description": "Local Chrome exposing a CDP endpoint",
+      "group": "crumb"
+    },
+    {
+      "id": "vault",
+      "label": "Session vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "",
+      "description": "Encrypted .crumb entries plus run handle files",
+      "group": "disk"
+    },
+    {
+      "id": "keystore",
+      "label": "OS key store",
+      "kind": "external",
+      "tags": [
+        "Keychain",
+        "secret-tool"
+      ],
+      "path": "",
+      "description": "Holds vault key; falls back to CRUMB_KEY or key file",
+      "group": "disk"
+    }
+  ],
+  "edges": [
+    {
+      "from": "agent",
+      "to": "guard",
+      "label": "tool call JSON",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "cli",
+      "label": "crumb launch id",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "supervisor",
+      "label": "spawn __supervise",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "vault",
+      "label": "poll handle file",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "keystore",
+      "label": "vault key lookup",
+      "mode": "sync"
+    },
+    {
+      "from": "supervisor",
+      "to": "vault",
+      "label": "encrypted session",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "chrome",
+      "label": "CDP cookies/state",
+      "mode": "sync"
+    },
+    {
+      "from": "agent",
+      "to": "chrome",
+      "label": "CDP automation",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Fails closed on key",
+      "text": "Missing key in configured store throws KEY_UNAVAILABLE; never mints a new key over an existing vault.",
+      "source": "src/crypto.ts"
+    },
+    {
+      "title": "Autosave and merge",
+      "text": "Supervisor saves every 30s, on SIGUSR2 and SIGTERM, 3-way merging so concurrent runs don't clobber.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Start timeout",
+      "text": "CLI polls for the handle up to 60s; supervisor errors surface via a .error file, else INTERNAL.",
+      "source": "src/session.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:18:36.345Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

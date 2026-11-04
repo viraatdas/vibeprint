@@ -1,0 +1,164 @@
+{
+  "title": "Crumb: how does `crumb launch` give an agent a logged-in Chrome?",
+  "audience": "New engineers",
+  "scope": "Launch from the agent's command through CDP control, with autosave back to the encrypted vault on one machine.",
+  "omissions": [
+    "login, capture, check, import/export and other CLI commands",
+    "Profile-mode details and the Claude/Codex skill setup"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "agent",
+      "label": "AI agent",
+      "description": "Local agent process, user-run"
+    },
+    {
+      "id": "crumb",
+      "label": "Crumb",
+      "description": "Local Node processes, self-hosted"
+    },
+    {
+      "id": "browser",
+      "label": "Browser",
+      "description": "Local Chrome, CDP on 127.0.0.1"
+    },
+    {
+      "id": "state",
+      "label": "Local state",
+      "description": "Local files and OS key store"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "Coding agent",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Runs crumb, then drives Chrome over CDP",
+      "group": "agent"
+    },
+    {
+      "id": "cli",
+      "label": "Crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node",
+        "commander"
+      ],
+      "path": "src/cli.ts",
+      "description": "Spawns supervisor, prints handle JSON",
+      "group": "crumb"
+    },
+    {
+      "id": "supervisor",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Detached: launches Chrome, injects, autosaves",
+      "group": "crumb"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "CDP"
+      ],
+      "path": "src/browser.ts",
+      "description": "System Chrome or Playwright Chromium",
+      "group": "browser"
+    },
+    {
+      "id": "vault",
+      "label": "Vault files",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Encrypted sessions plus run handle files",
+      "group": "state"
+    },
+    {
+      "id": "keystore",
+      "label": "OS key store",
+      "kind": "external",
+      "tags": [],
+      "path": "src/crypto.ts",
+      "description": "Keychain, secret-tool, CRUMB_KEY or key file",
+      "group": "state"
+    }
+  ],
+  "edges": [
+    {
+      "from": "agent",
+      "to": "cli",
+      "label": "crumb launch",
+      "mode": "sync"
+    },
+    {
+      "from": "cli",
+      "to": "supervisor",
+      "label": "spawn",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "keystore",
+      "label": "vault key",
+      "mode": "sync"
+    },
+    {
+      "from": "supervisor",
+      "to": "vault",
+      "label": "state+handle",
+      "mode": "local"
+    },
+    {
+      "from": "supervisor",
+      "to": "chrome",
+      "label": "storage state",
+      "mode": "sync"
+    },
+    {
+      "from": "cli",
+      "to": "vault",
+      "label": "poll handle",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "chrome",
+      "label": "CDP commands",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Handle handshake",
+      "text": "CLI polls run/<id>.json every 150ms for up to 60s; supervisor error file or exit fails launch.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Autosave gaps",
+      "text": "Saves diffs every 30s and on SIGTERM/SIGUSR2; if Chrome closes itself, exits without a final save.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Key fails closed",
+      "text": "Missing or wrong key throws KEY_UNAVAILABLE; no new key is minted over a non-empty vault.",
+      "source": "src/crypto.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:37:54.750Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

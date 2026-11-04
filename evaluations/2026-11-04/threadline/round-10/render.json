@@ -1,0 +1,127 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 435.36022676557855,
+    "y": 161.9056379821958,
+    "z": 0.5435264707068264
+  },
+  "text": [
+    {
+      "text": "Outbound: how does the draft claim suppress a concurrent double Send?",
+      "renderedSize": 17.392847062618443
+    },
+    {
+      "text": "New engineers · Two Today tabs sending one draft, the Next.js server action, and the conditional Postgres claim on its row.",
+      "renderedSize": 10.3270029434297
+    },
+    {
+      "text": "Owner's browser",
+      "renderedSize": 11.95758235555018
+    },
+    {
+      "text": "Local client: two tabs, one\nsession",
+      "renderedSize": 10.3270029434297
+    },
+    {
+      "text": "Vercel",
+      "renderedSize": 11.95758235555018
+    },
+    {
+      "text": "Hosted, managed: Vercel\nfunctions, sfo1",
+      "renderedSize": 10.3270029434297
+    },
+    {
+      "text": "AWS RDS",
+      "renderedSize": 11.95758235555018
+    },
+    {
+      "text": "Hosted, managed: RDS\nPostgres, us-west-1",
+      "renderedSize": 10.3270029434297
+    },
+    {
+      "text": "Today tab A",
+      "renderedSize": 13.588161767670659
+    },
+    {
+      "text": "DraftCard Send with\nthe edited text",
+      "renderedSize": 10.870529414136527
+    },
+    {
+      "text": "Today tab B",
+      "renderedSize": 13.588161767670659
+    },
+    {
+      "text": "Same draft, second\ntab; same Send call",
+      "renderedSize": 10.870529414136527
+    },
+    {
+      "text": "Next.js server",
+      "renderedSize": 13.588161767670659
+    },
+    {
+      "text": "run(): assertOwner,\nZod, then\nsendMessage",
+      "renderedSize": 10.870529414136527
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 13.588161767670659
+    },
+    {
+      "text": "First\ndraft|failed→sending\nUPDATE wins race",
+      "renderedSize": 10.870529414136527
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient,\nresponse included; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 10.870529414136527
+    },
+    {
+      "text": "The claim is one conditional UPDATE",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "UPDATE sets sending, clears error,\nstamps sentAt/updatedAt, saves edits\nWHERE id, out, status IN (draft,failed)\nRETURNING. A concurrent UPDATE\nthen matches 0 rows → skipped.",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "Source: lib/engine.ts:1346-1358",
+      "renderedSize": 9.783476472722874
+    },
+    {
+      "text": "Suppression, not exactly-once",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "Winner's outcome arrives after\nguards/delivery. Throws and most\nguards set failed, claimable again,\neven if markSent throws after Gmail\naccepted; closed/replied set skipped.",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "Source: lib/engine.ts:1360-1466",
+      "renderedSize": 9.783476472722874
+    },
+    {
+      "text": "Crash after claim strands the row",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "If the function dies after the claim, the\nrow stays 'sending': Send/Skip match\nonly draft|failed; refresh only resolves\nLinkedIn rows with a run id. Today\nshows it 'Queued on LinkedIn'.",
+      "renderedSize": 11.414055884843354
+    },
+    {
+      "text": "Source: lib/engine.ts:1755-1759;\ncomponents/today.tsx:107-116",
+      "renderedSize": 9.783476472722874
+    },
+    {
+      "text": "Outside this view: Guards and Gmail/LinkedIn/X delivery that run after a successful claim; Conversation Send: each click inserts its own row, so no\nshared claim.",
+      "renderedSize": 9.239950002016048
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.696423531309222
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

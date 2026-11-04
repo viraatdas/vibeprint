@@ -1,0 +1,74 @@
+{
+  "project": "vibeprint",
+  "round": 3,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:19:06.020Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one question ('how does an iPad sketch reach the local coding agent?'). The subtitle names the audience (new engineers) and the scope, and the level of detail suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Most boxes are runtime units (Canvas app, Relay, Daemon, MCP server, Claude API). '.vibeprint files' is a storage artifact and 'Coding agent' is an actor, but the reading key accounts for both. There is no linked zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "There is a visible 'Outside this view' line listing the deliberate omissions. The diagram leaves out that interpretation can also come from a heuristic plus the coding agent through the MCP interpret tool (src/mcp/backend.ts interpret(); daemon.ts:853). That is a core part of the sketch path, not a side detail."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow has a label, and the key defines initiator→recipient plus solid/dashed/dotted styles. F1 and F2 are spelled out in footnotes. Two things are unclear: 'strokes via LAN' is dashed but runs as a long horizontal line through the Relay frame, so it reads as passing through the relay, and nothing shows the order in which the steps happen."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Four labeled frames: iPad browser, Hosted relay (optional), Developer machine (self-hosted), and Anthropic (external managed). These boundaries are clear. Nothing marks the Claude API dependency as optional or keyed by an API key."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "The diagram runs left to right, but at 1194x834 the node descriptions, edge labels and reading key are tiny and hard to read. The top ~150px is empty. The MCP→Daemon 'HTTP: sketch, wait' line runs along the frame edge and overlaps other labels ('tunnel WebSocket' is cut off at the frame edge). The edge labels near .vibeprint files are cramped."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a reading key for frames, boxes, arrow direction and line styles. The type of each box is written as text ('service ·', 'storage ·'), so the meaning does not depend on color alone. All boxes have the same shape, so storage and external services are not visually distinct, and the sync/async line styles are hard to tell apart at this size."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Three visible notes, each citing its source file: the daemon-down file fallback, the optional relay with background retry, and canvas.json failing closed. The diagram omits the files.lock concurrency lock in LocalBackend (src/mcp/backend.ts:106-160) and the case where the Claude API is unavailable or no key is set."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "The footer gives the date, the revision dca6c85 plus local edits, owner 'Unassigned', and 'Live runtime NOT verified'. The labeling is honest, but no one owns the diagram, and it presents the Claude API as unconditional, which the code does not."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer could explain the main path (iPad → daemon via LAN or relay → files and Claude → MCP → agent) plus the fallbacks. They would likely misread Claude as required and miss that the agent can do the interpretation itself."
+    }
+  ],
+  "coldRead": "The user draws on a Canvas app in an iPad browser. Strokes reach the Daemon on the developer machine (`vibeprint serve`) in one of two ways: directly over the LAN, or through an optional hosted Relay that the daemon connects to with a tunnel WebSocket. The daemon writes canvas.json into the repo's .vibeprint/ files, commits them with git, and sends sketches to the Claude API (Anthropic) for interpretation. A local coding agent calls tools on the MCP server. The MCP server asks the daemon over HTTP for the current sketch or to wait for the user. If the daemon isn't running, the MCP server reads and writes .vibeprint/ directly, and live waiting is not available. The relay is optional and retries in the background. An unparseable canvas.json fails closed and asks the user to resolve merge conflicts or restore from git.",
+  "inaccuracies": [
+    "The Claude API is drawn as an unconditional step. In fact it is used only when ANTHROPIC_API_KEY is set (src/interpret/claude.ts:33). Otherwise interpretation is a heuristic plus the coding agent (src/server/daemon.ts:853).",
+    "The diagram does not show that the agent can submit interpretations through MCP (Backend.interpret in src/mcp/backend.ts:40,73,175). That is a second interpretation path.",
+    "The note 'MCP reads/writes .vibeprint/ directly' leaves out the files.lock mutual exclusion and its 503 error when the lock is busy (src/mcp/backend.ts:106-150).",
+    "The 'strokes via LAN' line runs across the Relay frame, so it looks like LAN traffic passes through the hosted relay."
+  ],
+  "improvements": [
+    "Mark the Claude API edge and frame as optional (only with ANTHROPIC_API_KEY), and add the alternative path where the agent interprets the sketch via the MCP interpret tool.",
+    "Make the diagram readable at 1194x834: use the empty top band, enlarge node and edge-label text, route 'strokes via LAN' below or around the Relay frame, and stop the 'tunnel WebSocket' label from being cut off.",
+    "Assign a real owner and add a note on the files.lock contention and the 503 when the lock is busy. Give storage and external services distinct shapes so they don't rely on text labels alone."
+  ],
+  "total": 29,
+  "verdict": "Good"
+}

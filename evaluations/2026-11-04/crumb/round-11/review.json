@@ -1,0 +1,72 @@
+{
+  "project": "crumb",
+  "round": 11,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:18:58.600Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one question: 'crumb: how does a running state-mode session autosave storage state to the vault?' The subtitle names the audience (New engineers) and the scope (timer-driven saves in supervise()). The level of detail suits new engineers: process names, the merge rule and the failure notes, with no line-level code."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "There are three nodes, all at the runtime level: the Supervisor process, its child Chrome process, and the Vault files store. Key-store and log details sit in notes and do not appear as mixed-level boxes. Nothing is jumbled across infrastructure, code and concepts."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "It shows every step needed for the question: tick, snapshot (cookies, localStorage, IndexedDB), read, in-memory merge, then temp write and rename. The 'Outside this view' line names the deliberate omissions: launch, run handle files (the post-save lastSavedAt handle write is one of them), signal-driven sync/close, profile mode, agent CDP and login/check. Nothing extra is included."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "All edges are directed, labelled and numbered 1–4, and each is marked sync, async or local. The legend says a request arrow includes its response, so the single 'read' arrow is fine, and the Chrome→Supervisor 'close event: no save' is drawn as its own async event. Deduction: the '1 tick' self-loop is drawn as a broken triangle. One dashed segment runs out of the Local machine frame to about (383,558), and another ends with no arrowhead near the step-3 label. A reader could take this as an unlabelled extra edge or a trigger from outside the machine. The merge between steps 3 and 4 is also only in a note, not a visible step."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "An explicit 'Local machine' frame is captioned 'Local host; all three as one OS user', which states the trust and ownership situation. Chrome is marked 'Owned child, temp profile'. Vault files are marked 'Encrypted per-account files, 0600, no lock'. No external services sit on the save path (the key is cached), so no extra boundary is needed for this local project."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Supervisor sits on the left and fans out to Chrome and Vault on the right, but the layout is awkward at 1194x834. The self-loop is a stray triangle that pokes below the frame and leaves a segment dangling. The solid edge runs through '2 storage-state snapshot', and the dotted edge runs through '3 read; 4 temp +'. The arrowhead and the cylinder top crowd the 'Vault files' title. The subtitle, frame caption, 'Source:' lines and footer are about 8–9px, hard to read at this size. The diagram uses only the centre of the canvas and leaves large empty margins."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "A visible key explains frames (trust/deployment zones), boxes (runtime actor/process), cylinders (stored state), and arrows (caller → recipient, response included; dashed = async event, solid = awaited request/reply, dotted = file/IPC). Line style, not colour, carries the meaning, so the single red authorship colour is fine. Names match the code (supervise(), Chrome, Vault files)."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The notes cover the relevant behaviour. Timer: default 30s, 0 = off. Concurrency: ticks join an in-flight save, and unchanged state skips the write. Retry: errors go only to the run log, and 'before' advances only on success, so the next tick retries. Race: no lock, so another process's write between steps 3 and 4 is lost. The Chrome close path ends without a save. Key store: the key is cached at startup, so saves make no key-store calls. The encrypted body vs plaintext header is stated."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows date (2026-11-04), revision 557acd4, owner Viraat Das and 'Live runtime NOT verified'. All claims I checked match src/session.ts, src/vault.ts, src/crypto.ts and src/browser.ts. Without verification against a running system the rubric caps this at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can mostly retell the save cycle from the image: tick, snapshot, read, merge, rewrite, plus the close/no-save and no-lock caveats. But the malformed self-loop that leaves the frame could be misread as an external trigger or an extra edge. The tiny caption and footer text also makes the trust and verification context easy to miss without someone explaining it."
+    }
+  ],
+  "coldRead": "crumb keeps per-account browser sessions in an encrypted vault on the local machine. This view covers one thing: while a state-mode session is running, how its storage gets saved back. A Supervisor process (supervise(), Node.js/Playwright) owns a Chrome child that runs on a temporary profile. Supervisor, Chrome and the vault files all run as the same OS user on one machine. A timer fires every 30s by default (--autosave 0 turns it off) (1). The supervisor asks Chrome for a storage-state snapshot of cookies, localStorage and IndexedDB, and waits for the reply (2). If nothing changed since the last good save, it stops there. Otherwise it reads the current vault entry for the account (3). In memory, it applies only the changes between the previous snapshot ('before') and the new one ('after') to that latest entry, and adds 'sync' provenance and browser hints. It then writes a temp file and renames it over the entry (4). The entry body is AES-256-GCM encrypted, the header is plaintext, and the file is mode 0600. The key comes from CRUMB_KEY, or else the key store named in config.json, and is cached at startup, so saves never touch the key store. Failure behaviour: a tick that arrives during a save joins that save. Errors are only logged to the run log, and because 'before' is not advanced, the next tick retries. There is no lock, so if another process writes the entry between the read and the rename, that write is lost. If the user closes Chrome, the supervisor exits without a final save, so up to one interval of changes is lost. Signal-driven sync/close, launch, handle files and profile mode are outside this view.",
+  "inaccuracies": [],
+  "improvements": [
+    "Redraw the '1 tick, default 30s' self-loop as a small closed loop on the Supervisor box, or as a timer glyph or node inside the frame. It must stay inside the Local machine frame and leave no dangling segment, so it no longer reads as an external trigger or a stray edge.",
+    "Move edge labels off their lines so the strokes don't run through '2 storage-state snapshot' and '3 read; 4 temp + rename', and end the dotted arrow at the cylinder body, clear of the 'Vault files' title. Consider splitting 3 (read) and 4 (temp + rename) into separate arrows, and showing the in-memory 'merge before→after' as a visible step between them.",
+    "Scale the diagram up to fill the 1194x834 viewport and raise the subtitle, frame caption, 'Source:' lines and footer (date/revision/owner/not-verified) to at least 11–12px. Optionally add drawn line-style swatches to the text-only key."
+  ],
+  "total": 35,
+  "verdict": "Good"
+}

@@ -1,0 +1,131 @@
+{
+  "nodes": [
+    {
+      "id": "web",
+      "label": "Web app",
+      "kind": "client",
+      "tags": [
+        "Next.js",
+        "React"
+      ],
+      "path": "app/",
+      "description": "Owner-only pages (Today, Find, People, Pipeline, Campaigns) plus cron and import API routes"
+    },
+    {
+      "id": "scout",
+      "label": "Scout CLI",
+      "kind": "client",
+      "tags": [
+        "Node"
+      ],
+      "path": "scripts/scout.ts",
+      "description": "Local CLI that finds companies with yc/gh/bird and pushes them to /api/import"
+    },
+    {
+      "id": "engine",
+      "label": "Engine",
+      "kind": "module",
+      "tags": [
+        "TypeScript"
+      ],
+      "path": "lib/",
+      "description": "Research, find people, enroll, draft, send, reply detection and hourly fill"
+    },
+    {
+      "id": "sources",
+      "label": "Sources",
+      "kind": "module",
+      "tags": [],
+      "path": "lib/sources/",
+      "description": "Pure finders for YC, GitHub, HN, X, websites, Apollo and Exa"
+    },
+    {
+      "id": "browser",
+      "label": "LinkedIn browser",
+      "kind": "service",
+      "tags": [
+        "Fly.io",
+        "browser-use"
+      ],
+      "path": "browser/",
+      "description": "Self-hosted Chromium agent running LinkedIn actions behind a Starlette API"
+    },
+    {
+      "id": "pg",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [
+        "RDS",
+        "Drizzle"
+      ],
+      "path": "",
+      "description": "Projects, companies, people, campaigns, messages, settings"
+    },
+    {
+      "id": "openrouter",
+      "label": "OpenRouter",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "LLMs for research, drafts, web search and reply labels"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Sends threaded emails and reads replies and bounces"
+    },
+    {
+      "id": "apollo",
+      "label": "Apollo / Exa",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "People search, email lookup, firmographics and company discovery"
+    }
+  ],
+  "edges": [
+    {
+      "from": "scout",
+      "to": "web",
+      "label": "HTTP"
+    },
+    {
+      "from": "web",
+      "to": "engine",
+      "label": ""
+    },
+    {
+      "from": "engine",
+      "to": "pg",
+      "label": "SQL"
+    },
+    {
+      "from": "engine",
+      "to": "sources",
+      "label": ""
+    },
+    {
+      "from": "sources",
+      "to": "apollo",
+      "label": "HTTP"
+    },
+    {
+      "from": "engine",
+      "to": "openrouter",
+      "label": "LLM"
+    },
+    {
+      "from": "engine",
+      "to": "gmail",
+      "label": "send"
+    },
+    {
+      "from": "engine",
+      "to": "browser",
+      "label": "runs"
+    }
+  ]
+}

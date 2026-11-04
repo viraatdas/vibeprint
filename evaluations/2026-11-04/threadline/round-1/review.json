@@ -1,0 +1,74 @@
+{
+  "project": "threadline",
+  "round": 1,
+  "model": "Claude Code",
+  "reviewedAt": "2026-11-04T04:05:43.475Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 0,
+      "evidence": "There is no title, caption, or question stated. The image is nine red boxes with no context, so a viewer cannot tell it describes an owner-only outbound sales tool."
+    },
+    {
+      "id": "abstraction",
+      "score": 2,
+      "evidence": "Most boxes sit at one level (clients, a module, a service, a DB, external APIs). 'Sources' is a code subfolder (lib/sources/) shown as a peer of deployed services, and the 'Apollo / Exa' box merges two vendors into one."
+    },
+    {
+      "id": "focus",
+      "score": 2,
+      "evidence": "The main pieces are present. Missing: the cron/hourly-fill trigger, the owner-click send gate (the core invariant in CLAUDE.md), and the external sources GitHub, HN and X. Scout's yc/gh/bird tools are also left out."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "Web→Engine and Engine→Sources have no labels. The Engine→Gmail edge has no visible label and runs straight through the LinkedIn browser box, so the 'runs' label looks like it belongs to that edge. Gmail reads replies and bounces, but the diagram only shows one direction. Nothing marks sync vs. async or the order of steps."
+    },
+    {
+      "id": "boundaries",
+      "score": 0,
+      "evidence": "There are no containers. Nothing separates Vercel from the Fly.io browser service, AWS RDS, the local CLI, or the third-party APIs."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "The top-down direction is clear. The Gmail arrow cuts through the LinkedIn browser box. Edge labels are tiny (about 6px), and the content fills only the middle of the canvas, leaving the left third empty."
+    },
+    {
+      "id": "notation",
+      "score": 1,
+      "evidence": "Everything uses the same red rectangle except the Postgres cylinder. Externals, clients and modules look identical and there is no legend. The names themselves are real."
+    },
+    {
+      "id": "operations",
+      "score": 0,
+      "evidence": "No failure modes, retries, rate limits, LinkedIn session fragility, cron schedule, or approval gate are shown."
+    },
+    {
+      "id": "freshness",
+      "score": 1,
+      "evidence": "The visible names match the repo: lib/gmail.ts, lib/ai.ts, lib/linkedin.ts and lib/engine.ts exist. But the image has no date, version or owner, and nothing was checked against production."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "A newcomer would see a web app calling an engine that fans out to services. They would not learn what the product does, that sends need a human click, or how replies come back."
+    }
+  ],
+  "coldRead": "A Scout CLI sends data over HTTP to a Web app. The Web app calls an Engine. The Engine writes to Postgres over SQL, uses a Sources module that calls Apollo/Exa, calls OpenRouter for LLM work, and also talks to a LinkedIn browser and the Gmail API. From the picture alone I can't tell what the system is for (outbound sales prospecting), who uses it, that sending is gated on an owner click, where each part runs, or how replies come back.",
+  "inaccuracies": [
+    "The Engine→Gmail edge has no visible label (the map says 'send') and passes through the LinkedIn browser box, so the 'runs' label reads ambiguously.",
+    "Gmail is shown as send-only, but lib/gmail.ts and the engine's reply detection also read replies and bounces, so the flow goes both ways.",
+    "Sources (lib/sources/) also calls YC, GitHub, HN, X and websites. The diagram shows only Apollo/Exa.",
+    "Scout CLI's local dependencies (yc/gh/bird for X) are left out, and so is the cron/hourly-fill entry point into the web app."
+  ],
+  "improvements": [
+    "Add a title, for example 'Threadline outbound: how prospects are found, drafted and sent (owner-click gated)', plus a date, the source revision and an owner.",
+    "Group nodes into labeled deployment/trust containers: local machine (Scout), Vercel (web + engine + cron), Fly.io (LinkedIn browser), AWS RDS, and third-party APIs. Add a legend that uses shape as well as color.",
+    "Label every edge in readable type and reroute Gmail so it doesn't cross the browser box. Show the reply path back from Gmail, the cron trigger, and the owner Send gate (sendMessage), and note LinkedIn session fragility as a failure point."
+  ],
+  "total": 10,
+  "verdict": "Redo"
+}

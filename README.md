@@ -1,6 +1,6 @@
 # vibeprint
 
-Draw your architecture on an iPad. Your coding agent reads it, marks it up in its own blue pen, and then tracks the build against it on the same canvas.
+Draw your architecture in blue on an iPad. Your coding agent reads it, marks it up in its own red pen, and then tracks the build against it on the same canvas.
 
 - **You sketch** boxes, arrows and words with the Pencil, then tap **Submit**.
 - **The agent reads it** into a private graph (nodes, edges, labels), each node bound to the strokes it came from. Faint tags like "Postgres" or "queue" appear on your shapes. Ignore them, or correct them by scribbling and submitting again.
@@ -62,9 +62,19 @@ The MCP server works with or without the canvas running. With `vibeprint serve` 
 Tap **Map this repo** (top bar, or the card on an empty canvas). It happens in two steps:
 
 1. **A quick map, at once.** Without any model, in well under a second: components from the folder layout and package manifests (a Next.js or Vite app at the root is one component; a folder with its own `package.json` is another), connections from the imports between them, and databases, queues and third-party APIs from the packages each component uses.
-2. **The real map, about a minute later.** A model reads the code and redraws the map in place: the Claude API if `ANTHROPIC_API_KEY` is set, otherwise the Claude Code or Codex you already have installed, run headless and read-only in the repo (Claude Code gets only its Read, Grep and Glob tools; Codex runs in its read-only sandbox). The top bar shows **Reading the code…** meanwhile. If you edit the quick map before it finishes, your edits win and the reading is dropped.
+2. **The model map, after source review.** A model reads the code, audits its draft against the implementation, and redraws the map in place: the Claude API if `ANTHROPIC_API_KEY` is set, otherwise the Claude Code or Codex you already have installed, run headless and read-only in the repo (Claude Code gets only its Read, Grep and Glob tools; Codex runs in its read-only sandbox). The top bar shows **Reading the code…** meanwhile. If you edit the quick map before it finishes, your edits win and the reading is dropped.
 
-The map lands as ordinary ink beside anything you've drawn, laid out with callers above what they call, and becomes the architecture with every component marked done. Boxes you draw afterwards come in as planned work next to what's built. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Connected agents hear about the map and can correct it with marks, or redraw it with `map_architecture`.
+The map lands as ordinary editable ink beside anything you've drawn and becomes the architecture with every component marked done. The model map answers one runtime question for new engineers: a title and scope, deployment/trust containers, short flow labels, a notation key, source-linked operational notes, and a source-review date/revision. A compound graph layout keeps deployment zones separate and reserves space for full arrow labels. Solid, dashed and dotted lines distinguish synchronous requests, asynchronous delivery and local I/O, with the type also written on every arrow. Generated maps use a bundled sans-serif face with matching server-side text measurements; original hand ink keeps its handwriting font. The instant quick scan keeps its simpler caller-first layout. A source review does not verify production, and generated claims still need checking. Boxes you draw afterwards come in as planned work next to what's built. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Connected agents hear about the map and can correct it with marks, or redraw it with `map_architecture`.
+
+Tap **Clean up** beside **Map this repo** to reconcile an existing canvas. The same AI reads the canvas image (including handwriting), approved architecture, recent chat and code, then redraws the diagram with a **Reconciled notes** column. It answers questions the code can resolve and keeps uncertain questions open. Unrecognized strokes and reference images stay in an **Original notes & references** area. AI ink is red; your original ink stays blue.
+
+Cleanup preserves component identities, build statuses and pending suggestions. Edits made while the model is working win: the cleanup is discarded rather than overwriting them. **Undo cleanup** restores the original canvas and architecture, including after restarting the daemon, provided no newer edits were made. The original backup remains in `.vibeprint/runtime/cleanups/`. Cleanup requires the Claude API, Claude Code or Codex; it does not change source files.
+
+### Evaluating map quality
+
+The [evaluation report](evaluations/2026-11-04/README.md) and [visual gallery](evaluations/2026-11-04/index.html) preserve real generate → render → review iterations across Outbound, Crumb and Vibeprint against ten dimensions (40 points). Each trial saves its editable canvas, iPad-size screenshot, raw map, rendering metrics and a fresh image-and-source review. Starting at round 4, both generation and judging explicitly select `claude-opus-5-5` through Claude Code and verify its returned model receipt. Later rounds record exact generation/audit prompts and renderer hashes. Source review is distinguished from live-system verification.
+
+To run or resume one round locally: `node --import tsx scripts/evaluate-maps.ts <round>`. To continue until every latest diagram scores at least 36/40: `node --import tsx scripts/iterate-maps.ts`. The loop generates revised maps using the previous review's findings, judges each new screenshot in a fresh context, and stops evaluating projects once they reach Excellent. It stops on generation/render/review errors so they can be repaired before resuming. Human redesign guidance, where used, is archived alongside the trials; judges do not receive prior scores or a requested score. This requires authenticated Claude Code, Playwright Chromium and its system libraries/fonts. Completed reviews are immutable and skipped. The harness uses isolated temporary canvases and never modifies other project checkouts or their running daemons. It is scoped to the three configured projects and dated output directory; change those for a new study.
 
 ### Seeing the schema
 
@@ -122,7 +132,7 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | `--no-relay`, `VIBEPRINT_RELAY` | Turn off the hosted relay, or point it at your own (`VIBEPRINT_RELAY=https://relay.example.com`). |
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |
-| `VIBEPRINT_MAPPER` | What reads the code for **Map this repo** and **Tables**: `api`, `claude`, `codex`, or `off` for the quick map only (default: the first available, in that order). |
+| `VIBEPRINT_MAPPER` | What reads the code for **Map this repo**, **Clean up** and **Tables**: `api`, `claude`, `codex`, or `off` for the quick map only (default: the first available, in that order). |
 | `VIBEPRINT_NO_UPDATE_CHECK` | Set to skip the check for a newer release at startup. |
 | `VIBEPRINT_AUTHOR` | Override the author name an MCP client's marks carry (default: detected `claude` / `codex`). |
 

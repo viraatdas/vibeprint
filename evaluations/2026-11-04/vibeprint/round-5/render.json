@@ -1,0 +1,150 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 127.98545994065296,
+    "y": 122.4166172106826,
+    "z": 0.7188566552901022
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+      "renderedSize": 23.00341296928327
+    },
+    {
+      "text": "New engineers · iPad canvas via opt-in hosted relay or LAN to the local daemon, .vibeprint state, and the agent's MCP server.",
+      "renderedSize": 13.658276450511943
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 15.814846416382249
+    },
+    {
+      "text": "User's tablet browser,\nexternal device",
+      "renderedSize": 13.658276450511943
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "Draws the canvas,\nsends strokes,\nreviews marks",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "Hosted relay",
+      "renderedSize": 15.814846416382249
+    },
+    {
+      "text": "Hosted relay, opt-in\nvia config",
+      "renderedSize": 13.658276450511943
+    },
+    {
+      "text": "Relay",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "Forwards iPad\nrequests over\ndaemon's tunnel",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "Dev machine: daemon",
+      "renderedSize": 15.814846416382249
+    },
+    {
+      "text": "Local, self-hosted\ndaemon and state",
+      "renderedSize": 13.658276450511943
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "vibeprint serve:\ncanvas state,\ntoken-gated",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": ".vibeprint dir",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "Plain JSON:\ncanvas, graph,\nrelay identity",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "Dev machine: agent",
+      "renderedSize": 15.814846416382249
+    },
+    {
+      "text": "Local agent with stdio\nMCP child",
+      "renderedSize": 13.658276450511943
+    },
+    {
+      "text": "Coding agent",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "Reads sketch,\nbuilds, proposes\nmarks",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "MCP server",
+      "renderedSize": 17.971416382252556
+    },
+    {
+      "text": "Tools: get_sketch,\nmarks,\nwait_for_user",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external service.\nArrows: caller → recipient (response included). Solid = sync; dashed = async; dotted = local command/I/O.",
+      "renderedSize": 14.377133105802045
+    },
+    {
+      "text": "Relay optional, LAN fallback",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "Relay only with a configured URL; if\nunreachable, serve prints the LAN URL\nand the tunnel reconnects",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 12.93941979522184
+    },
+    {
+      "text": "Daemon down: files mode",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "MCP picks daemon or .vibeprint/ files\nper call; canvas sees file writes on\nthe next vibeprint serve",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 12.93941979522184
+    },
+    {
+      "text": "No live wait without daemon",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "In files mode wait_for_user returns at\nonce and asks the user to run\nvibeprint serve",
+      "renderedSize": 15.095989761092147
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 12.93941979522184
+    },
+    {
+      "text": "Outside this view: Sketch interpretation via Claude API or heuristics (src/interpret/); CLI commands, git checkpoints and repo code-map scanning.",
+      "renderedSize": 12.220563139931738
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 11.501706484641636
+    }
+  ],
+  "errors": []
+}

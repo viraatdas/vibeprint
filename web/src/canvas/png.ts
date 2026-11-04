@@ -1,4 +1,5 @@
-import { arrowPoints, docBounds, sortedShapes, TEXT_LINE, TEXT_SIZE, type Doc } from '@shared/canvas'
+import { MAP_FLOW_SIZE, MAP_FLOW_LINE } from '@shared/map-font'
+import { AGENT_COLOR, arrowLabelPoint, arrowPoints, docBounds, sortedShapes, TEXT_LINE, TEXT_SIZE, type Doc } from '@shared/canvas'
 import { ARROW_LABEL_SIZE, arrowPaths, ARROW_WIDTH, drawShapePath } from './ink'
 
 const PAD = 32
@@ -22,7 +23,8 @@ async function toBase64(canvas: HTMLCanvasElement): Promise<string> {
 }
 
 /** PNG (base64) of the whole sketch on white, with the long side near 1600px. */
-export async function exportSketchPng(doc: Doc, ink: string): Promise<string | undefined> {
+export async function exportSketchPng(doc: Doc, ink: string, agent = AGENT_COLOR): Promise<string | undefined> {
+  await Promise.all([document.fonts.load('20px "VP Map"'), document.fonts.load('20px "VP Hand"')])
   const b = docBounds(doc)
   if (!b) return undefined
   const scale = Math.max(0.25, Math.min(2, 1600 / Math.max(1, b.w, b.h)))
@@ -44,36 +46,49 @@ export async function exportSketchPng(doc: Doc, ink: string): Promise<string | u
   for (const s of doc.values()) if (s.type === 'image' && !images.has(s.src)) images.set(s.src, await loadImage(s.src))
 
   for (const s of sortedShapes(doc)) {
+    ctx.fillStyle = s.author === 'agent' ? agent : ink
+    ctx.strokeStyle = ctx.fillStyle
     switch (s.type) {
       case 'draw':
         ctx.fill(new Path2D(drawShapePath(s)))
         break
       case 'arrow': {
         const { a, b: end } = arrowPoints(s, doc)
-        const { shaft, head } = arrowPaths(a, end)
+        const { shaft, head } = arrowPaths(a, end, s.route)
         ctx.lineWidth = ARROW_WIDTH
+        ctx.setLineDash(s.mode === 'async' ? [16, 8] : s.mode === 'local' ? [2, 8] : [])
         ctx.stroke(new Path2D(shaft))
+        ctx.setLineDash([])
         if (head) ctx.stroke(new Path2D(head))
         if (s.text?.trim()) {
-          // The label sits on the shaft with a white halo, as on screen.
+          // Routed labels mask the complete line behind them, as on screen.
           ctx.save()
-          ctx.font = `${ARROW_LABEL_SIZE}px "VP Hand", cursive`
+          ctx.font = `${s.route ? MAP_FLOW_SIZE : ARROW_LABEL_SIZE}px ${s.font === 'sans' ? '"VP Map", Arial, sans-serif' : '"VP Hand", cursive'}`
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.lineWidth = 7
           ctx.strokeStyle = '#ffffff'
           ctx.lineJoin = 'round'
-          const mx = (a.x + end.x) / 2
-          const my = (a.y + end.y) / 2
-          ctx.strokeText(s.text.trim(), mx, my)
-          ctx.fillText(s.text.trim(), mx, my)
+          const { x: mx, y: my } = s.labelAt ?? arrowLabelPoint([a, ...(s.route ?? []), end])
+          if (s.route) {
+            const lines = s.text.trim().split('\n'), width = Math.max(...lines.map(line => ctx.measureText(line).width)) + 16
+            const previousFill = ctx.fillStyle
+            ctx.fillStyle = '#ffffff'
+            ctx.fillRect(mx - width / 2, my - lines.length * MAP_FLOW_LINE / 2 - 4, width, lines.length * MAP_FLOW_LINE + 8)
+            ctx.fillStyle = previousFill
+          }
+          s.text.trim().split('\n').forEach((line, i, lines) => {
+            const y = my + (i - (lines.length - 1) / 2) * MAP_FLOW_LINE
+            ctx.strokeText(line, mx, y)
+            ctx.fillText(line, mx, y)
+          })
           ctx.restore()
         }
         break
       }
       case 'text': {
         const size = s.size ?? TEXT_SIZE
-        ctx.font = `${size}px "VP Hand", cursive`
+        ctx.font = `${size}px ${s.font === 'sans' ? '"VP Map", Arial, sans-serif' : '"VP Hand", cursive'}`
         ctx.textBaseline = 'middle'
         s.text.split('\n').forEach((line, i) => ctx.fillText(line, s.x, s.y + (i + 0.5) * size * TEXT_LINE))
         break

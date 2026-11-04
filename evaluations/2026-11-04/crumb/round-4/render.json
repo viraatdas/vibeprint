@@ -1,0 +1,154 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 357.86688741721855,
+    "y": 266.42384105960264,
+    "z": 0.5630126771066368
+  },
+  "text": [
+    {
+      "text": "Crumb: how does `crumb launch` give an agent a logged-in Chrome?",
+      "renderedSize": 18.01640566741238
+    },
+    {
+      "text": "New engineers · Launch from the agent's command through CDP control, with autosave back to the encrypted vault on one machine.",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "[ AI agent ]",
+      "renderedSize": 12.949291573452648
+    },
+    {
+      "text": "Local agent process,\nuser-run",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Coding agent",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "client · Runs\ncrumb, then drives\nChrome over CDP",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "[ Crumb ]",
+      "renderedSize": 12.949291573452648
+    },
+    {
+      "text": "Local Node processes,\nself-hosted",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Crumb CLI",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "client · Spawns\nsupervisor, prints\nhandle JSON",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Supervisor",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "worker · Detached:\nlaunches Chrome,\ninjects, autosaves",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "[ Browser ]",
+      "renderedSize": 12.949291573452648
+    },
+    {
+      "text": "Local Chrome, CDP on\n127.0.0.1",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Chrome",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "service · System\nChrome or\nPlaywright Chromium",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "[ Local state ]",
+      "renderedSize": 12.949291573452648
+    },
+    {
+      "text": "Local files and OS key\nstore",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Vault files",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "storage · Encrypted\nsessions plus run\nhandle files",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "OS key store",
+      "renderedSize": 14.07531692766592
+    },
+    {
+      "text": "external ·\nKeychain,\nsecret-tool,\nCRUMB_KEY or key\nfile",
+      "renderedSize": 10.6972408650261
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; boxes = named runtime units with type. Arrows: caller → recipient (response included).\nSolid = sync; dashed = async; dotted = local I/O. All generated ink is AI red; user additions are blue.",
+      "renderedSize": 11.260253542132737
+    },
+    {
+      "text": "F1 · Coding agent → Crumb CLI: crumb launch (sync)",
+      "renderedSize": 11.260253542132737
+    },
+    {
+      "text": "Handle handshake",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "CLI polls run/<id>.json every 150ms\nfor up to 60s; supervisor error file\nor exit fails launch.",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 10.134228187919463
+    },
+    {
+      "text": "Autosave gaps",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "Saves diffs every 30s and on\nSIGTERM/SIGUSR2; if Chrome closes\nitself, exits without a final save.",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "Source: src/session.ts",
+      "renderedSize": 10.134228187919463
+    },
+    {
+      "text": "Key fails closed",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "Missing or wrong key throws\nKEY_UNAVAILABLE; no new key is minted\nover a non-empty vault.",
+      "renderedSize": 11.823266219239374
+    },
+    {
+      "text": "Source: src/crypto.ts",
+      "renderedSize": 10.134228187919463
+    },
+    {
+      "text": "Outside this view: login, capture, check, import/export and other CLI commands; Profile-mode details and the Claude/Codex skill setup.",
+      "renderedSize": 9.571215510812825
+    },
+    {
+      "text": "Source review 2026-11-04 · revision 557acd4 · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 9.00820283370619
+    }
+  ],
+  "errors": []
+}

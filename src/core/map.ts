@@ -6,6 +6,7 @@ import crypto from 'node:crypto'
 import { arrowPoints, docBounds, extractSketch, shapeBounds, TEXT_LINE, TEXT_SIZE, type InkPoint, type Shape } from '../shared/canvas.js'
 import type { InterpretationResult, RepoMap, RepoMapEdge } from '../shared/types.js'
 import { FILES, VibeprintCore, VibeprintError } from './core.js'
+import { drawPresentedMap } from './map-presentation.js'
 
 /** The last map drawn, so an untouched map can be replaced instead of piling up. */
 interface MapRecord {
@@ -155,7 +156,8 @@ function handCylinder(x: number, y: number, w: number, h: number, seed: string):
 const labelWidth = (text: string, size = TEXT_SIZE) => Math.round(text.length * size * 0.54)
 const newId = () => 'shape:map' + crypto.randomBytes(8).toString('base64url').replace(/[^\w-]/g, '')
 const fingerprint = (shapes: Shape[]) =>
-  crypto.createHash('sha256').update(JSON.stringify([...shapes].sort((a, b) => (a.id < b.id ? -1 : 1)))).digest('hex')
+  // Attribution upgrades do not count as a user edit of a legacy map.
+  crypto.createHash('sha256').update(JSON.stringify([...shapes].sort((a, b) => (a.id < b.id ? -1 : 1)).map(({ author: _author, ...shape }) => shape))).digest('hex')
 
 export interface MapPlan {
   put: Shape[]
@@ -175,12 +177,14 @@ export function cleanMap(map: RepoMap): RepoMap {
     .map((n) => ({ ...n, label: n.label.trim().slice(0, 40), tags: (n.tags ?? []).filter((t) => typeof t === 'string').slice(0, 3) }))
   if (!nodes.length) throw new VibeprintError('The map has no components. Give each node an id and a label.')
   const ids = new Set(nodes.map((n) => n.id))
-  const edges = (map.edges ?? []).filter((e) => e && ids.has(e.from) && ids.has(e.to) && e.from !== e.to).slice(0, 60)
-  return { nodes, edges }
+  const presented = !!(map.title && map.groups?.length)
+  const edges = (map.edges ?? []).filter((e) => e && ids.has(e.from) && ids.has(e.to) && (presented || e.from !== e.to)).slice(0, 60)
+  return { ...map, nodes, edges }
 }
 
 /** Lay the map out in rows (clients, then services, then data) and turn it into shapes. */
-function drawMap(map: RepoMap, origin: { x: number; y: number }) {
+export function drawMap(map: RepoMap, origin: { x: number; y: number }) {
+  if (map.title && map.groups?.length) return drawPresentedMap(map, origin)
   const byId = new Map(map.nodes.map((n) => [n.id, n]))
   const lines = rankRows(map).flatMap((r) => Array.from({ length: Math.ceil(r.length / PER_ROW) }, (_, i) => r.slice(i * PER_ROW, (i + 1) * PER_ROW)))
 
@@ -450,6 +454,7 @@ export function mapCode(core: VibeprintCore, canvas: Shape[], input: RepoMap, au
   const b = docBounds(rest)
   const origin = untouched ? prior!.origin : b ? { x: r2(b.x + b.w + 200), y: r2(b.y) } : { x: 0, y: 0 }
   const { shapes, nodeShapes, edges } = drawMap(map, origin)
+  for (const s of shapes) s.author = 'agent'
   for (const s of shapes) byId.set(s.id, s)
 
   // The rest of the graph stays as it is; the map's components join it.

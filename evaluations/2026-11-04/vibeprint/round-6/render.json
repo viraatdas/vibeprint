@@ -1,0 +1,126 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 393.22514836795256,
+    "y": 143.45697329376856,
+    "z": 0.613424345847554
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch over the LAN reach the local\ncoding agent?",
+      "renderedSize": 19.62957906712173
+    },
+    {
+      "text": "New engineers · Direct LAN path only: iPad browser to local daemon, plaintext .vibeprint/ state, and the agent's MCP\nserver reading marks.",
+      "renderedSize": 11.655062571103526
+    },
+    {
+      "text": "iPad",
+      "renderedSize": 13.495335608646188
+    },
+    {
+      "text": "Local device on same\nLAN, user-managed",
+      "renderedSize": 11.655062571103526
+    },
+    {
+      "text": "iPad browser",
+      "renderedSize": 15.33560864618885
+    },
+    {
+      "text": "Draws sketches and\nmarks, shows chat",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "Developer machine",
+      "renderedSize": 13.495335608646188
+    },
+    {
+      "text": "One local host: daemon, MCP, files",
+      "renderedSize": 11.655062571103526
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 15.33560864618885
+    },
+    {
+      "text": "Token-gated canvas\nserver, owns state",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "Agent MCP",
+      "renderedSize": 15.33560864618885
+    },
+    {
+      "text": "Process the coding\nagent runs for tools",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": ".vibeprint dir",
+      "renderedSize": 15.33560864618885
+    },
+    {
+      "text": "Plaintext canvas,\nmarks, chat, token",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller →\nrecipient, response included; solid = sync; dashed = async; dotted = local command/I/O. Flow type is also\nwritten on each arrow.",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "F1 · iPad browser → Daemon: 2. canvas ops over WS (async)",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "F2 · Agent MCP → .vibeprint dir: alt: locked file I/O (local)",
+      "renderedSize": 12.26848691695108
+    },
+    {
+      "text": "Token gate",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "Non-local callers without a\nmatching token (header, cookie\nor ?t=) get 401; WS upgrades are\nrefused too.",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 11.041638225255973
+    },
+    {
+      "text": "No daemon: files mode",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "MCP edits .vibeprint/ under\nfiles.lock; waits 5s then 503, locks\nolder than 10s count as stale.",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 11.041638225255973
+    },
+    {
+      "text": "Single daemon",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "On start it probes an existing\ndaemon's /api/health (800ms) and\nreuses its port and token if alive.",
+      "renderedSize": 12.881911262798635
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 11.041638225255973
+    },
+    {
+      "text": "Outside this view: Hosted relay path for iPads off the LAN (relay/, src/server/relay.ts); Model-drawn quick map via Claude API\n(src/interpret/).",
+      "renderedSize": 10.428213879408418
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 9.814789533560864
+    }
+  ],
+  "errors": []
+}

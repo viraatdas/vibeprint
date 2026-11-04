@@ -1,0 +1,102 @@
+{
+  "title": "crumb: how does a running state-mode session autosave storage state to the vault?",
+  "audience": "New engineers",
+  "scope": "Timer-driven saves in supervise(): snapshot cookies, localStorage and IndexedDB, merge with the vault entry, rewrite it.",
+  "omissions": [
+    "Launch, run handle files, signal-driven saves (crumb sync/close)",
+    "Profile mode (same timer, persistent profile), agent CDP, login/check"
+  ],
+  "owner": "Viraat Das",
+  "groups": [
+    {
+      "id": "host",
+      "label": "Local machine",
+      "description": "Local host; all three as one OS user"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sup",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node.js",
+        "Playwright"
+      ],
+      "path": "src/",
+      "description": "supervise(): owns Chrome, merges in memory",
+      "group": "host"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "client",
+      "tags": [
+        "Chromium",
+        "CDP"
+      ],
+      "path": "",
+      "description": "Owned child, temp profile; close skips save",
+      "group": "host"
+    },
+    {
+      "id": "vault",
+      "label": "Vault files",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "",
+      "description": "Encrypted per-account files, 0600, no lock",
+      "group": "host"
+    }
+  ],
+  "edges": [
+    {
+      "from": "sup",
+      "to": "sup",
+      "label": "1 tick, default 30s",
+      "mode": "async"
+    },
+    {
+      "from": "sup",
+      "to": "chrome",
+      "label": "2 storage state snapshot",
+      "mode": "sync"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "3 read; 4 temp + rename",
+      "mode": "local"
+    },
+    {
+      "from": "chrome",
+      "to": "sup",
+      "label": "close event: no save",
+      "mode": "async"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Timer, skip, retry",
+      "text": "Default 30s; --autosave 0 = off. Ticks join an in-flight save; unchanged state skips. Errors go only to the ~/.crumb/run log; before advances only on success, so the next tick retries.",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Merge in memory, no lock",
+      "text": "Between steps 3 and 4, only before → after changes are applied to the latest entry, plus sync provenance and browser hints. No lock: another process's write in that window is lost.",
+      "source": "src/vault.ts"
+    },
+    {
+      "title": "Key cached at startup",
+      "text": "Key: CRUMB_KEY, else config.json's keyStore (Keychain, Secret Service or ~/.crumb/key). Cached at startup, so saves make no key-store calls. Body is AES-256-GCM; header is plaintext.",
+      "source": "src/crypto.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:16:58.943Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

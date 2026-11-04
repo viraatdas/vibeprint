@@ -52,7 +52,7 @@ function repo(): string {
  * A stand-in for the `claude` CLI: checks it was asked for read-only tools and a schema,
  * optionally waits, then prints what `claude -p --output-format json` prints.
  */
-function fakeClaude(opts: { delayMs?: number; fail?: boolean } = {}): string {
+function fakeClaude(opts: { delayMs?: number; fail?: boolean; expectedModel?: string } = {}): string {
   const dir = tmp('bin')
   const bin = path.join(dir, 'claude')
   fs.writeFileSync(
@@ -60,6 +60,7 @@ function fakeClaude(opts: { delayMs?: number; fail?: boolean } = {}): string {
     `#!/usr/bin/env node
 const args = process.argv.slice(2)
 const at = (f) => args[args.indexOf(f) + 1]
+if (${JSON.stringify(opts.expectedModel)} && at('--model') !== ${JSON.stringify(opts.expectedModel)}) {console.error('wrong model');process.exit(2)}
 if (at('--tools') !== 'Read,Grep,Glob' || !args.includes('--json-schema') || !at('-p').includes('quick automatic scan')) {
   console.error('unexpected args: ' + args.join(' ')); process.exit(2)
 }
@@ -111,12 +112,31 @@ describe('choosing what reads the code', () => {
 describe('reading the code', () => {
   test('Claude Code runs read-only in the repo and its map comes back', async () => {
     const mapper: Mapper = { kind: 'claude-code', label: 'Claude Code', author: 'claude', bin: fakeClaude() }
-    assert.deepEqual(await mapWithModel(repo(), { nodes: [], edges: [] }, mapper), READ)
+    const { verification, ...map } = await mapWithModel(repo(), { nodes: [], edges: [] }, mapper)
+    assert.deepEqual(map, READ)
+    assert.equal(verification?.revision, 'unknown')
+    assert.equal(verification?.dirty, false)
+    assert.ok(Number.isFinite(Date.parse(verification!.at)))
+  })
+
+  test('explicit Claude model reaches both generation and source audit, with query traces', async () => {
+    const mapper: Mapper = { kind: 'claude-code', label: 'Claude Code', author: 'claude', bin: fakeClaude({ expectedModel: 'claude-opus-5-5' }) }
+    const queries: Array<{ prompt: string; what: string }> = []
+    await mapWithModel(repo(), { nodes: [], edges: [] }, mapper, { model: 'claude-opus-5-5', trace: q => queries.push(q) })
+    assert.equal(queries.length, 2)
+    assert.equal(queries[0].what, 'map')
+    assert.equal(queries[1].what, 'map source audit')
+    assert.match(queries[1].prompt, /SOURCE AUDIT/)
+    assert.match(queries[1].prompt, /Draft:/)
   })
 
   test('Codex runs in a read-only sandbox and its last message is the map', async () => {
     const mapper: Mapper = { kind: 'codex', label: 'Codex', author: 'codex', bin: fakeCodex() }
-    assert.deepEqual(await mapWithModel(repo(), { nodes: [], edges: [] }, mapper), READ)
+    const { verification, ...map } = await mapWithModel(repo(), { nodes: [], edges: [] }, mapper)
+    assert.deepEqual(map, READ)
+    assert.equal(verification?.revision, 'unknown')
+    assert.equal(verification?.dirty, false)
+    assert.ok(Number.isFinite(Date.parse(verification!.at)))
   })
 
   test('the Claude API gets the scan and a digest of the code', async () => {
@@ -132,7 +152,9 @@ describe('reading the code', () => {
       },
     }
     const map = await mapWithModel(repo(), { nodes: [{ id: 'web', label: 'Web' }], edges: [] }, { kind: 'api', label: 'Claude', author: 'claude' }, { client })
-    assert.deepEqual(map, READ)
+    const { verification, ...content } = map
+    assert.deepEqual(content, READ)
+    assert.equal(verification?.revision, 'unknown')
     assert.match(prompt, /"label":"Web"/, 'the quick scan is the starting point')
     assert.match(prompt, /A storefront with an orders API/, 'the README is in the digest')
     assert.match(prompt, /--- server\/index\.ts \(start\) ---/, 'entry points are in the digest')

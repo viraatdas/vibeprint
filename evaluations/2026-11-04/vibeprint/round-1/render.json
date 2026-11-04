@@ -1,0 +1,46 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 1127.0541721854302,
+    "y": 356.95059602648985,
+    "z": 0.4220470680306334
+  },
+  "text": [
+    {
+      "text": "Web canvas",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "CLI",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "MCP server",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "Relay",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "Interpret",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "Core",
+      "renderedSize": 10.129129632735202
+    },
+    {
+      "text": "Claude API",
+      "renderedSize": 10.129129632735202
+    }
+  ],
+  "errors": []
+}

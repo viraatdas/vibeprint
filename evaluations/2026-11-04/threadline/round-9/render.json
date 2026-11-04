@@ -1,0 +1,127 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 549.8508740356083,
+    "y": 178.67002967359053,
+    "z": 0.4925280426760203
+  },
+  "text": [
+    {
+      "text": "Outbound: how do concurrent Send clicks claim one draft so only one proceeds?",
+      "renderedSize": 15.76089736563265
+    },
+    {
+      "text": "New engineers · The owner's Send click from two tabs, the sendAction server action, and the atomic Postgres claim on one message\nrow.",
+      "renderedSize": 9.358032810844385
+    },
+    {
+      "text": "Owner device",
+      "renderedSize": 10.835616938872446
+    },
+    {
+      "text": "Local browser, two tabs of one client",
+      "renderedSize": 9.358032810844385
+    },
+    {
+      "text": "App server",
+      "renderedSize": 10.835616938872446
+    },
+    {
+      "text": "Hosted Next.js server\nruntime",
+      "renderedSize": 9.358032810844385
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 10.835616938872446
+    },
+    {
+      "text": "Hosted database",
+      "renderedSize": 9.358032810844385
+    },
+    {
+      "text": "Browser tab A",
+      "renderedSize": 12.313201066900508
+    },
+    {
+      "text": "Owner clicks Send\non a draft",
+      "renderedSize": 9.850560853520406
+    },
+    {
+      "text": "Browser tab B",
+      "renderedSize": 12.313201066900508
+    },
+    {
+      "text": "Same draft,\nconcurrent second\nclick",
+      "renderedSize": 9.850560853520406
+    },
+    {
+      "text": "App server",
+      "renderedSize": 12.313201066900508
+    },
+    {
+      "text": "sendAction runs\nsendMessage per\nclick",
+      "renderedSize": 9.850560853520406
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 12.313201066900508
+    },
+    {
+      "text": "messages row;\ndraft/failed claimed\nonce",
+      "renderedSize": 9.850560853520406
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient,\nresponse included; solid = sync. Flow type is also written on each arrow.",
+      "renderedSize": 9.850560853520406
+    },
+    {
+      "text": "Atomic claim",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "After loadSettings, one UPDATE\nWHERE id, direction='out', status IN\n(draft,failed) sets sending, clears error,\nstamps sentAt/updatedAt, saves edits,\nRETURNING. No row → skipped.",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 8.865504768168366
+    },
+    {
+      "text": "Not one-way",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "After a win, failed guards set the row\nto failed or skipped, with sentAt null\nand an error. Failed rows can be\nclaimed again by a manual Send.\nSkipped rows cannot.",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 8.865504768168366
+    },
+    {
+      "text": "Crash after claim",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "This only prevents duplicate claims. It\ndoes not guarantee delivery. A row left\n'sending' can't be reclaimed. Refresh\nresolves only queued LinkedIn rows\nthat have an externalId.",
+      "renderedSize": 10.343088896196425
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 8.865504768168366
+    },
+    {
+      "text": "Outside this view: Post-claim guards, Gmail/LinkedIn delivery and daily rate limits; Finding, research, enrollment and drafting of prospects.",
+      "renderedSize": 8.372976725492345
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.880448682816325
+    }
+  ],
+  "overflows": [],
+  "errors": []
+}

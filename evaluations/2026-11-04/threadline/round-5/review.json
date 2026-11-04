@@ -1,0 +1,77 @@
+{
+  "project": "threadline",
+  "round": 5,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:41:56.722Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one specific question: how one approved email draft gets sent through Gmail. The subtitle names the audience (new engineers) and the scope. The level of detail suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "There are four nodes, each a runtime component: browser, Next.js server, Postgres and Gmail API. Code detail (sendMessage) appears only as a description, not as a separate box."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The diagram is tightly focused, and its omissions are stated in the 'Outside this view' line. But the notes leave out checks that really happen in sendMessage: the person stage/closed check (skipped), missing person, and a missing or bounced email address (lib/engine.ts:1369-1374, 1413)."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "There are three directed, labeled sync arrows. The order only shows up through the numbered notes 1) to 4); the arrows have no sequence numbers. Server to Gmail ('checks, send') bundles two separately timed calls: the in-touch check happens before the send. Nothing shows that the claim comes before the Gmail calls or that 'sent' is written after."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Each node sits in a labeled frame: Owner device (local), Web app (hosted), Database ('hosting not verified') and Google (external, vendor-managed). Each frame holds exactly one node, so the frames add little grouping. Trust and ownership between the app and Postgres are left unclear."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Flow runs left to right with good spacing, and text is readable at 1194x834. Problems: the server→Gmail arrow loops over the top of the Database frame, the 'checks, send' label is struck through by the line, and the labels render with stray middle dots ('Send·+·edits', 'claim,-sent'). The top ~120px is empty."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a key for frames, boxes, the cylinder and the double border, and the cylinder and double border are non-color signals. The key also defines dashed (async) and dotted (local I/O) lines that never appear. Everything is drawn in a single red, so color carries no meaning."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The notes cover the double-send claim, which checks fail open and which fail closed, and the absence of retries on Gmail errors (the row becomes 'failed' and the owner must click again). All of this matches lib/engine.ts:1345-1466 and fits this small system."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows the review date, revision f467a33 + local edits, Owner: Unassigned, and 'Live runtime NOT verified'. The claims match the source. The score is capped at 3 because production was not verified, and no owner is assigned."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer could explain the path and the safeguards. They might still think every Gmail call happens after all checks, or that a failed check always yields 'failed'. In fact a reply found or a closed stage yields 'skipped'."
+    }
+  ],
+  "coldRead": "The owner clicks Send, optionally with edits, on an email draft in the Today or conversation view in their browser. The browser makes a synchronous call to the hosted Next.js server, where sendMessage in lib/engine.ts is the only send path. sendMessage first claims the Postgres message row: it sets the row to 'sending' only if the message is outbound and in draft or failed state, so a second click gets 'skipped'. Next come the checks. The daily email limit is enforced. The Gmail reply check fails open: if it errors, the send goes ahead. The Gmail in-touch check fails closed: if it errors, the send is blocked. If the draft passes, the server sends the email in-thread through the Gmail API and records the row as sent in Postgres. If Gmail is not connected or the send throws, the row becomes 'failed' with the error recorded, and there is no automatic retry; the owner has to click Send again. LinkedIn, X DMs, discovery and drafting are outside this view. The diagram was reviewed from source at f467a33 plus local edits, the live system was not verified, and no owner is assigned.",
+  "inaccuracies": [
+    "The checks note leaves out the person-stage/closed check (lib/engine.ts:1373-1374), which comes before the daily limit and ends in 'skipped'. It also leaves out the missing-person check (1369) and the no-usable/bounced-email check (1413).",
+    "The note implies every check failure produces 'failed'. Actually, 'already replied' and a closed stage set the row to 'skipped' (lib/engine.ts:1374, 1384); only the limit, in-touch and Gmail errors set 'failed'.",
+    "Replies the owner writes from a conversation skip the reply and in-touch checks (lib/engine.ts:1382, 1389: `!reply`). The diagram presents those checks as unconditional.",
+    "The single 'checks, send' arrow merges two Gmail calls made at different times: the in-touch check happens before the send, and markSent writes to the DB after it (lib/engine.ts:1393, 1426-1435)."
+  ],
+  "improvements": [
+    "Number the arrows (1 claim, 2 checks, 3 send, 4 record sent) and split server→Gmail into separate 'history check' and 'send' edges, so the order is visible without reading the notes.",
+    "Fix the edge rendering: route server→Gmail so it doesn't cross over the Database frame, keep the line from striking through its label, and remove the stray dot glyphs from the labels. Drop the dashed and dotted entries from the key, since no edge uses them.",
+    "Correct the checks note: add the stage, person and email-address checks, distinguish 'skipped' from 'failed' outcomes, mention that conversation replies bypass the cold checks, and assign an owner."
+  ],
+  "total": 33,
+  "verdict": "Good"
+}

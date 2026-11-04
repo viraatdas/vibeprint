@@ -1,0 +1,137 @@
+{
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "CLI",
+      "kind": "client",
+      "tags": [
+        "Node",
+        "CLI"
+      ],
+      "path": "src/cli.ts",
+      "description": "crumb command entry point for agents and users"
+    },
+    {
+      "id": "hooks",
+      "label": "Guard hook",
+      "kind": "module",
+      "tags": [
+        "agent hook"
+      ],
+      "path": "hooks/",
+      "description": "Agent hook guarding access to the crumb vault"
+    },
+    {
+      "id": "session",
+      "label": "Session",
+      "kind": "module",
+      "tags": [],
+      "path": "src/session.ts",
+      "description": "Opens per-account browser sessions"
+    },
+    {
+      "id": "resolve",
+      "label": "Resolve",
+      "kind": "module",
+      "tags": [],
+      "path": "src/resolve.ts",
+      "description": "Resolves which account/session to use"
+    },
+    {
+      "id": "transfer",
+      "label": "Transfer",
+      "kind": "module",
+      "tags": [],
+      "path": "src/transfer.ts",
+      "description": "Imports and exports session state"
+    },
+    {
+      "id": "browser",
+      "label": "Browser",
+      "kind": "module",
+      "tags": [
+        "Playwright"
+      ],
+      "path": "src/browser.ts",
+      "description": "Launches Chromium and reads/writes cookies and storage"
+    },
+    {
+      "id": "vault",
+      "label": "Vault",
+      "kind": "module",
+      "tags": [],
+      "path": "src/vault.ts",
+      "description": "Stores account entries and profiles, encrypted with crypto.ts"
+    },
+    {
+      "id": "disk",
+      "label": "Vault files",
+      "kind": "storage",
+      "tags": [
+        "encrypted"
+      ],
+      "path": "",
+      "description": "Encrypted session state and config in the home directory"
+    },
+    {
+      "id": "chromium",
+      "label": "Chromium",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Local browser driven by playwright-core"
+    }
+  ],
+  "edges": [
+    {
+      "from": "cli",
+      "to": "session",
+      "label": ""
+    },
+    {
+      "from": "cli",
+      "to": "resolve",
+      "label": ""
+    },
+    {
+      "from": "cli",
+      "to": "transfer",
+      "label": ""
+    },
+    {
+      "from": "session",
+      "to": "browser",
+      "label": ""
+    },
+    {
+      "from": "session",
+      "to": "vault",
+      "label": ""
+    },
+    {
+      "from": "resolve",
+      "to": "vault",
+      "label": ""
+    },
+    {
+      "from": "transfer",
+      "to": "vault",
+      "label": ""
+    },
+    {
+      "from": "browser",
+      "to": "chromium",
+      "label": "CDP"
+    },
+    {
+      "from": "vault",
+      "to": "disk",
+      "label": "encrypted"
+    },
+    {
+      "from": "hooks",
+      "to": "disk",
+      "label": "guards"
+    }
+  ]
+}

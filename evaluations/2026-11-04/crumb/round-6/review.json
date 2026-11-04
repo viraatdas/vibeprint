@@ -1,0 +1,79 @@
+{
+  "project": "crumb",
+  "round": 6,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:46:13.305Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one specific question (how `crumb launch` restores a saved session into a browser an agent can drive). The subtitle names the audience (new engineers) and the scope (state mode, one machine)."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All six boxes are runtime actors or stores at the same level. Run files are a set of mixed artifacts (handle, error, log, temp dir), and 'Crumb CLI' really runs session.ts:launchDetached rather than cli.ts logic. Profile mode is pushed out to a footnote with no separate zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Covers the launch path and has an explicit 'Outside this view' line. It leaves out the early-return case: if a run handle already exists, launchDetached returns it without spawning (session.ts:133-134). It also leaves out the supervisor's header touch (session.ts:196) and the home-page navigation."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Steps are numbered and each arrow carries its sync/async/local type in text, but four of the eight edges are hidden behind indirection labels (F1–F4), so the reader has to look the meaning up in a list. 'poll handle / .error' has no step number, and step 8 'save' is bundled into the step 4 arrow. Two separately initiated events (the initial decrypt and the periodic or signal-driven save) share one arrow."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "There are four frames: Agent, Crumb processes, Crumb data dir and Browser, each with a same-host description. The detached supervisor and the CLI sit in one frame with no process boundary between them. The open CDP trust boundary appears only in a note and is not drawn."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "Direction is left to right, but the CLI→Vault and Supervisor→Run file labels collide with the dotted edges ('2. read entry header' is overprinted). Step 5 and F4 take long detours around the frames. In the notes row, 'NEEDS_LOGIN' overprints 'Every 30s' and 'logged' runs into '127.0.0.1'. Several labels are small at 1194x834."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The key explains frames, boxes and cylinders, and solid, dotted and dashed lines, and flow types are also written as text, which gives a non-color signal. The whole diagram is one red hue. Dotted and dashed are hard to tell apart at this size, and the F-label indirection adds an undocumented step for the reader."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes cover the pre-spawn NOT_FOUND/NEEDS_LOGIN checks, errors passed through run/<id>.error, the 60s timeout leading to INTERNAL, best-effort autosave on a 30s timer and on SIGUSR2/SIGTERM, Chrome closing without a final save, and unauthenticated CDP. Missing: the poll stops early when the child exits (session.ts:161), the timeout and interval are configurable, SIGINT also saves, and cleanup removes the temp dir."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Shows a date, revision 557acd4, 'Owner: Unassigned' and 'Live runtime NOT verified'. Names match the code (__supervise, SIGUSR2, NEEDS_LOGIN). Capped at 3 because only the source was reviewed and no live system was checked."
+    },
+    {
+      "id": "comprehension",
+      "score": 2,
+      "evidence": "A newcomer can get the gist, but has to decode the F1–F4 list, untangle overlapping labels, and read past collided note text. The 'Checks entry' step attributed to the CLI is easy to misread."
+    }
+  ],
+  "coldRead": "An agent runs `crumb launch` (step 1). The CLI reads the account's entry header from the encrypted vault. If there is no entry it fails with NOT_FOUND, and if the entry is empty it fails with NEEDS_LOGIN. Otherwise it spawns a detached `__supervise` process and polls the run directory for a handle or an .error file, for up to 60s. The supervisor decrypts the session from the vault, launches system Chrome with CDP on 127.0.0.1, and injects the cookies and storage. It then writes a 0600 handle file containing the CDP URLs. The CLI returns that handle to the agent, and the agent drives Chrome directly over CDP (step 7). While Chrome runs, the supervisor merges changed state back into the vault every 30s and on SIGUSR2 or SIGTERM. Failures there are only logged, and closing Chrome skips the final save. The CDP port is unauthenticated, so any local process can drive the logged-in browser.",
+  "inaccuracies": [
+    "The pre-spawn checks, spawn and polling labeled 'Crumb CLI' (map path src/cli.ts) are actually implemented in src/session.ts:131-165 (launchDetached).",
+    "Omitted: if a handle for the account is already running, launch returns it immediately without spawning (src/session.ts:133-134).",
+    "The poll ends early with INTERNAL if the supervisor exits before writing a handle (src/session.ts:161). The 60s timeout and 30s autosave interval are defaults that can be overridden with options (session.ts:152, 191, 222).",
+    "SIGINT also triggers a stop with a final save (src/session.ts:234). The note mentions only SIGTERM.",
+    "The supervisor also writes the vault header right after launch (touchHeader lastUsedAt, src/session.ts:196), so step 4 is not only decrypt and later save.",
+    "The supervisor navigates to the session's home URL or --url after injecting (src/session.ts:178-180). The diagram does not show this."
+  ],
+  "improvements": [
+    "Fix the collisions: move the edge labels off the dotted lines and stop the note columns overprinting each other ('NEEDS_LOGIN'/'Every 30s', 'logged'/'127.0.0.1'). Route step 5 and the CDP edge directly rather than around the frames.",
+    "Remove the F1–F4 indirection by writing each label on its arrow. Number the poll edge, and split step 8 (save, triggered by a timer or signal) into its own arrow marked as a separately initiated event.",
+    "Draw the unauthenticated CDP port as an explicit trust-boundary marker on the Browser frame. Add the reuse-running-handle shortcut, plus the child-exit and SIGINT paths, to the failure notes."
+  ],
+  "total": 27,
+  "verdict": "Mediocre"
+}

@@ -7,6 +7,8 @@ import type { Point, Rect, SketchShape } from './types.js'
 /** Bumped when the wire protocol between the canvas and the daemon changes. */
 export const CANVAS_PROTOCOL = 1
 export const CANVAS_FORMAT = 'vibeprint-canvas'
+export const INK_COLOR = '#2e5bff'
+export const AGENT_COLOR = '#d94040'
 
 /** [x, y, pressure] in page space. */
 export type InkPoint = [number, number, number]
@@ -16,6 +18,10 @@ interface ShapeBase {
   id: string
   /** Stacking order; higher draws on top. */
   z: number
+  /** Generated ink keeps its attribution when moved, edited, saved or exported. */
+  author?: 'user' | 'agent'
+  /** Typeset map text; handwritten ink remains the default. */
+  font?: 'hand' | 'sans'
 }
 
 export interface DrawShape extends ShapeBase {
@@ -42,6 +48,10 @@ export interface ArrowShape extends ShapeBase {
   start: ArrowEnd
   end: ArrowEnd
   text?: string
+  /** Optional page-space bends for generated, obstacle-avoiding connectors. */
+  route?: Point[]
+  mode?: 'sync' | 'async' | 'local'
+  labelAt?: Point
 }
 
 export interface TextShape extends ShapeBase {
@@ -109,8 +119,9 @@ function pointsBounds(points: InkPoint[]): Rect {
 /** Page bounds of a shape. Arrows depend on the shapes they are bound to, so they need the doc. */
 export function shapeBounds(shape: Shape, doc: Doc): Rect {
   if (shape.type === 'arrow') {
-    const { a, b } = arrowPoints(shape, doc)
-    return { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) }
+    const pts = arrowRoute(shape, doc)
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y)
+    return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }
   }
   const hit = boundsCache.get(shape)
   if (hit) return hit
@@ -174,8 +185,9 @@ export function arrowPoints(shape: ArrowShape, doc: Doc): { a: Point; b: Point }
   const e = anchorPoint(shape.end, doc)
   let a = s.p
   let b = e.p
-  if (s.target) a = clipToOutline(e.p, s.p, s.target, doc)
-  if (e.target) b = clipToOutline(s.p, e.p, e.target, doc)
+  if (s.target) a = clipToOutline(shape.route?.[0] ?? e.p, s.p, s.target, doc)
+  if (e.target) b = clipToOutline(shape.route?.at(-1) ?? s.p, e.p, e.target, doc)
+  if (shape.route?.length) return { a, b }
   const len = Math.hypot(b.x - a.x, b.y - a.y)
   if (len > ARROW_GAP * 4) {
     const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len
@@ -183,6 +195,21 @@ export function arrowPoints(shape: ArrowShape, doc: Doc): { a: Point; b: Point }
     if (e.target) b = { x: b.x - ux * ARROW_GAP, y: b.y - uy * ARROW_GAP }
   }
   return { a, b }
+}
+
+export function arrowRoute(shape: ArrowShape, doc: Doc): Point[] {
+  const { a, b } = arrowPoints(shape, doc)
+  return [a, ...(shape.route ?? []), b]
+}
+
+/** Labels sit on the longest run of a routed arrow, away from box centers. */
+export function arrowLabelPoint(points: Point[]): Point {
+  let best = 0, at = 1
+  for (let i = 1; i < points.length; i++) {
+    const length = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y)
+    if (length > best) { best = length; at = i }
+  }
+  return { x: (points[at - 1].x + points[at].x) / 2, y: (points[at - 1].y + points[at].y) / 2 }
 }
 
 /** Shapes in stacking order. */
@@ -217,8 +244,8 @@ export function distToShape(p: Point, shape: Shape, doc: Doc): number {
       return best
     }
     case 'arrow': {
-      const { a, b } = arrowPoints(shape, doc)
-      return distToSegment(p, a, b)
+      const points = arrowRoute(shape, doc)
+      return Math.min(...points.slice(1).map((b, i) => distToSegment(p, points[i], b)))
     }
     default: {
       const r = shapeBounds(shape, doc)

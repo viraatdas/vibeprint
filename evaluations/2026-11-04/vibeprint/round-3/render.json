@@ -1,0 +1,166 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 438.214155629139,
+    "y": 350.0538079470199,
+    "z": 0.42850555141711894
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+      "renderedSize": 13.712177645347806
+    },
+    {
+      "text": "New engineers · The sketch path from iPad canvas through the local daemon, its state files and interpreter, to the agent's MCP tools.",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "[ iPad browser ]",
+      "renderedSize": 9.855627682593736
+    },
+    {
+      "text": "User's device, local browser\ntab",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "Canvas app",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "client · iPad drawing\ncanvas, synced live over\nWebSocket",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "[ Hosted relay ]",
+      "renderedSize": 9.855627682593736
+    },
+    {
+      "text": "Hosted tunnel, optional, off\nwhen unset",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "Relay",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "service · Forwards iPad\nrequests to the daemon\ntunnel",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "[ Developer machine ]",
+      "renderedSize": 9.855627682593736
+    },
+    {
+      "text": "Local, self-hosted processes\nand repo files",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "service · vibeprint serve:\ncanvas sync, interpret,\ngit commits",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": ".vibeprint files",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "storage · Canvas, sketches\nand graph committed in the\nrepo",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "MCP server",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "service · Agent tools;\nuses daemon, else reads\nthe files",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "Coding agent",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "client · Local agent that\nreads sketches via MCP\ntools",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "[ Anthropic ]",
+      "renderedSize": 9.855627682593736
+    },
+    {
+      "text": "External managed model API",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "Claude API",
+      "renderedSize": 10.712638785427973
+    },
+    {
+      "text": "external · Model that\ninterprets sketches into a\ngraph",
+      "renderedSize": 8.14160547692526
+    },
+    {
+      "text": "READING KEY · Frames = deployment/trust zones. Boxes = runtime units; type appears below the name. Arrows = initiator → recipient, including the response. Solid = sync\nrequest · dashed = async delivery/stream · dotted = local disk/IPC. AI red; your additions blue.",
+      "renderedSize": 8.570111028342378
+    },
+    {
+      "text": "F1 · Daemon → Claude API: sketch to interpret (sync)",
+      "renderedSize": 8.570111028342378
+    },
+    {
+      "text": "F2 · MCP server → .vibeprint files: fallback file I/O (local)",
+      "renderedSize": 8.570111028342378
+    },
+    {
+      "text": "Daemon-down fallback",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Without the daemon, MCP reads/writes .vibeprint/\ndirectly; live waiting is unavailable.",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 7.713099925508141
+    },
+    {
+      "text": "Relay is optional",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Relay off when unset; if unreachable, daemon prints\nLAN URL and keeps retrying in background.",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Source: src/server/daemon.ts",
+      "renderedSize": 7.713099925508141
+    },
+    {
+      "text": "Canvas fails closed",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Unparseable canvas.json throws, asking to resolve\nmerge conflicts or restore from git.",
+      "renderedSize": 8.998616579759497
+    },
+    {
+      "text": "Source: src/server/canvas.ts",
+      "renderedSize": 7.713099925508141
+    },
+    {
+      "text": "Outside this view: Quick code-map generation via spawned CLI; Relay deployment and hosting details.",
+      "renderedSize": 7.2845943740910215
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 6.856088822673903
+    }
+  ],
+  "errors": []
+}

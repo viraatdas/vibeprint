@@ -1,0 +1,77 @@
+{
+  "project": "threadline",
+  "round": 7,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:54:24.316Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one specific question ('how does an approved email draft get sent through Gmail?'). The subtitle names the audience (new engineers) and the scope (the email branch of sendMessage)."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "All four nodes are runtime components at the same level (browser, app server, Postgres, Gmail API). No code modules, teams or concepts are mixed in."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The omissions are stated in the image ('Outside this view…'). Some steps are missing: the closed-stage and 'already replied' checks end as skipped rather than failed, and the person/campaign/thread reads are folded into 'read'."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are directed, labelled and marked sync, and the legend says a response is included. But '2/4. claim, read, mark' merges several separately ordered DB calls, and '3. checks, send' merges the reply check, the in-touch check and the send, so the real order (claim → limit read → Gmail checks → DB reads → send → mark) is lost."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Labelled frames for owner device, Vercel, Postgres and Google, with local/hosted/external/managed notes. The Postgres frame says 'Hosted database' but not who hosts it. Each frame holds a single node, so the grouping adds little."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Clear left-to-right flow with no crossings. Edge labels and frame sublabels are very small (about 8px) at 1194x834. The App server's diagonal leader lines to the edges look awkward, and a lot of space is wasted."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The key explains frames, boxes, the cylinder, the double border and arrow semantics, and flow type is written as text, not just colour. Everything is one red colour, and the Postgres frame and node share a name, which is redundant."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Three notes cover the atomic claim and double-click safety, a row stuck in 'sending' after a crash, which guards fail open and which fail closed, the daily limit, and retryable failed rows. All of this matches lib/engine.ts:1345-1415."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows the date, revision f467a33 + local edits, 'Owner: Unassigned' and 'Live runtime NOT verified'. The names match the code. There is no production verification and no owner, so 3 is the cap."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer could explain the click → claim → guards → Gmail → mark flow. The merged step numbers and the small text may need a short walkthrough to get the exact order right."
+    }
+  ],
+  "coldRead": "The owner clicks Send in the Today or conversation UI in their browser. A Next.js server action on Vercel runs sendMessage. It first claims the message row in Postgres, changing it from draft/failed to 'sending' and saving any edits, so a double click sends only once. Next come the guards: the daily email limit (if exceeded, the row is marked failed); the check for an earlier reply from this person (if that check errors, it counts as no reply and sending continues); and a Gmail check for existing contact outside the sequence (if that check errors, nothing is sent; owner override and replies skip it). Then it checks that the address is usable and that Gmail is connected, sends through the Gmail API, and marks the row sent. Every failure leaves the row 'failed', and failed rows can be claimed again. A crash in the middle of a send can leave a row stuck in 'sending'. LinkedIn and X sends, and the discovery/research pipeline, are deliberately left out.",
+  "inaccuracies": [
+    "Several guard outcomes are not shown: a closed person stage and 'already replied' end the attempt as 'skipped', not 'failed' (lib/engine.ts:1373-1384). The notes only mention 'skipped' for the claim race.",
+    "If the person no longer exists, the row is marked failed (lib/engine.ts:1369). No note mentions this.",
+    "The label '2/4. claim, read, mark' hides DB reads that happen after the Gmail checks (firstSentAt, the campaign and previous emails at lib/engine.ts:1390-1416). Because of that, a single step 3 between steps 2 and 4 is not the true order.",
+    "The in-touch check is skipped only when the inTouchOverride flag is set or when sending a reply (lib/engine.ts:1389). That matches the note, but the Gmail edge never shows that a hit is also written back to people.metadata in Postgres (lib/engine.ts:1397-1401)."
+  ],
+  "improvements": [
+    "Number every call in order (1 claim, 2 limit/person read, 3 reply check, 4 in-touch check, 5 send, 6 mark sent) instead of the merged '2/4' and '3' labels.",
+    "Make edge labels and frame sublabels at least 11–12px at 1194x834, and route the App server's arrows directly instead of through diagonal leaders.",
+    "Show which outcomes end as skipped and which as failed (closed stage and already replied → skipped). Also name an owner and who hosts Postgres."
+  ],
+  "total": 33,
+  "verdict": "Good"
+}

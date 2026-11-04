@@ -1,0 +1,170 @@
+{
+  "title": "Crumb: how does `crumb launch` restore a saved session into a browser an agent can drive?",
+  "audience": "New engineers",
+  "scope": "State-mode launch on one machine: agent, CLI, detached supervisor, vault, run files, and Chrome over CDP.",
+  "omissions": [
+    "crumb login, capture, check, sync, close and transfer flows",
+    "Profile mode (persistent user-data dir) beyond notes"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "caller",
+      "label": "Agent",
+      "description": "Local agent process, same host"
+    },
+    {
+      "id": "crumb",
+      "label": "Crumb processes",
+      "description": "Local Node CLI + detached supervisor"
+    },
+    {
+      "id": "data",
+      "label": "Crumb data dir",
+      "description": "Local disk, same host"
+    },
+    {
+      "id": "browser",
+      "label": "Browser",
+      "description": "Local Chrome child, same host"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "agent",
+      "label": "Agent",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Runs crumb launch, then drives Chrome",
+      "group": "caller"
+    },
+    {
+      "id": "cli",
+      "label": "Crumb CLI",
+      "kind": "client",
+      "tags": [
+        "Node",
+        "CLI"
+      ],
+      "path": "src/cli.ts",
+      "description": "Checks entry, spawns supervisor, polls run",
+      "group": "crumb"
+    },
+    {
+      "id": "sup",
+      "label": "Supervisor",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "Playwright"
+      ],
+      "path": "src/session.ts",
+      "description": "Decrypts, launches, injects, autosaves",
+      "group": "crumb"
+    },
+    {
+      "id": "vault",
+      "label": "Vault",
+      "kind": "storage",
+      "tags": [
+        "AES-256-GCM"
+      ],
+      "path": "src/vault.ts",
+      "description": "Encrypted sessions; key via OS key store",
+      "group": "data"
+    },
+    {
+      "id": "run",
+      "label": "Run files",
+      "kind": "storage",
+      "tags": [],
+      "path": "src/paths.ts",
+      "description": "Plaintext 0600 handle, error, log; temp dir",
+      "group": "data"
+    },
+    {
+      "id": "chrome",
+      "label": "Chrome",
+      "kind": "service",
+      "tags": [
+        "CDP"
+      ],
+      "path": "src/browser.ts",
+      "description": "System Chrome child, CDP on 127.0.0.1",
+      "group": "browser"
+    }
+  ],
+  "edges": [
+    {
+      "from": "agent",
+      "to": "cli",
+      "label": "1. launch → handle",
+      "mode": "sync"
+    },
+    {
+      "from": "cli",
+      "to": "vault",
+      "label": "2. read entry header",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "sup",
+      "label": "3. spawn __supervise",
+      "mode": "async"
+    },
+    {
+      "from": "sup",
+      "to": "vault",
+      "label": "4. decrypt; 8. save",
+      "mode": "local"
+    },
+    {
+      "from": "sup",
+      "to": "chrome",
+      "label": "5. launch+inject state",
+      "mode": "sync"
+    },
+    {
+      "from": "sup",
+      "to": "run",
+      "label": "6. handle w/ CDP URL",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "run",
+      "label": "poll handle / .error",
+      "mode": "local"
+    },
+    {
+      "from": "agent",
+      "to": "chrome",
+      "label": "7. CDP commands",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Checks before and after spawn",
+      "text": "No entry → NOT_FOUND, empty → NEEDS_LOGIN pre-spawn; later errors go to run/<id>.error; 60s poll then INTERNAL",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Autosave is best-effort",
+      "text": "Every 30s, SIGUSR2 and SIGTERM merge changed state into vault; failures only logged. Closing Chrome skips final save",
+      "source": "src/session.ts"
+    },
+    {
+      "title": "Unauthenticated local CDP",
+      "text": "Handle exposes CDP http/ws URLs on 127.0.0.1; any local process can drive the logged-in browser",
+      "source": "src/browser.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:45:39.297Z",
+    "revision": "557acd4",
+    "dirty": false
+  }
+}

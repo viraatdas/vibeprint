@@ -1,0 +1,50 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 456.8432284768211,
+    "y": 225.82367549668868,
+    "z": 0.6671895193805301
+  },
+  "text": [
+    {
+      "text": "Guard hook",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "CLI",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Transfer",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Resolve",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Session",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Vault",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Browser",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Vault files",
+      "renderedSize": 16.01254846513272
+    },
+    {
+      "text": "Chromium",
+      "renderedSize": 16.01254846513272
+    }
+  ],
+  "errors": []
+}

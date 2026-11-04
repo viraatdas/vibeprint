@@ -1,0 +1,188 @@
+{
+  "title": "Outbound: how does an owner-approved message reach a prospect?",
+  "audience": "New engineers",
+  "scope": "The owner's Send click through the Vercel app to Gmail, or to LinkedIn via the Fly browser worker, with state kept in Postgres.",
+  "omissions": [
+    "Finding, research and the hourly pipeline fill",
+    "Local scout CLI and X DMs, which the owner sends inside X"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "owner",
+      "label": "Owner",
+      "description": "Local: the owner's browser and home exit node"
+    },
+    {
+      "id": "hosted",
+      "label": "Vercel + AWS",
+      "description": "Hosted, managed: Vercel functions and RDS Postgres"
+    },
+    {
+      "id": "fly",
+      "label": "Fly worker",
+      "description": "Hosted on Fly, self-hosted browser-use worker"
+    },
+    {
+      "id": "external",
+      "label": "External APIs",
+      "description": "External, vendor-managed: Google, LinkedIn, OpenRouter"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "owner",
+      "label": "Owner browser",
+      "kind": "client",
+      "tags": [],
+      "path": "",
+      "description": "Owner reviews drafts and clicks Send on Today",
+      "group": "owner"
+    },
+    {
+      "id": "exit",
+      "label": "Home exit node",
+      "kind": "service",
+      "tags": [
+        "Tailscale"
+      ],
+      "path": "",
+      "description": "Owner's always-on machine that LinkedIn traffic exits through",
+      "group": "owner"
+    },
+    {
+      "id": "app",
+      "label": "Web app",
+      "kind": "service",
+      "tags": [
+        "Next.js",
+        "Vercel"
+      ],
+      "path": "app/",
+      "description": "Owner-only UI and server actions; sendMessage lives in lib/engine.ts",
+      "group": "hosted"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [
+        "AWS RDS"
+      ],
+      "path": "",
+      "description": "Messages, people, stages and sealed credentials",
+      "group": "hosted"
+    },
+    {
+      "id": "worker",
+      "label": "LinkedIn worker",
+      "kind": "worker",
+      "tags": [
+        "browser-use",
+        "Starlette"
+      ],
+      "path": "browser/",
+      "description": "Runs one queued Chromium agent task at a time",
+      "group": "fly"
+    },
+    {
+      "id": "gmail",
+      "label": "Gmail API",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Sends threaded email and finds replies and bounces",
+      "group": "external"
+    },
+    {
+      "id": "linkedin",
+      "label": "LinkedIn",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Site the agent uses to send invites and messages",
+      "group": "external"
+    },
+    {
+      "id": "openrouter",
+      "label": "OpenRouter",
+      "kind": "external",
+      "tags": [],
+      "path": "",
+      "description": "Model API used for drafting and the worker's agent",
+      "group": "external"
+    }
+  ],
+  "edges": [
+    {
+      "from": "owner",
+      "to": "app",
+      "label": "Send click",
+      "mode": "sync"
+    },
+    {
+      "from": "app",
+      "to": "db",
+      "label": "SQL: claim+status",
+      "mode": "sync"
+    },
+    {
+      "from": "app",
+      "to": "gmail",
+      "label": "reply check, send",
+      "mode": "sync"
+    },
+    {
+      "from": "app",
+      "to": "worker",
+      "label": "queue run, poll",
+      "mode": "async"
+    },
+    {
+      "from": "app",
+      "to": "openrouter",
+      "label": "draft prompts",
+      "mode": "sync"
+    },
+    {
+      "from": "worker",
+      "to": "openrouter",
+      "label": "agent steps",
+      "mode": "sync"
+    },
+    {
+      "from": "worker",
+      "to": "exit",
+      "label": "SOCKS5 traffic",
+      "mode": "sync"
+    },
+    {
+      "from": "exit",
+      "to": "linkedin",
+      "label": "page actions",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Single send path, fail-closed",
+      "text": "Send claims the row (draft→sending) and re-checks Gmail for replies first. If that check fails, nothing is sent.",
+      "source": "lib/engine.ts"
+    },
+    {
+      "title": "Home exit node is a SPOF",
+      "text": "If the exit node is offline or the IP matches Fly's, LinkedIn runs stay queued and fail after 24h.",
+      "source": "browser/worker.py"
+    },
+    {
+      "title": "Async LinkedIn confirm",
+      "text": "Sends wait up to 30s. Otherwise they stay 'sending' until refresh confirms them (daily cron plus hourly Fly GET).",
+      "source": "AGENTS.md"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T04:18:34.614Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

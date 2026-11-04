@@ -1,0 +1,166 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 192.74238410596013,
+    "y": 288.37748344370857,
+    "z": 0.5201515673441268
+  },
+  "text": [
+    {
+      "text": "Outbound: how does an owner-approved message reach a prospect?",
+      "renderedSize": 16.64485015501206
+    },
+    {
+      "text": "New engineers · The owner's Send click through the Vercel app to Gmail, or to LinkedIn via the Fly browser worker, with state kept in Postgres.",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "[ Owner ]",
+      "renderedSize": 11.963486048914916
+    },
+    {
+      "text": "Local: the owner's browser\nand home exit node",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "Owner browser",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "client · Owner reviews\ndrafts and clicks Send on\nToday",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "Home exit node",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "service · Owner's\nalways-on machine that\nLinkedIn traffic exits\nthrough",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "[ Vercel + AWS ]",
+      "renderedSize": 11.963486048914916
+    },
+    {
+      "text": "Hosted, managed: Vercel\nfunctions and RDS Postgres",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "Web app",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "service · Owner-only UI\nand server actions;\nsendMessage lives in\nlib/engine.ts",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "Postgres",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "database · Messages,\npeople, stages and sealed\ncredentials",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "[ Fly worker ]",
+      "renderedSize": 11.963486048914916
+    },
+    {
+      "text": "Hosted on Fly, self-hosted\nbrowser-use worker",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "LinkedIn worker",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "worker · Runs one queued\nChromium agent task at a\ntime",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "[ External APIs ]",
+      "renderedSize": 11.963486048914916
+    },
+    {
+      "text": "External, vendor-managed:\nGoogle, LinkedIn, OpenRouter",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "Gmail API",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "external · Sends threaded\nemail and finds replies\nand bounces",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "LinkedIn",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "external · Site the agent\nuses to send invites and\nmessages",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "OpenRouter",
+      "renderedSize": 13.003789183603171
+    },
+    {
+      "text": "external · Model API used\nfor drafting and the\nworker's agent",
+      "renderedSize": 9.88287977953841
+    },
+    {
+      "text": "READING KEY · Frames = deployment/trust zones. Boxes = runtime units; type appears below the name. Arrows = initiator → recipient, including the response. Solid = sync\nrequest · dashed = async delivery/stream · dotted = local disk/IPC. AI red; your additions blue.",
+      "renderedSize": 10.403031346882536
+    },
+    {
+      "text": "Single send path, fail-closed",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "Send claims the row (draft→sending) and re-checks\nGmail for replies first. If that check fails,\nnothing is sent.",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 9.362728212194282
+    },
+    {
+      "text": "Home exit node is a SPOF",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "If the exit node is offline or the IP matches Fly's,\nLinkedIn runs stay queued and fail after 24h.",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 9.362728212194282
+    },
+    {
+      "text": "Async LinkedIn confirm",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "Sends wait up to 30s. Otherwise they stay 'sending'\nuntil refresh confirms them (daily cron plus hourly\nFly GET).",
+      "renderedSize": 10.923182914226663
+    },
+    {
+      "text": "Source: AGENTS.md",
+      "renderedSize": 9.362728212194282
+    },
+    {
+      "text": "Outside this view: Finding, research and the hourly pipeline fill; Local scout CLI and X DMs, which the owner sends inside X.",
+      "renderedSize": 8.842576644850157
+    },
+    {
+      "text": "Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 8.32242507750603
+    }
+  ],
+  "errors": []
+}

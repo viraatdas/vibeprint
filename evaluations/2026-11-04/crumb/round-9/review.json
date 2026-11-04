@@ -1,0 +1,76 @@
+{
+  "project": "crumb",
+  "round": 9,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:00:29.831Z",
+  "revision": "557acd4",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks a precise question (how a running state-mode session autosaves into the vault), and the subtitle names the audience (new engineers) and the scope."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All three boxes are runtime actors or stores at the same level. But the triggers (timer, signals from outside senders such as `crumb sync` SIGUSR2) and the key source exist only as prose, not as elements."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are stated deliberately below the diagram. The supervisor's run-handle update after each save (`lastSavedAt`, src/session.ts:209) and the external signal sender are left out, even though they are part of the save loop."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are numbered 1-3 and labelled with mode. But labels are hyphen-broken mid-word ('rena me', 'cookies/s tore'), and edges 2 and 3 both go to the vault with a crossing approach. Triggers are not drawn as separately initiated events."
+    },
+    {
+      "id": "boundaries",
+      "score": 2,
+      "evidence": "There is a single 'Local machine' frame. No internal boundary separates the supervisor process from its child Chrome, or shows the encrypted at-rest store or the key provider (keychain/env/file)."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "The diagram fills about 30% of the 1194x834 canvas, and the note and footer text is about 7-9px, which is hard to read at iPad size. Edge labels are tiny and wrap mid-word, and the frame has large empty space."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The legend explains frames, boxes, cylinders, and the solid vs dotted arrow styles, and the line style itself is a non-color signal. But everything is a single red hue, and the legend is small."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Notes cover coalescing, skipping unchanged snapshots, errors that are only logged, Chrome closing with no final save, no lock against other writers, and the atomic temp+rename write. None of these is attached to the diagram as a failure marker."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Shows date, revision 557acd4, and 'Owner: Unassigned', and states that the live runtime was NOT verified. The claims match src/session.ts:205-236 and vault.ts:112. Capped at 3 without production verification."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can follow snapshot → read latest → merge+write from the numbers plus the notes. But small text and broken labels slow this down, and who sends the signals needs explaining."
+    }
+  ],
+  "coldRead": "crumb runs a detached Node supervisor for each state-mode session, and the supervisor owns a Playwright Chrome context. Every --autosave seconds (default 30), on SIGUSR2, or on SIGINT/SIGTERM as a final save, the supervisor takes a snapshot of Chrome's cookies and storage (1). It then reads the latest encrypted session for the account from the vault (2), three-way merges latest/before/after, and writes the result atomically to a 0600 temp file, then renames it into place (3). Saves that overlap are combined into one, and unchanged snapshots are skipped. Errors are only logged. If Chrome closes by itself, the supervisor exits without a final save. The vault key comes from CRUMB_KEY, the OS keychain, or a key file. There is no lock against other writers.",
+  "inaccuracies": [
+    "Each successful save also updates the run handle's autosave.lastSavedAt (src/session.ts:209), which `crumb sync` polls (src/session.ts:266-272). The 'Outside this view' note excludes run handle files, but leaving them out hides the signal/acknowledgement loop.",
+    "Who sends SIGUSR2/SIGTERM is not shown. In practice the CLI's sync and close commands send them (src/session.ts:254, 267), so the 'Save triggers' note looks like a purely internal trigger.",
+    "The edge labels 'merge→temp+rena me' and 'snapshot→cookies/s tore' are wrapped mid-token, so the visible text is garbled even though the facts are right."
+  ],
+  "improvements": [
+    "Scale the diagram to fill the 1194x834 viewport and raise the font size of edge labels and notes to at least 12px. Widen the edge label boxes so tokens don't break mid-word.",
+    "Draw the triggers explicitly: a timer element and an external 'crumb CLI (sync/close)' actor sending SIGUSR2/SIGTERM, styled as separately initiated events. Optionally add the handle `lastSavedAt` write as the acknowledgement path.",
+    "Attach failure markers to the elements they affect (Chrome closing on its own → no final save; write → no lock; save error → only logged). Show the key provider as an external dependency of the vault."
+  ],
+  "total": 29,
+  "verdict": "Good"
+}

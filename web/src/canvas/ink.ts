@@ -54,12 +54,15 @@ export function drawShapePath(s: DrawShape): string {
 }
 
 /** Shaft and head of an arrow from a to b, as two open paths. */
-export function arrowPaths(a: Point, b: Point): { shaft: string; head: string } {
+export function arrowPaths(a: Point, b: Point, bends: Point[] = []): { shaft: string; head: string } {
+  const previous = bends.at(-1) ?? a
+  const dx = b.x - previous.x, dy = b.y - previous.y
   const len = Math.hypot(b.x - a.x, b.y - a.y)
-  const shaft = `M${f(a.x)},${f(a.y)}L${f(b.x)},${f(b.y)}`
+  const shaft = `M${f(a.x)},${f(a.y)}` + [...bends, b].map(p => `L${f(p.x)},${f(p.y)}`).join('')
   if (len < 1) return { shaft, head: '' }
-  const ux = (b.x - a.x) / len
-  const uy = (b.y - a.y) / len
+  const finalLength = Math.hypot(dx, dy) || len
+  const ux = dx / finalLength
+  const uy = dy / finalLength
   const size = Math.min(18, Math.max(8, len * 0.35))
   const spread = 0.48
   const cos = Math.cos(spread)

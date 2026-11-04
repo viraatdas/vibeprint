@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Vibeprint</title>
-<meta name="description" content="Draw your architecture on an iPad. Claude Code or Codex marks it up in blue, then builds against it.">
+<meta name="description" content="Draw your architecture on an iPad. Claude Code or Codex marks it up in red, then builds against it.">
 <meta name="theme-color" content="#f3f5f7">
 <meta property="og:title" content="Vibeprint">
 <meta property="og:description" content="The sketch is the spec. Draw your architecture on an iPad; your coding agent marks it up and builds against it.">
@@ -20,10 +20,11 @@
   --paper: #f3f5f7;
   --screen: #f8f9fb;
   --dot: #d4d9e0;
-  --ink: #1d1d1f;
+  --ink: #2e5bff;
+  --ui-ink: #1d1d1f;
   --muted: #5f6672;
   --line: #dde2e8;
-  --agent: #2e5bff;
+  --agent: #d94040;
   --bezel: #1c1c1e;
   --sans: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --hand: 'Kalam', 'Comic Sans MS', cursive;
@@ -34,7 +35,7 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; color: var(--ink); font: 400 17px/1.5 var(--sans);
+  margin: 0; color: var(--ui-ink); font: 400 17px/1.5 var(--sans);
   background-color: var(--paper);
   background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);
   background-size: 24px 24px;
@@ -192,10 +193,10 @@ vibeprint</a>
 <main>
   <section class="wrap hero">
     <h1>The sketch is the spec.</h1>
-    <p class="lede">Draw your architecture on an iPad. Claude Code or Codex marks it up in blue, then builds against it.</p>
+    <p class="lede">Draw your architecture on an iPad. Claude Code or Codex marks it up in red, then builds against it.</p>
     <div class="cta">
-      <button class="cmd" id="copy" type="button" aria-label="Copy the command npx vibeprint init"><span><span class="p">$</span> npx vibeprint init</span><span class="copy" id="copy-label">Copy</span></button>
-      <p class="then">in your repo, then <code>npx vibeprint</code> and scan the QR code with your iPad</p>
+      <button class="cmd" id="copy" type="button" aria-label="Copy the command npx vibeprint@latest init"><span><span class="p">$</span> npx vibeprint@latest init</span><span class="copy" id="copy-label">Copy</span></button>
+      <p class="then">in your repo, then <code>npx vibeprint@latest</code> and scan the QR code with your iPad</p>
     </div>
   </section>
 
@@ -205,7 +206,7 @@ vibeprint</a>
         <div class="screen">
           <svg class="sketch" viewBox="0 0 1194 834" role="img" aria-labelledby="sk-title sk-desc">
 <title id="sk-title">A Vibeprint session on an iPad</title>
-<desc id="sk-desc">Black ink, drawn by the user: a web app connected to an api, which connects to postgres and an email worker; a cron box also feeds the worker. After Submit, the agent's blue marks appear: faint tags under each box, a proposed redis cache in dashed blue, a strike through cron with the note "the worker can run this on a schedule", and the question "retries with backoff?" beside the email worker.</desc>
+<desc id="sk-desc">Blue ink, drawn by the user: a web app connected to an api, which connects to postgres and an email worker; a cron box also feeds the worker. After Submit, the agent's red marks appear: faint tags under each box, a proposed redis cache in dashed red, a strike through cron with the note "the worker can run this on a schedule", and the question "retries with backoff?" beside the email worker.</desc>
 <g class="sk">
 <g class="user">
 <path class="ink draw anim" pathLength="1" d="M37,71 Q81,72.1 103.1,72.1 Q125.1,72.1 147.1,72.1 Q169.2,72.1 191.2,71.6 L213.2,71" style="--d:0.40s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M210,67.8 Q210.9,116.9 209.9,141.4 L209,165.9" style="--d:0.47s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M213.1,158 Q169.3,159.7 147.4,159.8 Q125.5,160 103.6,159.4 Q81.7,158.8 59.8,157.9 L37.9,157" style="--d:0.54s;--t:0.07s"/><path class="ink draw anim" pathLength="1" d="M41,159.9 Q39.5,113.6 39.5,90.4 L39.5,67.3" style="--d:0.61s;--t:0.07s"/><text class="hand write anim" x="125" y="122" font-size="25" text-anchor="middle" style="--d:0.68s;--t:0.20s">web app</text>
@@ -257,7 +258,7 @@ vibeprint</a>
 
 <footer class="wrap">
   <span>MIT licensed, canvas included.</span>
-  <span><a href="https://github.com/viraatdas/vibeprint">Source on GitHub</a></span>
+  <span><a href="/evaluations/2026-11-04/">Map quality report</a> · <a href="https://github.com/viraatdas/vibeprint">Source on GitHub</a></span>
 </footer>
 
 <script>
@@ -308,7 +309,7 @@ vibeprint</a>
   const label = document.getElementById('copy-label')
   copy.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText('npx vibeprint init')
+      await navigator.clipboard.writeText('npx vibeprint@latest init')
       label.textContent = 'Copied'
     } catch {
       label.textContent = 'Select it'

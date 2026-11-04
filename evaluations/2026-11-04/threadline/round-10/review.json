@@ -1,0 +1,79 @@
+{
+  "project": "threadline",
+  "round": 10,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T05:07:04.359Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks one exact question: \"Outbound: how does the draft claim suppress a concurrent double Send?\" The subtitle names the audience (New engineers) and the scope (two Today tabs, the server action, the conditional Postgres claim). The amount of detail, a conditional UPDATE plus three failure notes with line-cited sources, suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Every node is a runtime actor or a store, so the level is mostly consistent. One mismatch matters for a race diagram: the client side is drawn as two instances (tab A and tab B), but the server is a single \"Next.js server\" box, even though each Send is its own server-action request with its own UPDATE. The server node also mixes in code-level text (\"run(): assertOwner, Zod, then sendMessage\"), and the DB node carries a behaviour statement instead of a name and role."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "It stays on the claim. A visible \"Outside this view\" line names the deliberate omissions: post-claim guards and delivery, and Conversation Send inserting its own row (correct per lib/engine.ts:1204-1223). Several relevant facts are missing. The losing tab's edits are thrown away. The loser gets \"Already sent or no longer a draft\" and its card disappears (components/today.tsx:174-176). Stranded 'sending' rows still count toward the daily limit (lib/engine.ts:1316-1329)."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "All three arrows are directed and labelled with what flows (\"Send+edits → SendOutcome\", \"claim UPDATE → row/none\") and marked sync, which matches the stated convention. The ordering that the question is about, though, is only in text. The two claims share one server→DB arrow, and the diagram never shows which caller gets row and which gets none, or that the second UPDATE waits on the row lock and then matches 0 rows."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Three labelled frames: Owner's browser (\"Local client: two tabs, one session\"), Vercel (\"Hosted, managed … sfo1\"), and AWS RDS (\"Hosted, managed … us-west-1\"). The legend says frames are trust/deployment zones. The managed vs. client split is clear. The auth boundary (assertOwner) is buried in the node text rather than drawn, and the cross-provider network hop (Vercel to RDS, TLS required) isn't marked."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Clean left-to-right flow with no crossings and aligned frames, and the notes sit in three tidy columns. At 1194x834 the drawing uses only about 60% of the width (roughly 240px empty on each side), and the browser and Vercel frames have dead space. The edge labels and subtitle are about 9px and the footer metadata about 8px, which is small on an iPad. Node text (10–13px) is readable."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "A visible key explains frames, boxes, the cylinder, arrow direction including the response, and solid = sync, and the flow type is also written on each arrow. Shapes carry the meaning, so nothing relies on colour. Weaknesses: everything is the same red, so the failure notes don't stand out from neutral facts. The \"solid = sync\" convention never has a contrasting style to compare with. Real code names are partial: the action's actual name, sendAction, is never shown, and the DB text \"First draft|failed→sending\" is cryptic."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Strong, well-sourced failure notes. \"Suppression, not exactly-once\": failed rows can be claimed again even if markSent throws after Gmail accepted the email, which is a real duplicate-send risk. \"Crash after claim strands the row\": only draft|failed can be sent or skipped, and refresh only resolves LinkedIn rows that have a run id. Missing: the concrete crash cause (the function timeout, maxDuration 300 in app/(app)/page.tsx, while LinkedIn sends wait up to 75s), the only alert (LinkedIn rows stuck over 3h, lib/engine.ts:2010-2022; email and X rows get none), and the quota taken up by stranded rows."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows \"Source review 2026-11-04 · revision f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified\". Every claim I checked matches the source: lib/engine.ts:1346-1358, 1360-1466, 1755-1759; components/today.tsx:27, 107-116; vercel.json:4; AGENTS.md:203. The score can't go above 3 without verifying production, and there is no accountable owner."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain the main mechanism from the image alone: two tabs, one server action, a conditional UPDATE in Postgres, first one wins. The three notes add the important caveats. Possible misreadings: the single server box suggests in-process dedupe, the identical tab arrows hide that the loser gets \"skipped\", and the 8–9px labels and footer are easy to miss."
+    }
+  ],
+  "coldRead": "The owner may have the Today page open in two browser tabs, both showing the same draft. Each Send click calls a Next.js server action on Vercel (sfo1). That action checks it is the owner, validates the edited text with Zod, and calls sendMessage. sendMessage begins with a single conditional UPDATE on the message row in RDS Postgres (us-west-1). The UPDATE sets status to 'sending', clears the error, stamps sentAt, and saves the edits, but only WHERE the row is outbound and still draft or failed, and it RETURNS the row. Whichever request gets there first claims the row. The other request's UPDATE matches zero rows, so that tab immediately gets 'skipped'. So the database row, not the server, is what stops a double send. This is suppression, not exactly-once. The winner's result only comes back after the guards and delivery run. Most guard failures and thrown errors put the row back to 'failed', and a failed row can be claimed and sent again, even when Gmail already accepted the email and only the bookkeeping afterwards (markSent) threw. 'Closed' and 'already replied' set 'skipped' instead. If the function dies right after the claim, the row is stuck in 'sending'. Send and Skip no longer match it, refresh only rescues LinkedIn rows that have a run id, and Today lists it under 'Queued on LinkedIn' whatever the channel. Conversation replies are outside this view: each click inserts a new row, so there's no shared claim.",
+  "inaccuracies": [
+    "Server node and the server→DB arrow: drawn as one 'Next.js server' issuing one 'claim UPDATE'. In fact each tab's Send is a separate sendAction request (app/(app)/actions.ts:363-373), likely a separate function invocation, and each issues its own UPDATE (lib/engine.ts:1346-1357). The single arrow hides that two claims race.",
+    "Edge label 'Send+edits → SendOutcome': the action returns ActionResult<SendOutcome> (app/(app)/actions.ts:44, 366). A failed assertOwner or Zod check returns {ok:false,error} and no SendOutcome (actions.ts:46-61); DraftCard handles that separately (components/today.tsx:166).",
+    "Both tab arrows say 'Send+edits' as if both sets of edits are kept. Only the winner's UPDATE writes body/subject (lib/engine.ts:1352-1353). The loser's edits are silently dropped, and it gets 'Already sent or no longer a draft.' (engine.ts:1358).",
+    "The DB node and note 1 ('A concurrent UPDATE then matches 0 rows') leave out that under Postgres READ COMMITTED the second UPDATE blocks on the row lock until the first one commits, then re-checks status IN (draft,failed). That re-check is the real reason suppression works without an explicit transaction.",
+    "Note 2, 'Winner's outcome arrives after guards/delivery': for LinkedIn the winner can get 'pending' after a 75s wait with delivery unconfirmed (lib/engine.ts:1455-1461). It isn't always a delivered result.",
+    "Note 3 is accurate but incomplete. Stranded 'sending' rows still count toward the daily limit (sentInLastDay includes 'sending', lib/engine.ts:1323). The only alert is the over-3-hours LinkedIn warning (lib/engine.ts:2010-2022). Stranded email and X rows get no alert at all."
+  ],
+  "improvements": [
+    "Show the race itself. Split the server into two concurrent invocations, or add a small numbered sequence strip. Tab A: UPDATE → row → guards/delivery → sent/failed/skipped. Tab B: UPDATE waits on the row lock, re-checks status → none → 'skipped: Already sent or no longer a draft', with its edits dropped. Name the real entry point, sendAction → sendMessage, and the return type ActionResult<SendOutcome>.",
+    "Use the 1194x834 viewport. Scale the drawing about 1.3–1.4× to remove the ~240px side margins and the empty frame space. Raise the edge labels, subtitle, source lines and footer to at least 11px. Give the three failure notes a non-colour marker (icon or border) so they stand apart from neutral facts in the all-red palette.",
+    "Complete the operations and freshness picture. Name the likely crash cause (function timeout: maxDuration 300, LinkedIn wait 75s). Add that stranded 'sending' rows use up the daily limit and that only LinkedIn rows get the over-3-hours alert; there is no sweeper for email or X. Assign a named, accountable owner and record when the diagram was checked against production."
+  ],
+  "total": 31,
+  "verdict": "Good"
+}

@@ -73,7 +73,7 @@ export interface Sketch {
   /** Optional message typed alongside the submit. */
   note?: string
   /** 'map': drawn by mapping the existing code, not by the user's pen. */
-  source?: 'map'
+  source?: 'map' | 'cleanup'
 }
 
 // ---------------------------------------------------------------------------
@@ -278,17 +278,28 @@ export interface RepoMapNode {
   /** Where the code lives, e.g. "src/server/". */
   path?: string
   description?: string
+  /** Deployment/trust container from RepoMap.groups. */
+  group?: string
 }
 
 export interface RepoMapEdge {
   from: string
   to: string
   label?: string
+  mode?: 'sync' | 'async' | 'local'
 }
 
 export interface RepoMap {
   nodes: RepoMapNode[]
   edges: RepoMapEdge[]
+  title?: string
+  audience?: string
+  scope?: string
+  omissions?: string[]
+  owner?: string
+  groups?: Array<{ id: string; label: string; description: string }>
+  notes?: Array<{ title: string; text: string; source: string }>
+  verification?: { at: string; revision: string; dirty: boolean }
 }
 
 /** What an interpreter (heuristic, Claude API, or a coding agent via MCP) returns. */
@@ -368,6 +379,17 @@ export interface MapperInfo {
   lastError?: string
 }
 
+export interface CleanupInfo {
+  active: boolean
+  startedAt?: string
+  finishedAt?: string
+  outcome?: 'cleaned' | 'kept' | 'failed' | 'restored'
+  summary?: string
+  lastError?: string
+  undoId?: string
+  shapeIds?: string[]
+}
+
 export interface VibeprintState {
   /** The folder vibeprint runs in (the git toplevel: a worktree has its own) and its branch. */
   project: { name: string; root: string; branch?: string; worktree?: boolean }
@@ -378,6 +400,7 @@ export interface VibeprintState {
   sketch: { seq: number; createdAt: string | null; shapeCount: number; hasImage: boolean }
   interpreter: InterpreterInfo
   mapper: MapperInfo
+  cleanup?: CleanupInfo
   /** A newer vibeprint on npm than the one running, when the CLI found one. */
   update?: { latest: string; current: string; command: string }
   /** Agents seen through MCP recently (author -> last seen ISO time). */

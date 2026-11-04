@@ -12,10 +12,10 @@ import { importTldraw } from './tldraw-import.js'
 const num = z.number().finite()
 const shapeId = z.string().regex(/^shape:[\w-]{1,80}$/)
 const end = z.object({ x: num, y: num, id: shapeId.optional(), nx: num.optional(), ny: num.optional() })
-const base = { id: shapeId, z: num }
+const base = { id: shapeId, z: num, author: z.enum(['user', 'agent']).optional(), font: z.enum(['hand', 'sans']).optional() }
 export const shapeSchema = z.discriminatedUnion('type', [
   z.object({ ...base, type: z.literal('draw'), points: z.array(z.tuple([num, num, num])).min(1).max(20_000), pen: z.boolean().optional(), closed: z.boolean().optional() }),
-  z.object({ ...base, type: z.literal('arrow'), start: end, end, text: z.string().max(2_000).optional() }),
+  z.object({ ...base, type: z.literal('arrow'), start: end, end, text: z.string().max(2_000).optional(), route: z.array(z.object({ x: num, y: num })).max(256).optional(), mode: z.enum(['sync', 'async', 'local']).optional(), labelAt: z.object({ x: num, y: num }).optional() }),
   z.object({ ...base, type: z.literal('text'), x: num, y: num, w: num.min(0), h: num.min(0), text: z.string().max(20_000), size: num.positive().max(1_000).optional() }),
   z.object({ ...base, type: z.literal('image'), x: num, y: num, w: num.positive(), h: num.positive(), src: z.string().regex(/^\/files\/[\w.-]{1,128}$/) }),
 ])
@@ -49,7 +49,20 @@ export function readCanvasFile(core: VibeprintCore, log: (msg: string) => void =
       if (parsed.success) shapes.push(parsed.data as Shape)
       else log(`canvas: skipped an unreadable shape in canvas.json (${parsed.error.issues[0]?.message})`)
     }
-    return { shapes, text, converted: false }
+    // Older maps were ordinary ink. Recover attribution from their graph bindings without
+    // recoloring any freehand additions the user drew alongside the map.
+    const mappedNodes = core.graph.nodes.filter((n) => n.fromCode)
+    const mappedIds = new Set(mappedNodes.map((n) => n.id))
+    const generated = new Set([
+      ...mappedNodes.flatMap((n) => n.shapeIds),
+      ...core.graph.edges.filter((e) => mappedIds.has(e.from) && mappedIds.has(e.to)).flatMap((e) => e.shapeIds),
+    ])
+    let converted = false
+    for (const s of shapes) if (!s.author && generated.has(s.id)) {
+      s.author = 'agent'
+      converted = true
+    }
+    return { shapes, text, converted }
   }
   if (Array.isArray(data.records)) {
     for (const s of importTldraw(data.records)) {
@@ -88,7 +101,7 @@ export class CanvasRoom {
     const file = readCanvasFile(this.core, this.log)
     for (const shape of file.shapes) this.shapes.set(shape.id, shape)
     if (file.converted) {
-      this.log(`canvas: converted ${this.shapes.size} shapes from the old tldraw format`)
+      this.log(`canvas: upgraded saved canvas (${this.shapes.size} shapes)`)
       this.save()
     } else this.lastSaved = file.text
   }

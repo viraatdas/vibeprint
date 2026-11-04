@@ -1,0 +1,79 @@
+{
+  "project": "threadline",
+  "round": 6,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:51:30.859Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The title asks one exact question: how an approved email draft gets checked and sent through Gmail. The subtitle names the audience (new engineers) and the scope. The level of detail suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "All four boxes are runtime actors or stores at the same level. The notes mix in code-level guard details, which is acceptable. Database reads (person, settings, campaign, daily count) are folded into 'checks' with no zoom-in view."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The diagram is tight, and the omissions are noted explicitly (LinkedIn, X, finding and drafting). Missing: the database reads before the guards (loadSettings, people, sentInLastDay, campaigns) and the in-touch override write to people. Only the claim and the final mark are drawn."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "The arrows are numbered, labelled and marked sync, and the legend says a response is included. Arrow 2 does not show that the claim also writes the edits. The guard reads are invisible. Arrow 3 looks unconditional; only a note says it is skipped for replies and overrides."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Four labelled zones: owner device, Vercel (managed), Postgres (hosted), Google (external). The 'Owner device' frame implies the web app runs only in the browser, but it is served by the Vercel app. The diagram does not say who hosts Postgres."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "The flow runs left to right, but arrow 4 loops over the top of the Postgres frame and arrow 3 runs underneath it. Labels 2, 3 and 5 crowd around the junction next to the database, and the label boxes overlap the lines. The footer text is tiny at 1194x834, and the top of the canvas is mostly empty."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The key explains frames, boxes, the cylinder and the double border, and says the flow type is also written on each arrow. Everything is drawn in one red colour, so the subtle double border is the only external-service cue. A solid line means sync, but there is no other line style to compare it with."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Strong notes cover the idempotent claim, skipped versus failed outcomes, and the asymmetric handling of check errors. Missing: what happens if the process crashes after the claim, which leaves the row stuck in 'sending', and the 'Gmail not connected' failure."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Dated 2026-11-04, revision f467a33 plus local edits. The claims match lib/engine.ts:1339-1441. The owner is unassigned and the live system was not verified, so the score is capped at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A new engineer could explain the click → claim → checks → send → record sequence correctly. They might wrongly conclude that the server makes no other database reads, or that both Gmail checks always run."
+    }
+  ],
+  "coldRead": "The owner clicks Send in the web app. That calls a Next.js server action on Vercel (sendMessage). The server first claims the message row in Postgres: only outgoing draft or failed rows flip to 'sending', so a double click or a second tab sends once and returns 'skipped'. It then calls Gmail to check whether the prospect replied, and whether the owner is already in touch with them outside this sequence. If the guards pass, it sends through Gmail and gets back the message and thread ids. Finally it marks the row sent or failed in Postgres. Closed stage or an existing reply gives 'skipped'. A missing person, the daily limit, an in-touch hit, a bad email address or a Gmail error gives 'failed'. If the reply check errors, the send goes ahead. If the in-touch check errors, the send is blocked. LinkedIn and X DMs are out of scope.",
+  "inaccuracies": [
+    "lib/engine.ts:1344-1409: sendMessage also reads settings, people, the daily sent count, firstSentAt and campaigns from Postgres between the claim and the send. None of these reads are drawn.",
+    "lib/engine.ts:1352-1353: the claim also writes the owner's subject and body edits. Arrow 2 is labelled only 'claim → sending'.",
+    "lib/engine.ts:1398-1401: an in-touch hit writes the touch details to people.metadata. This write to Postgres is not drawn.",
+    "lib/engine.ts:1382-1389: the reply check runs only if the person has lastContactedAt and the message is not a reply. The in-touch check is skipped for replies and overrides. Arrow 3 looks unconditional.",
+    "lib/engine.ts:1415: 'Connect Gmail in Settings first' is a failure path that is missing from the 'Skipped vs failed' note.",
+    "The web app is drawn only inside 'Owner device', but it is served by the Next.js app on Vercel."
+  ],
+  "improvements": [
+    "Re-route arrows 3 and 4 so they don't wrap around the Postgres frame. For example, put Gmail directly right of the app server and Postgres below it. This removes the crowded label junction and makes the footer text larger.",
+    "Add a 'reads person/settings/limits' database arrow and mark arrow 3 as conditional (skipped for replies and overrides), so the guard phase is visible.",
+    "Add the crash-after-claim risk (a row stuck in 'sending') and the 'Gmail not connected' failure to the notes. Add a non-colour cue for external services beyond the thin double border."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

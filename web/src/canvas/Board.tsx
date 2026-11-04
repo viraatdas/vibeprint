@@ -1,5 +1,6 @@
+import { MAP_FLOW_SIZE, MAP_FLOW_LINE, mapTextWidth } from '@shared/map-font'
 import { createContext, memo, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { arrowPoints, TEXT_SIZE, type DrawShape, type ImageShape, type TextShape } from '@shared/canvas'
+import { arrowLabelPoint, arrowPoints, TEXT_SIZE, type ArrowShape, type DrawShape, type ImageShape, type TextShape } from '@shared/canvas'
 import type { Point, Rect } from '@shared/types'
 import { attachInput } from './input'
 import { ARROW_LABEL_SIZE, arrowPaths, drawShapePath } from './ink'
@@ -118,7 +119,7 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
                   if (s.type === 'draw') return <Stroke key={s.id} shape={s} faded={faded} />
                   if (s.type === 'image') return <Picture key={s.id} shape={s} faded={faded} />
                   const { a, b } = arrowPoints(s, editor.doc)
-                  return <Arrow key={s.id} id={s.id} ax={a.x} ay={a.y} bx={b.x} by={b.y} text={s.text} faded={faded} />
+                  return <Arrow key={s.id} id={s.id} ax={a.x} ay={a.y} bx={b.x} by={b.y} text={s.text} author={s.author} route={s.route} mode={s.mode} labelAt={s.labelAt} font={s.font} faded={faded} />
                 })}
                 <path ref={liveRef} className="vp-ink" />
               </g>
@@ -137,18 +138,20 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
 }
 
 const Stroke = memo(function Stroke({ shape, faded }: { shape: DrawShape; faded: boolean }) {
-  return <path className={`vp-shape vp-ink${faded ? ' is-erasing' : ''}`} data-shape-id={shape.id} d={drawShapePath(shape)} />
+  return <path className={`vp-shape vp-ink${faded ? ' is-erasing' : ''}`} data-shape-id={shape.id} data-author={shape.author} d={drawShapePath(shape)} />
 })
 
-const Arrow = memo(function Arrow({ id, ax, ay, bx, by, text, faded }: { id: string; ax: number; ay: number; bx: number; by: number; text?: string; faded: boolean }) {
-  const { shaft, head } = arrowPaths({ x: ax, y: ay }, { x: bx, y: by })
+const Arrow = memo(function Arrow({ id, ax, ay, bx, by, text, author, route, mode, labelAt, font, faded }: { id: string; ax: number; ay: number; bx: number; by: number; text?: string; author?: 'user' | 'agent'; route?: Point[]; mode?: ArrowShape['mode']; labelAt?: Point; font?: ArrowShape['font']; faded: boolean }) {
+  const { shaft, head } = arrowPaths({ x: ax, y: ay }, { x: bx, y: by }, route)
+  const label = labelAt ?? arrowLabelPoint([{ x: ax, y: ay }, ...(route ?? []), { x: bx, y: by }])
   return (
-    <g className={`vp-shape vp-arrow${faded ? ' is-erasing' : ''}`} data-shape-id={id}>
-      <path d={shaft} />
+    <g className={`vp-shape vp-arrow${faded ? ' is-erasing' : ''}`} data-shape-id={id} data-author={author}>
+      <path d={shaft} strokeDasharray={mode === 'async' ? '16 8' : mode === 'local' ? '2 8' : undefined} />
       {head && <path d={head} />}
+      {route && text?.trim() && <rect x={label.x - Math.max(...text.trim().split('\n').map(line => mapTextWidth(line, MAP_FLOW_SIZE))) / 2 - 8} y={label.y - text.trim().split('\n').length * MAP_FLOW_LINE / 2 - 4} width={Math.max(...text.trim().split('\n').map(line => mapTextWidth(line, MAP_FLOW_SIZE))) + 16} height={text.trim().split('\n').length * MAP_FLOW_LINE + 8} fill="var(--vp-paper, #fff)" />}
       {text?.trim() && (
-        <text className="vp-arrow-label" x={(ax + bx) / 2} y={(ay + by) / 2} fontSize={ARROW_LABEL_SIZE}>
-          {text.trim()}
+        <text className="vp-arrow-label" x={label.x} y={label.y} fontSize={route ? MAP_FLOW_SIZE : ARROW_LABEL_SIZE} style={font === 'sans' ? { fontFamily: '"VP Map", Arial, sans-serif' } : undefined}>
+          {text.trim().split('\n').map((line, i, lines) => <tspan key={i} x={label.x} dy={i === 0 ? -(lines.length - 1) * (route ? MAP_FLOW_LINE : 21.6) / 2 : (route ? MAP_FLOW_LINE : 21.6)}>{line}</tspan>)}
         </text>
       )}
     </g>
@@ -159,7 +162,7 @@ const Picture = memo(function Picture({ shape, faded }: { shape: ImageShape; fad
   return (
     <image
       className={`vp-shape${faded ? ' is-erasing' : ''}`}
-      data-shape-id={shape.id}
+      data-shape-id={shape.id} data-author={shape.author}
       href={shape.src}
       x={shape.x}
       y={shape.y}
@@ -174,8 +177,8 @@ const Text = memo(function Text({ shape, faded }: { shape: TextShape; faded: boo
   return (
     <div
       className={`vp-shape vp-text-shape${faded ? ' is-erasing' : ''}`}
-      data-shape-id={shape.id}
-      style={{ left: shape.x, top: shape.y, fontSize: shape.size ?? TEXT_SIZE }}
+      data-shape-id={shape.id} data-author={shape.author}
+      style={{ left: shape.x, top: shape.y, fontSize: shape.size ?? TEXT_SIZE, ...(shape.font === 'sans' ? { fontFamily: '"VP Map", Arial, sans-serif' } : {}) }}
     >
       {shape.text}
     </div>
@@ -196,6 +199,7 @@ function TextEditor({ editor }: { editor: Editor }) {
     const m = mirror.current
     if (!ta || !m) return
     m.style.fontSize = ta.style.fontSize
+    m.style.fontFamily = ta.style.fontFamily
     m.textContent = ta.value + '​'
     ta.style.width = `${Math.max(m.offsetWidth + 4, 12)}px`
     ta.style.height = `${m.offsetHeight}px`
@@ -204,9 +208,11 @@ function TextEditor({ editor }: { editor: Editor }) {
   useLayoutEffect(() => {
     const place = (shape: TextShape) => {
       const ta = ref.current!
+      ta.dataset.author = shape.author ?? 'user'
       ta.style.left = `${shape.x}px`
       ta.style.top = `${shape.y}px`
       ta.style.fontSize = `${shape.size ?? TEXT_SIZE}px`
+      ta.style.fontFamily = shape.font === 'sans' ? '"VP Map", Arial, sans-serif' : ''
       ta.classList.add('is-on')
     }
     editor.focusText = (shape) => {

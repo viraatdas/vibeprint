@@ -1,0 +1,76 @@
+{
+  "project": "vibeprint",
+  "round": 8,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-04T04:58:05.159Z",
+  "revision": "dca6c85",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "The visible title asks a specific question (how does an iPad sketch survive a page reload?). The subtitle names the audience (new engineers) and the scope (direct LAN sync only). The level of detail suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Three boxes, all at the same level: a client, a process and a stored file. Each has a matching code path in the map. Nothing mixes in teams or concepts."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are stated in an 'Outside this view' line. The diagram leaves out the token/auth handshake and the broadcast to other clients, which is fine. But the reload path itself (page reload → reconnect → snapshot) is only covered in the notes, not drawn as a numbered step, even though it is the question in the title."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is labelled and marked async or local. Steps 1 and 2 are numbered, but 'snapshot on connect' and 'shapes read at start' have no numbers. So the order on reload (start read → connect → snapshot → replay) has to be inferred. The snapshot arrow bends through the corner of the iPad frame, which is awkward."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "There are two labelled frames: the iPad (user-managed) and the developer machine (self-hosted). The trust boundary is implied by the 'Token-gated' text, not drawn on the LAN crossing. There is no managed vs. external contrast, though the project has no external parts in scope."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The flow runs cleanly left to right and is readable at 1194x834. However, the snapshot arrow takes a detour over the top that clips the iPad frame. The two return arrows ('shapes read at start' and the snapshot) bend at angles. Arrow labels are small, and some overlap dash patterns ('op·acks·(async)')."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "There is a key for frames, boxes, cylinders, dashed vs. dotted lines and the request-includes-response convention. The dashed and dotted lines are hard to tell apart at this size. Everything is one red colour, so there is no colour coding, but the flow type is also written on each arrow as text."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Three notes, each grounded in source, cover what matters for this question: (1) the 800ms debounce loss window before the save timer fires, (2) unacked ops kept only in memory and the reconnect backoff from 500ms to 10s, and (3) a corrupt canvas.json stops loading while a single bad shape is skipped. This is the right failure analysis for a local app."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The diagram shows a date, revision dca6c85 with local edits, 'Owner: Unassigned' and 'Live runtime NOT verified'. I checked the claims against src/server/canvas.ts:166 (setTimeout 800), :43/:74 (throws with a restore-from-git message), :50 (skipped shape is logged), and web/src/canvas/sync.ts:28/131 (backoff 500ms up to 10s) and :102-103 (replay on snapshot). With no production verification the cap is 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain it from the image: edits go over WebSocket, the daemon keeps them in memory and acks them, a debounced save writes them to disk, and on connect the browser gets a snapshot. The reload answer is spread across the arrows and the notes, so a reader has to put it together themselves rather than following a numbered reload sequence."
+    }
+  ],
+  "coldRead": "Vibeprint's canvas editor runs in the browser on an iPad on the same LAN. It sends shape edits as async WebSocket ops to a token-gated daemon on the developer's machine. The daemon applies them in memory, acks them, and about 800ms after the last edit writes them to .vibeprint/canvas.json in the repo. When the daemon starts it reads the shapes back from that file. When a browser connects, or reloads and connects again, it gets the full snapshot, which is how a sketch survives a page reload. Risks: (1) a daemon crash inside the 800ms window loses the latest edits. (2) Unacked ops live only in page memory. They are replayed after a reconnect (backoff 500ms up to 10s) but lost on a full reload. (3) A corrupt canvas.json stops loading, and the fix is to restore it from git. MCP, AI redraws, the Fly relay, and marks/chat/assets/checkpoints are out of scope. No owner is assigned and the live runtime is not verified.",
+  "inaccuracies": [
+    "I found no factual errors. The 800ms debounce (src/server/canvas.ts:166), the parse/shape-check throws with restore-from-git messages (:43, :74), the skipped-shape log (:50), the 500ms→10s backoff (web/src/canvas/sync.ts:28, :131) and the replay on snapshot (:102-103) all match the source.",
+    "Small simplification: the snapshot arrow is labelled 'on connect', but sync.ts also filters later remote broadcasts against pending IDs (:110-111). Ops from other clients reaching this browser are not shown.",
+    "The 'Key' says dotted = local I/O, but at viewing size the '2. 800ms debounced save' line is hard to tell apart from the dashed async lines."
+  ],
+  "improvements": [
+    "Number the reload path explicitly (for example 3. page reload → reconnect, 4. snapshot from the daemon's memory, 0. shapes read at daemon start) so the title's question can be answered from the arrows alone.",
+    "Route the snapshot arrow directly between the browser and the daemon (for example as a parallel line above the ops arrow) instead of bending it through the corner of the iPad frame. Also make the dashed and dotted lines clearly different, for example by thickness or a second colour.",
+    "Draw the token-gated LAN crossing as an explicit trust boundary on the WebSocket edges, and either name an owner or verify the live runtime to raise the accountability and freshness scores."
+  ],
+  "total": 33,
+  "verdict": "Good"
+}

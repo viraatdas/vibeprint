@@ -1,0 +1,116 @@
+{
+  "title": "Outbound: how does the draft claim suppress a concurrent double Send?",
+  "audience": "New engineers",
+  "scope": "Two Today tabs sending one draft, their separate sendAction calls, and the conditional Postgres UPDATE claiming its row.",
+  "omissions": [
+    "Guards and Gmail/LinkedIn/X delivery after a successful claim",
+    "Conversation Send: each click inserts its own row, so no shared claim"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "browser",
+      "label": "Owner's browser",
+      "description": "Local client: two tabs, one session"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel",
+      "description": "Hosted, managed: Vercel functions, sfo1"
+    },
+    {
+      "id": "aws",
+      "label": "AWS RDS",
+      "description": "Hosted, managed: us-west-1, TLS per docs"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tabA",
+      "label": "Today tab A",
+      "kind": "client",
+      "tags": [
+        "React 19"
+      ],
+      "path": "components/today.tsx",
+      "description": "DraftCard Send: id + edited body (+subject)",
+      "group": "browser"
+    },
+    {
+      "id": "tabB",
+      "label": "Today tab B",
+      "kind": "client",
+      "tags": [
+        "React 19"
+      ],
+      "path": "components/today.tsx",
+      "description": "Same draft card, same Send; either may win",
+      "group": "browser"
+    },
+    {
+      "id": "server",
+      "label": "Next.js server",
+      "kind": "service",
+      "tags": [
+        "Next.js 16",
+        "Drizzle"
+      ],
+      "path": "app/(app)/actions.ts",
+      "description": "Per-tab sendAction→sendMessage, owner-gated",
+      "group": "vercel"
+    },
+    {
+      "id": "db",
+      "label": "Postgres",
+      "kind": "database",
+      "tags": [
+        "Postgres 17"
+      ],
+      "path": "",
+      "description": "First draft|failed UPDATE wins, per attempt",
+      "group": "aws"
+    }
+  ],
+  "edges": [
+    {
+      "from": "tabA",
+      "to": "server",
+      "label": "id+edits → ActionResult",
+      "mode": "sync"
+    },
+    {
+      "from": "tabB",
+      "to": "server",
+      "label": "id+edits → ActionResult",
+      "mode": "sync"
+    },
+    {
+      "from": "server",
+      "to": "db",
+      "label": "2× claim UPDATE → row/0",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Loser gets 0 rows: skipped, edits lost",
+      "text": "Each UPDATE autocommits with no isolation override (Postgres default READ COMMITTED): a concurrent loser waits on the row lock, re-checks, gets 0 rows → skipped; its edits drop, card hides.",
+      "source": "lib/engine.ts:1346-1358; lib/db/client.ts:9-20; components/today.tsx:174-176"
+    },
+    {
+      "title": "Suppression, not exactly-once",
+      "text": "Winner resolves only after guards and a delivery try. Guard fails and in-try throws reset it to failed (re-sendable), even if markSent threw after Gmail accepted; closed/replied → skipped.",
+      "source": "lib/engine.ts:1360-1466"
+    },
+    {
+      "title": "A crash after the claim strands the row",
+      "text": "A timeout (maxDuration 300) or a query throw outside the try leaves the row sending: Send/Skip can't claim it; email/LinkedIn rows count to the limit for 24h; only LinkedIn gets a 3h alert.",
+      "source": "lib/engine.ts:1316-1329,1368-1410,2010-2022; app/(app)/page.tsx:4"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-04T05:15:51.377Z",
+    "revision": "f467a33",
+    "dirty": true
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 495.6513245033111,
+    "y": 301.0430463576158,
+    "z": 0.49826761260518077
+  },
+  "text": [
+    {
+      "text": "Vibeprint: how does an iPad sketch reach the local coding agent?",
+      "renderedSize": 15.944563603365784
+    },
+    {
+      "text": "New engineers · iPad strokes via optional relay or LAN into the local daemon, interpretation, .vibeprint/ state, and agent MCP use.",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "[ iPad browser ]",
+      "renderedSize": 11.460155089919157
+    },
+    {
+      "text": "User device, outside\ndev machine",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Sketch app",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "client · Draws\nstrokes, shows\ninterpreted graph",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "[ Hosted relay ]",
+      "renderedSize": 11.460155089919157
+    },
+    {
+      "text": "Hosted relay, optional\n(off via flag/env)",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Relay",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "service · Forwards\niPad HTTPS over\ndaemon's tunnel",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "[ Developer machine\n]",
+      "renderedSize": 11.460155089919157
+    },
+    {
+      "text": "Local, self-hosted\nprocesses and files",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Daemon",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "service · Serves\napp, interprets,\nholds sketch state",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": ".vibeprint dir",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "storage · Sketch,\ngraph, marks, relay\nidentity",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Agent + MCP",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "client · Coding\nagent using\nvibeprint MCP tools",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "[ Anthropic ]",
+      "renderedSize": 11.460155089919157
+    },
+    {
+      "text": "External managed API,\noptional",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Claude API",
+      "renderedSize": 12.456690315129519
+    },
+    {
+      "text": "external ·\nHandwriting pass,\nonly if API key set",
+      "renderedSize": 9.467084639498434
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; boxes = named runtime units with type. Arrows: caller → recipient (response included).\nSolid = sync; dashed = async; dotted = local I/O. All generated ink is AI red; user additions are blue.",
+      "renderedSize": 9.965352252103616
+    },
+    {
+      "text": "F1 · Daemon → Claude API: sketch image (sync)",
+      "renderedSize": 9.965352252103616
+    },
+    {
+      "text": "Relay degrades to LAN",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "If the relay is unreachable the daemon\nretries with backoff in the\nbackground; the LAN URL keeps working.",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "Source: src/server/relay.ts",
+      "renderedSize": 8.968817026893253
+    },
+    {
+      "text": "Remote requests need token",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "Tunneled requests get x-forwarded-for,\nso the daemon requires the access\ntoken as for LAN clients.",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "Source: src/server/relay.ts",
+      "renderedSize": 8.968817026893253
+    },
+    {
+      "text": "No-daemon fallback is locked",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "If the daemon is gone, MCP writes\n.vibeprint/ under files.lock; after 5s\nof contention it errors 503.",
+      "renderedSize": 10.463619864708797
+    },
+    {
+      "text": "Source: src/mcp/backend.ts",
+      "renderedSize": 8.968817026893253
+    },
+    {
+      "text": "Outside this view: Repo code-map generation (quick scan, model read); Git auto-commit and the schema/chat panels.",
+      "renderedSize": 8.470549414288072
+    },
+    {
+      "text": "Source review 2026-11-04 · revision dca6c85 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 7.972281801682892
+    }
+  ],
+  "errors": []
+}
