@@ -1,0 +1,11 @@
+{
+  "method": "Fresh default generation, without prior critique or manual map corrections. Requested Claude Code claude-opus-5-5.",
+  "status": "failed",
+  "reason": "Second source-audit call reached the six-minute CLI deadline (exit 143). No completed map or screenshot score.",
+  "draft": {
+    "actors": 18,
+    "flows": 27,
+    "views": 8
+  },
+  "followup": "Production code now bounds the optional audit to two minutes and retains the code-read draft with an explicit Source audit incomplete warning if that pass fails. Regression covered by test/code-map.test.ts."
+}

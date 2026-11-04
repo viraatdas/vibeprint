@@ -359,10 +359,17 @@ test('map_architecture draws the code beside the sketch and marks it built', asy
   })
   fs.writeFileSync(path.join(dir, '.vibeprint/canvas.json'), serializeCanvas(onCanvas as Shape[]))
   const res = await call('map_architecture', {
+    title: 'How does a signup send email?',
+    groups: [{ id: 'app', label: 'Application', description: 'Development machine' }],
+    notes: [],
+    views: [
+      { title: 'Accept signup', scope: 'Client to API', nodeIds: ['web', 'api'], edgeIndices: [0], noteIndices: [] },
+      { title: 'Deliver email', scope: 'API to worker', nodeIds: ['api', 'jobs'], edgeIndices: [1], noteIndices: [] },
+    ],
     nodes: [
-      { id: 'web', label: 'Web app', kind: 'client', path: 'web/' },
-      { id: 'api', label: 'API', kind: 'service', path: 'server/' },
-      { id: 'jobs', label: 'Email worker', kind: 'worker', path: 'worker/' },
+      { id: 'web', label: 'Web app', kind: 'client', path: 'web/', group: 'app' },
+      { id: 'api', label: 'API', kind: 'service', path: 'server/', group: 'app' },
+      { id: 'jobs', label: 'Email worker', kind: 'worker', path: 'worker/', group: 'app' },
     ],
     edges: [
       { from: 'web', to: 'api', label: 'HTTP' },
@@ -377,6 +384,7 @@ test('map_architecture draws the code beside the sketch and marks it built', asy
   assert.ok(worker?.fromCode && worker.status === 'done')
   // The sketched nodes are still there.
   assert.ok(g.nodes.some((n) => n.label === 'Postgres' && !n.fromCode))
-  const canvas = readJson<{ shapes: Array<{ id: string }> }>('canvas.json')
+  const canvas = readJson<{ shapes: Array<{ id: string; mapView?: { id: string } }> }>('canvas.json')
   assert.ok(canvas.shapes.length >= 8)
+  assert.equal(new Set(canvas.shapes.flatMap(s => s.mapView ? [s.mapView.id] : [])).size, 2)
 })

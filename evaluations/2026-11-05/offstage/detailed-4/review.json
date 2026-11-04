@@ -1,0 +1,80 @@
+{
+  "reviewedAt": "2026-11-05T00:41:07.259Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a one-line question title: 'How does offstage execute a command away from your screen?', 'How does the plane admit cloud work and keep its state?', 'How does a fleet box claim a task, run it in a slot, and wipe it?', 'How does a sandbox agent run reach Claude without the slot holding a key?', 'What does the web console call, and where does its data live?'. Each also has an audience line ('Engineers onboarding to offstage and offstage cloud') and a one-sentence summary. The level of detail suits that audience. The selector shows the same questions, so it is clear what each view is for."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Most boxes are runtime actors or stores at one level: offstage CLI/MCP, Session lane: sessiond, Control plane API, Fleet runner, Fly volume /data, Anthropic Messages API, Clerk. Breaking the system into five scoped views is the right way to zoom in. Three boxes sit at other levels. 'Headless lane' (view 1) is a code path inside the CLI's child process, not a separate actor. 'Slot accounts' (views 3 and 4) is a set of OS user accounts, not a process. 'offstage-cloud SDK' (view 2) is a library inside customer code. There is no overview view tying the five zoom-ins together."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view holds only what its question needs, and each has an 'Outside this view' line ('Billing, CI, maintenance and third-party internals'). Some gaps fall inside the views' own questions. View 5 asks what the console calls but leaves out its Connect GitHub flow (cloud/src/api/github-routes.ts, /v1/github/setup), and its Third-party APIs frame lists only Anthropic and Clerk, with no GitHub or Stripe. View 3's 'claim, run, wipe' cycle leaves out the GUI-slot re-seed that src/fleet/reset.ts:58 says must follow a reset before the slot offers GUI work, and the login budget. The GitHub Actions runner workflow appears in no view, and 'CI' in the footer doesn't make clear whether it means that workflow or the repo's own CI."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Nearly every edge carries a protocol, payload and response, e.g. 'B2 HTTPS long-poll /claim ≤25 s → work or 204 (async)' and 'C4 HTTPS /v1/model/messages with run token (sync)'. Direction is caller → recipient, and solid/dashed/dotted stand for sync/async/local. Deductions: (1) In view 3, B4 (solid) and B2 (dashed) merge into one trunk along the Fly frame's top and right borders and share a single arrowhead into Control plane, so you can't tell which arrow is which or which is async. (2) Steps are split across views (B1 in view 2, B2–B5 in view 3; C1 in view 2, C2–C6 in views 3 and 4) with no 'continues in…' pointer. (3) In view 3 the labels run heartbeat, B4, B2, B5/C6, B3/C3 from left to right, out of step order. (4) In view 5, the JWKS label sits between Control plane and the volume, so it reads as if it belongs to the volume."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames mark trust and deployment zones, and the subtitles state who manages each: 'Self-hosted Mac', 'Same Mac, separate uid (computeruse)', 'Local Docker container … repo read-only', 'Fly-managed: one machine (sjc)', 'Fleet Mac: operator uid' vs 'Fleet Mac: slot uids', 'Third-party APIs: Managed providers'. Double borders mark external services. Deductions: (1) No frame shows that the Developer, Helper and Docker frames (view 1) share one physical machine, or that the operator and slot frames (views 3 and 4) share one Studio. That is stated only in text. (2) Edges damage the boundaries: in view 1 the docker edge runs through the Helper macOS session frame, in view 3 edges are drawn on top of the Fly frame's border, and in view 5 the JWKS edge rides over the Fly frame's top-right corner. (3) The network path between the fleet Mac and Fly is never shown."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "There are few true crossings, and views 2 and 4 read cleanly left to right. View 4 is the cleanest. The defects are concrete. (1) View 3: heartbeat, B4 and B2 drop onto the Fly frame's top border at y≈383, run along it, then down its left and right sides at x≈318 and x≈662, so the boundary reads as a wire. (2) View 1: the 'A1 docker run' edge enters the Helper session frame and runs horizontally through it at y≈423, just under 'window server', before reaching the Docker frame. (3) View 5: the Clerk-bound edge climbs over the Fly frame's corner at x≈913. (4) At 1194×834, node descriptions, edge labels, the key and the notes are about 7–9 px in views 2, 3 and 5 (titles about 14 px). The text that carries the semantics is the smallest on screen. (5) Space is badly used: views 2, 3 and 5 fill only about half the canvas width while their frames are largely empty (the top half of the Fly frame in view 2; the lower parts of the view 3 frames; the bottom third of the Developer frame in view 1). Readable with effort, but awkward."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Shapes are used consistently and every view has a key: frame = trust zone, box = actor, cylinder = state, double border = external, solid/dashed/dotted = sync/async/local. Line style gives a non-color signal, so the single red authorship color isn't a gap in meaning. Names are real (offstage-api, sessiond, offstage0–7, plane.json, /data). Deductions: (1) The key is a single run-on sentence with no sample swatches. (2) The letters A, B and C are 'workflows' but are never named. (3) The 'B5/C6' slash form (one step shared by two workflows) isn't explained. (4) B2's dashed segment in view 3 is only about 13 px long before it merges into a solid line, so its style can't be read."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes go well beyond the happy path and cite source files. Covered: refusal beats --lane; no fallback, exit 69; the plane admits work before queueing, with idempotency replay; acks come from memory and a crash can lose about 2 s; unstarted claims requeue after 20 s, up to 3 tries; a box silent for 2 min fails its task; heartbeat delivers cancels; the LAN guard fails closed; reset happens before the next claim; the key stays on the plane, with step and token budgets; op answers retry with backoff; the plane is a single sjc machine. Deductions: all of this is prose in the footer. No node or edge carries a mark tying it to a failure note. The fleet's slot-readiness constraints (GUI seeding after reset, the per-boot login budget in src/fleet/login-budget.ts) are missing, and so is the session lane's one-time setup and TCC dependency."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Every view ends with 'Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das · Live runtime NOT verified'. Spot checks match the code: exit 69 (src/contract/index.ts:542); plane.json written every 2 s and on SIGTERM (cloud/src/server.ts:112–113); MAX_POLL_MS 25 s (queue.ts:50); HEARTBEAT_MS 15 s, CLAIM_ACK_MS 20 s, MAX_ATTEMPTS 3 and BOX_LOST_MS 2 min (store.ts); omt_ token (agent-runs.ts:226); /v1/model/messages; /v1/auth/clerk; x-anthropic-api-key (src/cloud/client.ts). At this size, one source citation in views 2 and 5 reads 'cloud/src/serverts' rather than server.ts. Capped at 3 because no production verification has been done."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Working alone, a newcomer can learn that the CLI routes a command to headless, container or helper-session execution and writes result.json; that cloud clients hit a single Fly plane that snapshots to a volume; that a Studio runner long-polls, runs work as a slot uid, reports, then resets the slot; that agent model calls go through the plane's proxy so the slot never holds the key; and that the console uses optional Clerk sign-in exchanged for a plane session. They can't learn what workflows A, B and C are, how the five views join into one system, or the network path from the Studio to Fly. GitHub and billing are absent. Two spots invite misreading: view 1 seems to route Docker through the helper session, and view 3's merged trunk hides which call is which. The 7–9 px text makes a two-minute read of five views unrealistic."
+    }
+  ],
+  "visualVerdict": "30/40, Good band, at the low end. The content is strong: precise edge labels, source-cited operational notes, and consistent notation and provenance across all five views. The 'messy' feeling comes from the rendering, not the model. Edges ride frame borders in view 3, cut through a foreign frame in view 1 and climb over a frame corner in view 5. The text that carries the meaning is about 7–9 px at the real iPad size, while the frames around it sit half empty. View 4 shows what the set could look like; view 3 is the worst. It is usable for close reading, not at a glance.",
+  "coldRead": "View 1 shows offstage CLI/MCP inside the developer's macOS account fanning out three alternative 'A1' calls: execa in place (Headless lane), a unix socket to sessiond in a separate 'computeruse' helper session, and docker run on Xvfb in a local container. All of them write result.json to a per-run directory (A2). The notes say installers are refused on every lane and that a missing substrate means exit 69, never the real screen.\n\nView 2 shows the CLI (through MCP sandbox tools carrying an Anthropic key) and the customer SDK calling a single Fly.io 'Control plane API'. The plane keeps state in memory and snapshots plane.json to a volume every 2 s, so a crash can lose about 2 s of acknowledged work.\n\nView 3 shows a Fleet runner under the Studio's operator account long-polling /claim, sending heartbeats and events to the plane, running work as offstage0–7 slot users through sessiond or sudo, then resetting the slot (kill, wipe, new uid) behind a fail-closed LAN guard.\n\nView 4 follows a sandbox agent run. The runner polls ops (C2) and runs them as the slot (C3). The slot's harness calls the plane's /v1/model/messages with an omt_ run token (C4). The plane calls Anthropic with the customer's key (C5), and the slot is reset at the end (C6).\n\nView 5 shows the web console SPA calling the plane's /v1 routes and, optionally, ClerkJS. The plane verifies Clerk tokens through JWKS and stores data on /data.\n\nUncertain from the image alone:\n- What A, B and C stand for. I inferred local run, cloud task and sandbox/agent run.\n- Whether B and C start in view 2.\n- In view 3, which arrowhead belongs to B4 and which to B2.\n- Whether the docker call in view 1 passes through the helper session. The drawing suggests it does; the code says no.\n- How the Studio reaches Fly (internet or tailnet).\n- Where GitHub, Stripe and GUI slot seeding fit. They appear nowhere in the set.",
+  "mostSeriousProblems": [
+    "View 3: the heartbeat, B4 and B2 edges are drawn on top of the Fly.io frame's top border (y≈383) and down its left and right sides (x≈318 and x≈662). B4 (solid) and B2 (dashed) merge into one trunk with one arrowhead into Control plane, so the boundary reads as a wire, the async/sync distinction disappears, and you can't tell which arrow is which.",
+    "View 1: the 'A1 docker run --rm on Xvfb' edge enters the Helper macOS session frame and runs horizontally through it at y≈423, under 'window server', before reaching the Docker container. On a trust-boundary diagram this says the container lane goes through the helper session, which it doesn't.",
+    "Legibility at 1194×834: node descriptions, edge labels, the key and the notes are about 7–9 px in views 2, 3 and 5, and the key and notes carry most of the meaning. Meanwhile those views use only about half the canvas width and their frames are largely empty (the top half of the Fly frame in view 2; the lower halves of both view 3 frames).",
+    "Workflow letters A, B and C are never named, and the 'B5/C6' slash form is undefined. Steps are split across views (B1 in view 2 → B2–B5 in view 3; C1 in view 2 → C2–C6 in views 3 and 4) with no pointer to the next view. In view 3 the labels read heartbeat, B4, B2, B5/C6, B3/C3 from left to right, out of step order.",
+    "View 5: the label 'HTTPS: JWKS + user for token verification' sits between Control plane and Fly volume, directly above the file label. Its line then runs over the Fly frame's top-right corner before climbing to Clerk, so it reads as if it goes to the volume.",
+    "Omissions inside a view's own question: view 5's console has a Connect GitHub flow (github-routes.ts) that isn't drawn, and its Third-party APIs frame leaves out GitHub and Stripe. View 3's claim → run → wipe cycle leaves out the GUI-slot re-seed that reset.ts says must follow a reset, and the login budget. The GitHub Actions runner workflow appears in no view."
+  ],
+  "recommendations": [
+    "1. Fix edge routing first. Never draw an edge along a frame border. Give every edge its own port and arrowhead. In view 3, bring heartbeat, B4 and B2 into the top of Control plane as three separate lines with their own styles, or lay the view out left to right like view 4. In view 1, route docker run above the Helper frame, or swap the Helper and Docker frames so the edge doesn't cross a foreign zone. In view 5, take the JWKS edge out of the top of Control plane and keep its label next to its own line.",
+    "2. Make the text readable at real size. Use at least about 11 pt for node descriptions, edge labels and the key. Scale views 2, 3 and 5 up to the full canvas width, shrink oversized frames to fit their contents, and move the two notes to a collapsible panel or cut them to one line each.",
+    "3. Name the workflows in the key (for example, A = local run, B = cloud task, C = sandbox/agent run) and define 'B5/C6' (a step shared by two workflows). Add 'B continues in: fleet box view'-style pointers at the ends of each view. Order labels in space by step number.",
+    "4. Replace the run-on key sentence with a small graphical legend: line swatches for solid, dashed and dotted, plus a box, a cylinder and a double border.",
+    "5. Draw or explicitly note the scoped gaps: console → GitHub connect (and GitHub and Stripe in Third-party APIs), the GitHub Actions runner workflow, and the GUI slot re-seed and login budget after reset in view 3.",
+    "6. Add a one-screen overview view (CLI, plane, fleet box, console, third parties, and how the Studio reaches Fly) linking to the five zoom-ins, so a newcomer has a place to start.",
+    "7. Tie each failure note to the drawing with a small marker on the node or edge it describes (for example, a ⚠ on Fly volume pointing to 'Acknowledged is not yet durable'), so the operational notes connect to the picture."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

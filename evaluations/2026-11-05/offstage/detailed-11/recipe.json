@@ -1,0 +1,4 @@
+{
+  "basis": "../detailed-10/map.json",
+  "method": "Add a separate system-context overview using existing runtime actors/edges and source-checked deployment facts. No extra architecture nodes or flows are invented. Existing detailed views unchanged. Introduce optional view kind (overview/workflow); source generation prompt now requests context for substantial cross-deployment systems. Fresh full-set screenshot review."
+}

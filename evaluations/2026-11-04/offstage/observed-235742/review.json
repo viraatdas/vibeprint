@@ -1,0 +1,82 @@
+{
+  "reviewedAt": "2026-11-05T00:00:13.034Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 1,
+      "evidence": "The canvas has no title. The only hint of purpose is the app header ('offstage', branch 'fleet-gui-pool'), which is UI chrome, not part of the diagram. It's guessable as 'a list of what's in the offstage repo', but it doesn't say what question it answers. It also mixes audiences: a marketing film (Launch), the marketing site (Site), monitoring (Ops) and source modules (Router, Probe, Lanes) all sit together."
+    },
+    {
+      "id": "abstraction",
+      "score": 1,
+      "evidence": "Several levels are mixed in one grid. There are src/ modules (Router, CLI, Probe, Lanes, Session, MCP, Fleet), whole separately deployed apps (Cloud is the Fly control plane, Site is on Vercel, Console is the web console), a native daemon (Native), an infrastructure store (Blob storage, the only cylinder) and non-runtime folders (Launch, Ops). A 3-file module like Probe is drawn the same size and weight as the whole Cloud service."
+    },
+    {
+      "id": "focus",
+      "score": 1,
+      "evidence": "The central part of offstage, Router, has no connections at all. So do Cloud, Native, Launch and Ops: 5 of 16 boxes are orphans. There's no route from a command through the Router to a lane to a substrate. The three lanes (headless, container, session) aren't distinguished, and Docker/Xvfb doesn't appear. Cloud has no links to SDK, Console or Fleet. Meanwhile Launch and Ops take up space without contributing anything."
+    },
+    {
+      "id": "flow",
+      "score": 1,
+      "evidence": "None of the 13 arrows has a label. The arrows mean different things: most match code imports (MCP→CLI, CLI→Lanes, Fleet→Session), Site→Blob storage is a storage write, and Console→SDK is not an import (the console only shows SDK install snippets). Fleet↔CLI is drawn as two near-parallel opposite arrows with no explanation. There's no ordering, and no sign of sync vs async or protocol (HTTP long-poll, unix socket)."
+    },
+    {
+      "id": "boundaries",
+      "score": 0,
+      "evidence": "There are no containers anywhere. Nothing separates the npm package (src/, native/) from the Fly app (Cloud), the Vercel site, the Mac fleet box or the customer side (SDK). Internal vs external and managed vs self-hosted are never shown."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "Boxes sit on a tidy 4-column, 6-row grid, but the edges are long diagonals spanning 2–5 rows. There are about 6 crossings: MCP→Fleet crosses CLI→Probe and CLI→Session; MCP→Session crosses CLI→Lanes and CLI→Probe; MCP→Probe crosses CLI→Lanes; Site→Blob storage crosses Lanes→Session. Lines also run through unrelated boxes: CLI→Probe and MCP→Session both strike through the 'Launch' label, and Site→Blob storage cuts through Ops, which makes it look as if those boxes are connected. Eight arrowheads crowd the CLI–Fleet–Session column while the right third of the 1194px screen is empty. The handwritten labels are about 9–10px, readable but small at iPad size."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "Notation is consistent but explained nowhere. Every box is the same red sketched rectangle; the red is authorship ink, so it isn't counted as a flaw. The only meaningful shape is the cylinder for Blob storage. One arrow style is used for different meanings (import vs storage write vs docs link), and there's no legend. Names are real folder names (Router, Lanes, Fleet, Native, Ops), but 'Native', 'Ops' and 'Cloud' don't say what they are."
+    },
+    {
+      "id": "operations",
+      "score": 0,
+      "evidence": "Nothing about failure, load, queues, retries, state or ownership is shown. Behaviour that defines the system is missing: the plane's task queue and long-polling runner, slot reset and seeding, the installer/.dmg/.pkg refusal path, and when lanes are unavailable. The lone Blob storage cylinder is the only stateful element and says nothing about behaviour."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "There's no date, version, commit or owner on the canvas; only the chrome shows a branch and 'Sketch #1 read'. Every node name matches a real folder (src/router, src/cli, src/fleet, src/probe, src/lanes, src/session, src/mcp, cloud/, console/, sdk/, site/, native/, ops/, launch/). Most drawn edges match imports: src/mcp/core.ts imports cli/fleet/probe/session, src/cli/api.ts imports lanes/probe, src/fleet/wait-ready.ts imports cli/session, src/lanes/session imports session, and site/api/waitlist.js uses blob. But real edges are missing: CLI→Router (src/cli/api.ts:57-58 imports classify), MCP→the cloud client, the Fleet runner→Cloud plane, and Session→Native sessiond. Console→SDK is not a code dependency. Overall it's mostly right but undated and unverified in production."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "Without help, a newcomer could only list the parts and see that MCP and CLI sit above Fleet, Probe, Lanes and Session. They couldn't explain what offstage does (routing commands away from the real screen), what the three lanes are, how the cloud product relates to the Mac fleet, or what Native/Ops/Cloud are. Some of what they would infer is wrong: that Router is unused, or, because lines pass through boxes, that Launch sits on the CLI→Probe path."
+    }
+  ],
+  "visualVerdict": "Total 10/40, in the Redo band. What you see is a neat grid of 16 same-looking red boxes with 13 unlabeled diagonal arrows bunched into one central column, five unconnected boxes, no title, no containers and no legend. It reads as a list of folders, not an architecture. The UI looks like a mapping run is still going: the 'Reading the code…' and 'Clean up' buttons in the top bar are dimmed, with an ellipsis, and the footer says 'Sketch #1 read'. These scores are for this exact snapshot.",
+  "coldRead": "What a new person can actually learn: the repo called offstage has about 16 named parts. MCP and CLI are entry points that both reach down into Fleet, Probe and Session. Fleet and Lanes both depend on Session. Console points at SDK. Site stores something in Blob storage, the only thing drawn as a database. The rows hint at layers, top to bottom.\n\nWhat they can't learn: what offstage is for. They also can't learn what Router, Cloud, Native, Ops or Launch do (they float unconnected), what any arrow means (call, import, network request or data write), or which pieces ship together and where they run (npm package, Fly app, Vercel, Mac fleet box). The three lanes, the routing decision, and how the cloud plane hands tasks to the Macs are all absent.\n\nUncertainties a reader would have:\n- Whether rows mean layers. Router sits in row 2 with nothing attached, and SDK sits under Console in row 3, which suggests they don't.\n- Whether Launch and Ops are connected, since lines pass straight through them.\n- Which arrowhead belongs to which line in the three-line bundle between CLI and Fleet.\n- Whether Console really uses the SDK. In the code it doesn't: src/lib/api.ts calls the plane with fetch and only shows SDK install snippets.\n\nThe arrows I checked do mostly match code imports. But the edges that best explain the system are missing: CLI→Router, Session→sessiond, Fleet runner→Cloud plane, and Console/SDK→Cloud API.",
+  "mostSeriousProblems": [
+    "Router, the core of offstage, has no edges, even though src/cli/api.ts imports classify from it. The diagram suggests the central component is unused.",
+    "5 of 16 boxes are orphans (Router, Cloud, Native, Launch, Ops). The cloud product's whole flow is missing: SDK/Console → Cloud plane → Fleet runner on the Mac, plus Session client → Native sessiond over a unix socket.",
+    "Lines pass through unrelated boxes: CLI→Probe and MCP→Session run through the 'Launch' label, and Site→Blob storage cuts through Ops. That creates false connections and contributes to about 6 crossings in the central column.",
+    "All 13 arrows are unlabeled and mean different things (import vs storage write vs docs link). Console→SDK isn't a code dependency at all.",
+    "There's no title, boundary or legend. Nothing separates the npm package, the Fly control plane, the Vercel site, the Mac fleet box and customer code.",
+    "Abstraction levels are jumbled: source modules sit beside whole deployed services, infrastructure (Blob storage) and non-runtime folders (Launch film, Ops monitoring), all at the same size and weight."
+  ],
+  "recommendations": [
+    "Split it into two titled views, each answering one question. View 1: 'offstage: how a command reaches an isolated screen'. View 2: 'offstage cloud: how a customer task reaches a Mac slot'. Give each canvas a one-line title saying which one it is.",
+    "View 1 should show CLI and MCP → Router (classify, with the installer/.dmg/.pkg refusal drawn as a dead-end) → Lanes split into headless / container (Docker + Xvfb) / session → Session client → Native sessiond (unix socket) in the helper account.",
+    "View 2 should show SDK and Console → Cloud plane (Fly app offstage-api: Task/Sandbox API, queue, billing), the Fleet runner long-polling the plane, slots driven through sessiond, and Site → Blob storage (Vercel) off to the side.",
+    "Label every arrow with what crosses it and how (e.g. 'imports classify()', 'HTTPS long-poll: claim task', 'unix socket: run/capture/input', 'writes waitlist signup'). Use one arrow style per meaning and add a small legend.",
+    "Draw deployment and trust containers: the npm package @exla/offstage (src/ + native/), the Fly app, the Vercel project, a Mac fleet box with its operator and slot accounts, and an external customer zone.",
+    "Remove Launch and Ops from the runtime view, or move them to a clearly separate 'repo, not runtime' strip. Fix or label Console→SDK, which today is a docs/install link, not a call.",
+    "Re-lay it out to read top to bottom with orthogonal routing. Put connected nodes next to each other so no edge crosses a box it doesn't connect to, collapse Fleet↔CLI into one labeled two-way edge, use the empty right half of the screen, and make labels larger for iPad viewing.",
+    "Show operational facts where they shape behaviour: the plane's queue, slot reset and seed, the login budget, what happens when a lane's substrate is unavailable (run() never falls back to the real screen), and external dependencies (Docker, Fly, Vercel Blob).",
+    "Stamp the canvas with a date, commit or version and an owner, and mark which edges were confirmed against the code."
+  ],
+  "total": 10,
+  "verdict": "Redo"
+}

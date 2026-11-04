@@ -299,6 +299,8 @@ export interface RepoMap {
   owner?: string
   groups?: Array<{ id: string; label: string; description: string }>
   notes?: Array<{ title: string; text: string; source: string }>
+  /** Focused, navigable diagrams sharing the same architecture actors. */
+  views?: Array<{ kind?: 'overview' | 'workflow'; edgeLabels?: string[]; title: string; scope: string; nodeIds: string[]; edgeIndices: number[]; noteIndices: number[]; notes?: Array<{ title: string; text: string; source: string }> }>
   verification?: { at: string; revision: string; dirty: boolean }
 }
 

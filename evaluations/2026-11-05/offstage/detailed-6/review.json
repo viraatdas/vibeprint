@@ -1,0 +1,81 @@
+{
+  "reviewedAt": "2026-11-05T00:45:37.656Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a one-line question as its title, such as 'How does a fleet box claim a task, run it in a slot, and wipe it?'. Under it is an audience line ('Engineers onboarding to offstage and offstage cloud') and a one-sentence summary. The level of detail (routes, uids, timeouts) suits engineers. The only weak spots are app chrome rather than the diagram: the header 'vp-offstage-detailed-5oE8oE' means nothing, and the selector cuts the questions short ('How does offstage execute a command away fro...')."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "The key defines frames as trust/deployment zones, boxes as runtime actors and cylinders as stored state, and most views follow it. A few boxes are at a different level. 'Headless lane' and 'Xvfb container lane' are code-level lane concepts drawn as peers of the 'sessiond' daemon. 'Slot accounts' is a set of identities, not a process. 'offstage CLI / MCP' merges two entry points into one box. Frame types are also mixed: some are uids ('Fleet Mac: operator uid'), one is a deployment ('Fly.io offstage-api') and some are just categories ('Customer clients', 'Third-party APIs'). The views are sibling slices, not true zoom-ins. No view sits above them showing how the five fit together."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view has 3–5 nodes and answers its own question. Omissions are declared in each view's 'Outside this view' line (Billing, CI, maintenance, third-party internals). Things a reader would expect but can't find: View 1 never shows who calls the CLI/MCP (an agent or a person). View 2's question is about admitting work, but the queue only appears as words inside the Control plane API box. View 5's Third-party frame text mentions the Anthropic API, which isn't drawn there. The fleet's GUI-slot seeding path and the site/ deployment are missing and aren't covered by the omission line."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every edge is directed and labelled with protocol and payload, e.g. 'B1 HTTPS POST /v1/tasks → id; GET ?wait= (sync)' and 'C4 HTTPS /v1/model/messages with run token (sync)'. Line style encodes sync, async and local. Step numbers carry order across views (A1/A2; B1–B5; C1–C6). Deductions: (1) The key says 'A/B/C = workflows' but never names them, so the reader has to guess that B means tasks and C means sandboxes/agents. (2) View 3 draws 'B2 HTTPS long-poll /claim ≤25 s → work or 204' as dashed (async = event/stream). It is really an awaited request/reply, which the key reserves for solid lines. (3) The '→' character inside labels for returns ('→ exit, log') looks like a second kind of arrow. (4) View 1 marks 'docker run' and 'execa argv' as dotted (file/IPC), but both are process spawns. (5) In view 3 it is hard to tell which label belongs to which line (see layout)."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Every frame says who manages it: 'Self-hosted Mac', 'Fly-managed: one machine (sjc) + offstage_data volume at /data', 'Managed providers', 'Same Studio A Mac; separate customer uids'. Internal vs external is clear, and the double border marks external services. But two machines are only described in text, never drawn as one boundary. 'Developer account on Mac' and 'Helper macOS session' are separate frames, not nested in one Mac. 'Fleet Mac: operator uid' and 'Fleet Mac: slot uids' sit apart in views 3 and 4 with no enclosing Studio frame. The network boundary between the Studio and Fly (internet or tailnet) is never shown, and the LAN guard exists only in a footnote. Frame titles use the same small red type as box body text, so frames don't read as a higher level."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "View 2 is a clean left-to-right flow and view 4 is mostly clean. View 3 is a tangle. The heartbeat edge runs down just outside the Fly frame's left border and the B4 edge runs down its right border. Both then cut across the frame below its header, which draws a fake inner rectangle around 'Fly.io offstage-api / Fly-managed…'. Three edges (heartbeat, B4, dashed B2) land within about 100 px on top of 'Control plane API', two of them almost on the same line from (668,420). The dotted B5/C6 and B3/C3 edges trace the left and right borders of the 'Fleet Mac: slot uids' frame before turning in. View 1: the two edges into sessiond end at nearly the same point, and the docker edge runs ~270 px just above the Helper frame's top border. View 5: the JWKS edge goes out to the Fly frame's right corner, doubles back, and crosses the Third-party frame's bottom border. In every view the text is about 8–9 px at 1194×834, yet large parts of the frames are empty. Examples: the top right of the Fly frame in view 2, the 165×325 'Customer clients' frame holding only the Web console in view 5, and the lower half of the Developer frame in view 1."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Each view has a Key covering frames, boxes, cylinders, double borders and solid/dashed/dotted lines. Because everything is one red, line and shape styles do all the work, which is the right choice for one colour. Names are real (offstage-api, offstage_data, offstage0–7, sessiond, /v1/tasks). Deductions: frames and boxes are the same red rounded rectangle, told apart only by size. At this size dotted and dashed lines are hard to tell apart, especially in view 3 where both land on the same box. The double border on Clerk and Anthropic is faint. The Key is 9 px footer text with no visual sample of each line style."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Each view has two concrete notes on behaviour, with sources. 'Refusal beats --lane' (no override). 'No fallback to your display' (exit 69, sessiond refuses input on the console). 'Acknowledged is not yet durable' (plane.json every 2 s, a crash can lose ~2 s). 'Claim long-polls ≤25 s; unstarted 20 s → requeue (max 3 tries); box silent 2 min → running task fails, not rerun; heartbeat 15 s delivers cancels'. The pf LAN guard fails closed. Reset happens before the next claim. The key stays in plane memory, with an omt_ token, step budget, max_tokens and no streaming. Answers are resent with backoff. A repeated idempotency key replays. Scale and state are explicit too: one Fly machine in sjc, one volume, offstage0–7. I checked these numbers against the code and they match. Not shown: what happens when Anthropic or Clerk is down."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Every view carries 'Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das · Live runtime NOT verified', and each note cites its source files. I checked these against the source and all match: sjc, offstage_data→/data, plane.json with a 2 s timer and SIGTERM, MAX_POLL_MS 25 s, CLAIM_ACK_MS 20 s, MAX_ATTEMPTS 3, BOX_LOST_MS 2 min, HEARTBEAT_MS 15 s, the omt_ token, no streaming on /v1/model/messages, /v1/auth/clerk with JWKS, exit 69, stdin ignored in execa, fluxbox and DISPLAY dropped in the container lane. Capped at 3 because the running system was not verified, as the diagram itself says."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Without help, a newcomer can learn: the local tool sends a command to one of three lanes (in place, a Docker/Xvfb container, or a second macOS uid through sessiond) and writes result.json; the cloud is one Fly machine with in-memory state saved to a volume; SDK and MCP clients submit tasks or sandboxes; a Studio runner long-polls, runs work as offstage0–7, and wipes the slot; agent runs reach Claude through the plane proxy without the key; the console can sign in through Clerk. They cannot learn: which workflow A, B and C are; which order to read the views in, since there is no overview; how the Studio reaches Fly; how the router classifies a command (only the refusal rule is stated). View 3's tangled routing makes it easy to attach a label to the wrong edge. Text this small also means reading by zooming in, not at a glance."
+    }
+  ],
+  "visualVerdict": "31/40, which is in the Good band. It isn't unusable, but it does look messy, and that comes from how it's drawn, not what it says. The content is strong: real names, protocols and timeouts that match the code, managed/self-hosted frames, sync/async/local line styles, numbered workflow steps, and concrete notes on failure behaviour. The mess has three causes. First, view 3 routes edges along frame borders and makes them converge on one box, creating a fake inner rectangle and tangled arrowheads. Views 1 and 5 have smaller versions of the same habit (edges hugging borders, a doubled-back JWKS edge). Second, about 8–9 px text sits inside frames that are mostly empty, so everything has to be read up close. Third, every element is the same red, so frames, boxes and edges have little visual hierarchy. Views 2 and 4 already look reasonably clean. View 3 needs a re-layout.",
+  "coldRead": "Reading only the screenshots: offstage is a local CLI/MCP that classifies a command. It refuses installers, .pkg/.dmg files and hdiutil. Otherwise it runs the command in place, in a local Docker container with Xvfb, or in a second macOS account through a daemon called sessiond, and writes command.log, screen.png and result.json to a run directory. If the container or helper session isn't available, the command is skipped with exit 69 and never touches your screen. offstage cloud is a single Fly.io machine in sjc. It holds tasks, sandboxes, accounts and keys in memory and saves them to a volume every 2 s, so a crash can lose about 2 s of work that was already acknowledged. Clients are the SDK, the CLI/MCP's sandbox tools, and a web console that can optionally sign in through Clerk. On the Studio A Mac, a fleet runner under the operator uid long-polls the plane for work, runs it as one of offstage0–7 (via sessiond or sudo -u), reports events and artifacts, sends a heartbeat every 15 s that also carries cancels, and resets the slot (kill, wipe, new uid) before the next claim. Agent runs inside a slot call the plane's /v1/model/messages with a short-lived omt_ token, and the plane forwards to Anthropic with the customer's key. Uncertain or not visible: what workflows A, B and C are called (I'm inferring local run, task, and sandbox/agent from the labels). Whether the Studio reaches Fly over the public internet or a tailnet. Whether the Docker container runs inside a VM on the Mac. How the CLI decides between headless and container beyond the refusal rule. Whether the fleet runner and sessiond are the same process as fleetd. How a GUI slot gets a logged-in session. In view 3, I had to trace carefully to tell which of the three edges entering Control plane API is the heartbeat, B4 or B2.",
+  "mostSeriousProblems": [
+    "View 3 (fleet claim/run/wipe) is the worst view. The heartbeat and B4 edges run down the left and right borders of the 'Fly.io offstage-api' frame and then cut across it under its header, which draws a fake inner rectangle. Three edges (heartbeat, B4, dashed B2) land within about 100 px on top of 'Control plane API', two of them almost on the same line. The dotted B5/C6 and B3/C3 edges trace the slot-uids frame's left and right borders before turning in.",
+    "Text is about 8–9 px at 1194×834 (box bodies, edge labels, Key, notes; the subtitle is smaller) while frames are mostly empty: the top right of the Fly frame in view 2, the Customer clients and Third-party frames in view 5, the lower Developer frame in view 1. The space could hold text roughly 1.5× larger.",
+    "The workflow letters are never named. The Key says 'A/B/C = workflows', but no view says A = local run, B = task, C = sandbox/agent. Workflows B and C span views 2→3 and 2→3→4 with nothing visible linking them.",
+    "No overview view. There are five sibling views and no context view showing how they connect (local tool, plane, fleet box, clients, third parties). A newcomer doesn't know where to start, and the header ('vp-offstage-detailed-5oE8oE') doesn't help.",
+    "Edges cling to frames in views 1 and 5 as well. The docker edge runs about 270 px just above the Helper frame's top border. The two edges into sessiond end at the same point. The JWKS edge in view 5 goes out to the Fly frame's right corner, doubles back, and crosses the Third-party frame's bottom border.",
+    "The line styles contradict themselves in places. 'B2 HTTPS long-poll /claim … → work or 204' is dashed (async = event/stream), but it's an awaited request/reply, which the Key draws solid. View 1 marks process spawns ('execa argv', 'docker run') as dotted file/IPC.",
+    "Shared machines aren't drawn as boundaries. 'Developer account on Mac' and 'Helper macOS session' are the same Mac, and 'Fleet Mac: operator uid' and 'slot uids' are the same Studio, but this only appears in text. The Studio↔Fly network path isn't shown at all."
+  ],
+  "recommendations": [
+    "Re-lay out view 3 in three horizontal bands: Fly (top), operator runner (middle), slot accounts (bottom). Run the three HTTPS edges up to separate points on Control plane API, ordered B2 claim, B4 events, then heartbeat, each with its label right next to it. Run the two local edges down into Slot accounts. Never route an edge along a frame border. Use straight or single-bend paths into the box, not through frame corners.",
+    "Make text about 1.5× larger and shrink frames to fit their contents. Box titles around 16 px and body and edge labels at least 12 px at 1194×834. Remove the empty interiors in views 2 and 5 so the diagrams fill the canvas.",
+    "Name the workflows in every Key, e.g. 'A = local run, B = task, C = sandbox/agent run', and add 'continues in view: …' notes where B and C cross views (B1 view 2 → B2–B5 view 3; C1 view 2 → C2–C6 views 3–4).",
+    "Add an overview view as the first selector entry: one box each for offstage CLI/MCP, the plane, the fleet box, customer clients, Anthropic and Clerk, with one edge per workflow letter, and each region pointing to its detail view. Give the set a real title instead of 'vp-offstage-detailed-5oE8oE'.",
+    "Draw the shared machines as nesting. Put a 'Developer's Mac' frame around the Developer account and the Helper session (and Docker, if it runs there). Put a 'Studio A' frame around the operator-uid and slot-uid frames, and label the Studio→Fly link with the network it uses.",
+    "Fix the line-style contradictions. Draw request/reply long-polls (B2, C2) solid with '(long-poll)' in the label, or change the Key's definition of async. Give process spawns their own style or a 'spawn' label instead of file/IPC dotted.",
+    "Give the notation more visual hierarchy without relying on colour. Use bold or larger frame titles, a lighter or thinner frame stroke than box strokes, and line samples drawn inside the Key. In views 1 and 5, separate the two edges into sessiond and reroute JWKS so it goes straight from Control plane API up to Clerk."
+  ],
+  "total": 31,
+  "verdict": "Good"
+}

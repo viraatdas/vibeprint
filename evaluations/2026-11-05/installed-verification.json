@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-11-05T01:12:34.101Z",
+  "version": "0.9.0",
+  "cli": "/workspace/code/vibeprint/dist/cli.js",
+  "trial": "detailed-15",
+  "viewCount": 7,
+  "checks": [
+    "Published CLI starts isolated daemon; health version matches 0.9.0",
+    "All view selections restore view-specific notes at 14px",
+    "Previous/next controls navigate correctly",
+    "All views retains export annotations and hides reading panel",
+    "Phone notes collapse and expand; no horizontal overflow",
+    "No browser page errors"
+  ],
+  "phoneLayout": {
+    "width": 390,
+    "scroll": 390,
+    "nav": {
+      "x": 14,
+      "y": 782,
+      "width": 210,
+      "height": 44,
+      "top": 782,
+      "right": 224,
+      "bottom": 826,
+      "left": 14
+    },
+    "submit": {
+      "x": 242,
+      "y": 774,
+      "width": 132,
+      "height": 54,
+      "top": 774,
+      "right": 374,
+      "bottom": 828,
+      "left": 242
+    }
+  }
+}

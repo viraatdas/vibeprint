@@ -1,0 +1,17 @@
+{
+  "at": "2026-11-05T00:31:40.344Z",
+  "method": "Human source review before first visual judgement; original model output preserved in generator-map.json",
+  "changes": [
+    "Separate privileged operator uid and untrusted customer slot uids on the same Mac",
+    "Include direct browser ClerkJS/OAuth and plane JWKS/user verification when social sign-in is configured",
+    "Replace console notes with source-specific sign-in/session exchange and state/admission notes",
+    "Draw the Docker/Xvfb isolation boundary separately from the developer account"
+  ],
+  "sources": [
+    "console/src/lib/clerk.ts",
+    "cloud/src/core/clerk.ts",
+    "src/fleet/reset.ts",
+    "native/sessiond/Peer.swift",
+    "src/lanes/container/index.ts"
+  ]
+}

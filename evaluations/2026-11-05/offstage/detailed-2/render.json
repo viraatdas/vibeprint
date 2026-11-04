@@ -1,0 +1,494 @@
+{
+  "capturedAt": "2026-11-05T00:24:42.004Z",
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "captures": [
+    {
+      "title": "How does `offstage run` choose a lane and keep the work off your screen?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 630.2898181008902,
+        "y": 227.93175074183978,
+        "z": 0.3860804811685522
+      },
+      "selected": "shape:mape73a9e49318d8dc4",
+      "text": [
+        {
+          "text": "How does `offstage run` choose a lane and keep the work off your screen?",
+          "renderedSize": 12.35457539739367
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · CLI/MCP classifies argv, refuses or dispatches to the headless, container or helper-session lane, writes result.json; plus direct session\nverbs.",
+          "renderedSize": 7.335529142202492
+        },
+        {
+          "text": "Developer's machine",
+          "renderedSize": 8.493770585708148
+        },
+        {
+          "text": "User's own account (self-hosted): CLI/MCP process, lanes, Docker",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Helper macOS session",
+          "renderedSize": 8.493770585708148
+        },
+        {
+          "text": "Same Mac, separate uid\n(computeruse) with its own\nwindow server",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "offstage\nCLI/MCP +\nrouter",
+          "renderedSize": 9.652012029213806
+        },
+        {
+          "text": "CLI + stdio MCP;\nclassify() picks lane\nfrom argv/repo files;\nrun() refuses or\ndispatches",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Headless lane\n(in place)",
+          "renderedSize": 9.652012029213806
+        },
+        {
+          "text": "execa child in\ncaller's cwd, stdin\nignored, no\nisolation; refuses\nobvious --headed",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Xvfb web\ncontainer",
+          "renderedSize": 9.652012029213806
+        },
+        {
+          "text": "docker run --rm:\nrepo ro, artifacts rw,\nXvfb + fluxbox; host\nDISPLAY dropped",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Run dirs\n(.offstage/runs)",
+          "renderedSize": 9.652012029213806
+        },
+        {
+          "text": "Per-run dir in the\nrepo: command.log,\nscreen.png,\nxcresults, result.json\nLaneResult",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Helper\noffstage-session\nd",
+          "renderedSize": 9.652012029213806
+        },
+        {
+          "text": "In computeruse's\nGUI session: run,\nscreenshot, input;\npeer-uid check; no\ninput on console",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; dotted (local) = file/IPC.",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Routing: lane choice and cloud dispatch",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "classify() only reads argv/repo files: session >\ncontainer > headless. A refuse signal (installer,\n.pkg/.dmg, hdiutil) blocks every lane, even with --lane;\n--lane headless can't downgrade. Cloud submit checks\nauth, GUI gate, capacity, credit; /claim serves\nsandboxes, then fair-by-team tasks.",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "Source: src/router/index.ts, src/cli/api.ts,\ncloud/src/api/app.ts, cloud/src/core/queue.ts",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "State and result lifecycle",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "Local: run() makes .offstage/runs/<id>; a zod-checked\nLaneResult is saved best-effort as result.json. Cloud:\nin-memory state is snapshotted atomically to\n/data/plane.json every 2 s and on SIGTERM; a crash\ncan lose ~2 s of acked writes. Orphaned claims\nrequeue on restore; orphaned runs fail.",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "Source: src/contract/artifacts.ts, src/cli/api.ts,\ncloud/src/server.ts, cloud/src/core/persist.ts",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Failure, isolation and retry",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "Lanes never throw or use your screen: no substrate →\nskipped (exit 69). sessiond checks peer uid; refuses\ninput on console. Cloud: unstarted claims requeue\nafter 20 s (3 tries); a box silent 2 min fails running\ntasks, no rerun. Slots claim only behind a fail-closed pf\nguard; reset gives a new uid.",
+          "renderedSize": 8.107690104539596
+        },
+        {
+          "text": "Source: src/contract/index.ts, native/sessiond/Peer.swift,\nnative/sessiond/Input.swift, cloud/src/core/queue.ts,\nsrc/fleet/lan-guard.ts, src/fleet/reset.ts",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Outside this view: Other views: How does a cloud task reach a Mac slot and come back as a result?; How do sandboxes and agent runs drive a slot through the plane?; What does\nthe web console talk to, and where is its state kept?; GitHub Actions runner tasks, Clerk sign-in, Stripe billing and Resend mail on the plane; Slot login seeding (loopback RFB),\ncmio/SEP recovery, fleetd installs, probe verb; Marketing site (Vercel), launch film, bench and chaos tests: not product runtime.",
+          "renderedSize": 7.7216096233710445
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 7.7216096233710445
+        }
+      ]
+    },
+    {
+      "title": "How does a cloud task reach a Mac slot and come back as a result?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -2433.530118991098,
+        "y": 287.2175074183979,
+        "z": 0.30638800813701084
+      },
+      "selected": "shape:map8c14060d5df81806",
+      "text": [
+        {
+          "text": "How does a cloud task reach a Mac slot and come back as a result?",
+          "renderedSize": 9.804416260384347
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · SDK submits; the plane admits and queues; a box claims it, runs it as the slot uid, reports, uploads\nartifacts and resets; state snapshots to /data.",
+          "renderedSize": 5.821372154603206
+        },
+        {
+          "text": "Customer clients",
+          "renderedSize": 6.740536179014239
+        },
+        {
+          "text": "Customer code and\nbrowsers calling offstage\ncloud over HTTPS",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 6.740536179014239
+        },
+        {
+          "text": "Fly-managed: one machine (sjc) + offstage_data volume at /data",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Fleet Mac box",
+          "renderedSize": 6.740536179014239
+        },
+        {
+          "text": "Self-hosted Mac (Studio A): operator-run runner, slot accounts",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "offstage-cloud\nSDK",
+          "renderedSize": 7.659700203425271
+        },
+        {
+          "text": "Customer code:\nsubmit/wait tasks;\nsandbox commands,\nfiles, agent;\nidempotent create\nretry",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 7.659700203425271
+        },
+        {
+          "text": "Auth, billing admit,\nGUI gate; fair\nin-memory task\nqueue; sandbox op\nrelay; model proxy",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Fly volume\n/data",
+          "renderedSize": 7.659700203425271
+        },
+        {
+          "text": "plane.json snapshot\n(accounts, keys,\nledger, tasks,\nboxes); artifacts, log\narchive",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Fleet runner",
+          "renderedSize": 7.659700203425271
+        },
+        {
+          "text": "Operator uid:\nper-slot claim loops\nbehind LAN guard;\nheartbeats; runs\nwork; resets slot",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Slot accounts +\nsessiond",
+          "renderedSize": 7.659700203425271
+        },
+        {
+          "text": "offstage0–7: work\nruns as slot uid via\nsessiond (gui) or\nsudo -u; hosts the\nagent harness",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; solid\n(sync) = awaited request/reply; dashed (async) = event/stream; dotted (local) = file/IPC.",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Routing: lane choice and cloud dispatch",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "classify() only reads argv/repo files: session\n> container > headless. A refuse signal\n(installer, .pkg/.dmg, hdiutil) blocks every\nlane, even with --lane; --lane headless can't\ndowngrade. Cloud submit checks auth, GUI\ngate, capacity, credit; /claim serves\nsandboxes, then fair-by-team tasks.",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "Source: src/router/index.ts, src/cli/api.ts,\ncloud/src/api/app.ts, cloud/src/core/queue.ts",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "State and result lifecycle",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "Local: run() makes .offstage/runs/<id>; a\nzod-checked LaneResult is saved best-effort\nas result.json. Cloud: in-memory state is\nsnapshotted atomically to /data/plane.json\nevery 2 s and on SIGTERM; a crash can lose\n~2 s of acked writes. Orphaned claims\nrequeue on restore; orphaned runs fail.",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "Source: src/contract/artifacts.ts, src/cli/api.ts,\ncloud/src/server.ts, cloud/src/core/persist.ts",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Failure, isolation and retry",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "Lanes never throw or use your screen: no\nsubstrate → skipped (exit 69). sessiond\nchecks peer uid; refuses input on console.\nCloud: unstarted claims requeue after 20 s\n(3 tries); a box silent 2 min fails running\ntasks, no rerun. Slots claim only behind a\nfail-closed pf guard; reset gives a new uid.",
+          "renderedSize": 6.4341481708772275
+        },
+        {
+          "text": "Source: src/contract/index.ts,\nnative/sessiond/Peer.swift,\nnative/sessiond/Input.swift,\ncloud/src/core/queue.ts, src/fleet/lan-guard.ts,\nsrc/fleet/reset.ts",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Outside this view: Other views: How does `offstage run` choose a lane and keep the work off your screen?; How do sandboxes and agent runs\ndrive a slot through the plane?; What does the web console talk to, and where is its state kept?; GitHub Actions runner tasks, Clerk sign-in, Stripe\nbilling and Resend mail on the plane; Slot login seeding (loopback RFB), cmio/SEP recovery, fleetd installs, probe verb; Marketing site (Vercel),\nlaunch film, bench and chaos tests: not product runtime.",
+          "renderedSize": 6.127760162740216
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 6.127760162740216
+        }
+      ]
+    },
+    {
+      "title": "How do sandboxes and agent runs drive a slot through the plane?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -6235.553178189913,
+        "y": 310.44317507418396,
+        "z": 0.28346572598663633
+      },
+      "selected": "shape:mapb469ec4ba4e8e626",
+      "text": [
+        {
+          "text": "How do sandboxes and agent runs drive a slot through the plane?",
+          "renderedSize": 9.070903231572363
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · SDK or MCP opens a sandbox; ops relay to the box by long-poll; the in-slot harness calls Claude via the plane's proxy; closing resets the slot.",
+          "renderedSize": 5.38584879374609
+        },
+        {
+          "text": "Developer's machine",
+          "renderedSize": 6.2362459717059995
+        },
+        {
+          "text": "User's own account\n(self-hosted): CLI/MCP\nprocess, lanes, Docker",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Customer clients",
+          "renderedSize": 6.2362459717059995
+        },
+        {
+          "text": "Customer code and\nbrowsers calling offstage\ncloud over HTTPS",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 6.2362459717059995
+        },
+        {
+          "text": "Fly-managed: one\nmachine (sjc) +\noffstage_data volume at\n/data",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Fleet Mac box",
+          "renderedSize": 6.2362459717059995
+        },
+        {
+          "text": "Self-hosted Mac (Studio A): operator-run runner, slot accounts",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Third-party APIs",
+          "renderedSize": 6.2362459717059995
+        },
+        {
+          "text": "Managed SaaS the plane\ncalls (Anthropic Messages\nAPI)",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "offstage\nCLI/MCP +\nrouter",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "CLI + stdio MCP;\nclassify() picks lane\nfrom argv/repo files;\nrun() refuses or\ndispatches",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "offstage-cloud\nSDK",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "Customer code:\nsubmit/wait tasks;\nsandbox commands,\nfiles, agent;\nidempotent create\nretry",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "Auth, billing admit,\nGUI gate; fair\nin-memory task\nqueue; sandbox op\nrelay; model proxy",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Fleet runner",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "Operator uid:\nper-slot claim loops\nbehind LAN guard;\nheartbeats; runs\nwork; resets slot",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Slot accounts +\nsessiond",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "offstage0–7: work\nruns as slot uid via\nsessiond (gui) or\nsudo -u; hosts the\nagent harness",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Anthropic\nMessages API",
+          "renderedSize": 7.086643149665909
+        },
+        {
+          "text": "Claude model for\ncomputer-use agent\nruns; reached only\nvia the plane's\nproxy",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; double border = external service. Arrows: caller → recipient, response included; solid (sync) = awaited request/reply; dashed\n(async) = event/stream; dotted (local) = file/IPC.",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Routing: lane choice and cloud dispatch",
+          "renderedSize": 5.952780245719363
+        },
+        {
+          "text": "classify() only reads argv/repo files: session > container > headless. A refuse\nsignal (installer, .pkg/.dmg, hdiutil) blocks every lane, even with --lane; --lane\nheadless can't downgrade. Cloud submit checks auth, GUI gate, capacity, credit;\n/claim serves sandboxes, then fair-by-team tasks.",
+          "renderedSize": 5.952780245719363
+        },
+        {
+          "text": "Source: src/router/index.ts, src/cli/api.ts, cloud/src/api/app.ts, cloud/src/core/queue.ts",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Failure, isolation and retry",
+          "renderedSize": 5.952780245719363
+        },
+        {
+          "text": "Lanes never throw or use your screen: no substrate → skipped (exit 69). sessiond\nchecks peer uid; refuses input on console. Cloud: unstarted claims requeue after\n20 s (3 tries); a box silent 2 min fails running tasks, no rerun. Slots claim only\nbehind a fail-closed pf guard; reset gives a new uid.",
+          "renderedSize": 5.952780245719363
+        },
+        {
+          "text": "Source: src/contract/index.ts, native/sessiond/Peer.swift, native/sessiond/Input.swift,\ncloud/src/core/queue.ts, src/fleet/lan-guard.ts, src/fleet/reset.ts",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Outside this view: Other views: How does `offstage run` choose a lane and keep the work off your screen?; How does a cloud task reach a Mac slot and come back as a result?; What does the web\nconsole talk to, and where is its state kept?; GitHub Actions runner tasks, Clerk sign-in, Stripe billing and Resend mail on the plane; Slot login seeding (loopback RFB), cmio/SEP recovery, fleetd\ninstalls, probe verb; Marketing site (Vercel), launch film, bench and chaos tests: not product runtime.",
+          "renderedSize": 5.669314519732726
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 5.669314519732726
+        }
+      ]
+    },
+    {
+      "title": "What does the web console talk to, and where is its state kept?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -11510.617149851632,
+        "y": 142.75845697329385,
+        "z": 0.6164258276934332
+      },
+      "selected": "shape:mapa9c7c60c1f0db23a",
+      "text": [
+        {
+          "text": "What does the web console talk to, and where is its state kept?",
+          "renderedSize": 19.725626486189864
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · Console SPA served by the plane: sign-in, keys, billing, usage and replays, persisted in the plane's\n/data snapshot and artifact files.",
+          "renderedSize": 11.712090726175232
+        },
+        {
+          "text": "Customer clients",
+          "renderedSize": 13.561368209255532
+        },
+        {
+          "text": "Customer code and\nbrowsers calling offstage\ncloud over HTTPS",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 13.561368209255532
+        },
+        {
+          "text": "Fly-managed: one machine (sjc) + offstage_data volume at /data",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Web console",
+          "renderedSize": 15.41064569233583
+        },
+        {
+          "text": "SPA served by the\nplane: sign-in, keys,\nmembers, billing,\nusage, CI,\nsandboxes, replays",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 15.41064569233583
+        },
+        {
+          "text": "Auth, billing admit,\nGUI gate; fair\nin-memory task\nqueue; sandbox op\nrelay; model proxy",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Fly volume\n/data",
+          "renderedSize": 15.41064569233583
+        },
+        {
+          "text": "plane.json snapshot\n(accounts, keys,\nledger, tasks,\nboxes); artifacts, log\narchive",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; solid\n(sync) = awaited request/reply; dotted (local) = file/IPC.",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "State and result lifecycle",
+          "renderedSize": 12.944942381562099
+        },
+        {
+          "text": "Local: run() makes .offstage/runs/<id>; a zod-checked LaneResult is saved\nbest-effort as result.json. Cloud: in-memory state is snapshotted atomically to\n/data/plane.json every 2 s and on SIGTERM; a crash can lose ~2 s of acked writes.\nOrphaned claims requeue on restore; orphaned runs fail.",
+          "renderedSize": 12.944942381562099
+        },
+        {
+          "text": "Source: src/contract/artifacts.ts, src/cli/api.ts, cloud/src/server.ts,\ncloud/src/core/persist.ts",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Outside this view: Other views: How does `offstage run` choose a lane and keep the work off your screen?; How does a cloud task reach a Mac\nslot and come back as a result?; How do sandboxes and agent runs drive a slot through the plane?; GitHub Actions runner tasks, Clerk sign-in,\nStripe billing and Resend mail on the plane; Slot login seeding (loopback RFB), cmio/SEP recovery, fleetd installs, probe verb; Marketing site\n(Vercel), launch film, bench and chaos tests: not product runtime.",
+          "renderedSize": 12.328516553868665
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 12.328516553868665
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

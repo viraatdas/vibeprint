@@ -1,0 +1,83 @@
+{
+  "reviewedAt": "2026-11-05T01:08:34.360Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a one-line question title (e.g. 'How does a fleet box claim a task, run it in a slot, and wipe it?', 'How does a sandbox agent run reach Claude without the slot holding a key?') and the same audience line, 'Engineers onboarding to offstage and offstage cloud'. The level of detail suits that audience: endpoints, status codes and timings are present, with no marketing copy. The only problem is in the app chrome: the selector cuts titles off ('1/7 · How do offstage clients, the cloud…')."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Inside each view the boxes sit at one level: runtime components such as offstage CLI/MCP, the three lanes, Control plane API, Fleet runner, Slot accounts and Fly volume /data. Views 2–7 are zoom-ins. Deductions: view 1 is not a true parent of the others. The offstage-cloud SDK, Clerk, the Fly volume, Slot accounts and the three local lanes appear only in the zoom-ins, and view 1's single 'Fleet runner' box stands for both the runner and the slots. sessiond is a box in view 2, but on the fleet side (views 5–6) it exists only as an arrow label ('sessiond op')."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view answers one question, and the subtitles hand off to the next view. Deductions: view 1 ('How do offstage clients… connect?') leaves out the offstage-cloud SDK, which is where B1 'HTTPS POST /v1/tasks' starts in view 4, and leaves out Clerk, an external dependency. View 3 spends a whole view on a single arrow, and that arrow is only the CLI's result.json write, even though the Run directory box lists command.log and screen.png, which the lanes write. The pf LAN guard is named in the Fleet runner box and the notes but never drawn."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are directed caller→recipient, and each label carries protocol, path, payload and response, e.g. 'B2 HTTPS long-poll /claim ≤25 s → work or 204 (sync)' and 'C4 HTTPS /v1/model/messages with run token (sync)'. Workflows are lettered and numbered. The three A1 arrows are explained as alternatives and B3/C3 and B5/C6 as shared steps. Deductions: an '→' inside a label means 'returns', which overloads the arrow glyph ('A1 execa argv in caller's cwd → exit, log' sits on a rightward arrow). In view 7, D2's response '→ plane session' appears before D3, the token check that produces it, and the D3 label 'JWKS + user verifies token' is garbled. Line style also mixes two axes: solid means 'Sync request' and dotted means 'Local I/O', yet the local calls (sudo reset, unix socket) are synchronous too."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Views 2–7 draw labeled deployment and trust containers and say in text whether each is managed or self-hosted: 'Fly.io offstage-api — Fly-managed: one machine (sjc) + offstage_data volume at /data', 'Fleet Mac: slot uids — separate customer uids, reset between jobs', 'Third-party APIs — outside offstage trust boundary'. Deductions: view 1, the context view, has no containers at all; it puts location in box subtitles only. Machine-level grouping is missing: Developer account, Local Docker container and Helper macOS session are one Mac, and operator uid and slot uids are one Studio, but no box encloses either set; only the subtitles say 'Same machine' or 'Same Studio A Mac'. Containers use the same red stroke as the components inside them. The LAN guard, the slots' network boundary, is not drawn."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Reading direction is clear (a header row of columns, messages ordered top to bottom) and spacing is aligned. But full-height container walls mean long messages cut across many lines. In view 6, C5 crosses the runner and slot lifelines plus six walls. In view 2, both unix-socket arrows cross the Headless and Xvfb lifelines plus four walls. In view 4, C1 and B1 from the SDK cross the CLI lifeline plus four walls. In view 7, D3 crosses the Web console lifeline plus four walls. Walls and lifelines break at every label row, leaving short dashes (view 4 around x≈625–635, view 7 between the D2 and D4 rows, the Headless lifeline in view 2) that look like the dotted 'Local I/O' style. Adjacent containers leave pairs of walls about 8–10 px apart (view 5 at x≈493/501 and 757/765) that read as extra lifelines. View 3 leaves about a third of the canvas empty around one arrow. The notes panel takes about 22% of the screen height, so text in views 5–7 shrinks to roughly 12–13 px. That is 'readable but cluttered or awkward'."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Notation is consistent. Every view has a line legend ('Caller → recipient; response included. — Sync request ····· Local I/O'), the staging convention is written down ('Equal stages = alternatives; unnumbered calls are independent'), and real names are used throughout (offstage-api, offstage0–7, /v1/tasks, plane.json). The single authorship red is not counted against it. Deductions: shapes carry no meaning. Datastores (Fly volume /data, Run directory), external APIs (Anthropic, Clerk) and services are all the same rectangle. Containers differ from components only by nesting and font size, and the legend doesn't cover them. Line dash is the only signal that doesn't rely on text."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Every view states failure and non-functional behavior explicitly. The single Fly machine in sjc is called a single point of failure. Acknowledged writes live in memory, and plane.json is rewritten every 2 s and on SIGTERM, so a crash can lose about 2 s of acknowledged work. Claims long-poll for up to 25 s; a task not started 20 s after its claim is requeued (max 3 tries); a box silent for 2 min fails its running task, which is not rerun. The 15 s heartbeat delivers cancels, and 409 means cancelled. The LAN guard fails closed, and each slot is reset (processes killed, home wiped, new uid) before its next claim. A missing substrate exits 69 and never falls back to your screen. A failed result.json write is reported. The Anthropic key stays in plane memory and the proxy enforces the step budget and max_tokens. Answers are resent with backoff. The only nit: all of this sits in the prose panel and is not marked on the components it describes."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Every view's footer reads 'Source review 2026-11-05 · 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified'. My spot checks against the source matched: MAX_POLL_MS 25_000, HEARTBEAT_MS 15_000, CLAIM_ACK_MS 20_000, MAX_ATTEMPTS 3, BOX_LOST_MS 2 min, the 2_000 ms snapshot plus the SIGTERM write, primary_region sjc, /data, the omt_ token, /v1/model/messages, /v1/auth/clerk with JWKS, x-anthropic-api-key, execa with stdin 'ignore', --rm with fluxbox and DISPLAY dropped, exit 69, .offstage/runs/<id>/. Capped at 3 because nothing was verified against production. One visible error: view 3 says 'Return to the first view for lane selection and isolation', but that is view 2; view 1 is the cloud context."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Working through all seven views, a new engineer can correctly retell local lane routing, cloud admission, the fleet's claim/run/reset loop, the agent proxy that keeps the key off the slot, and Clerk sign-in. They still need someone to steer them past misreadings. View 1 alone does not show where tasks come from (the SDK) or where local execution happens. Box text uses terms it never defines ('op relay', 'GUI gate', 'fair queue', 'omt_'). The CLI is both the local router (views 2–3) and a cloud client that sends the customer's key (views 1 and 4), and nothing says how those roles relate. View 3's 'first view' pointer sends the reader to the wrong place."
+    }
+  ],
+  "visualVerdict": "Good: 31/40 (purpose 4, abstraction 3, focus 3, flow 3, boundaries 3, layout 2, notation 3, operations 4, freshness 3, comprehension 3). Not unusable. It is a coherent set of seven views with a question title on each, lettered workflows (A local, B task, C agent, D console), and directed messages labeled with protocol, path, timing and response, and the claims I checked match the code. The messy feel has specific visible causes. Full-height container walls get crossed by every long message, up to two lifelines and six walls per arrow in view 6. Walls and lifelines are cut into dash-like fragments under labels, which look like the dotted 'Local I/O' style. Everything is the same red rectangle, so containers, services, stores and external APIs have the same visual weight. View 1 is thinner than its zoom-ins and has no boundaries. View 3 holds one arrow and points to the wrong view. The notes panel takes about a fifth of the screen and pushes views 5–7 down to small text. These are layout and notation problems; the content is solid.",
+  "coldRead": "What a newcomer can learn: offstage is a CLI/MCP tool on a developer's Mac. It classifies a command and runs it one of three ways: in place (the headless lane, via execa, stdin ignored), in a throwaway Docker container with Xvfb and fluxbox (repo read-only, host DISPLAY dropped), or as a separate macOS user (computeruse) driven over a unix socket by sessiond. Installers, .pkg/.dmg files and hdiutil are refused on every lane. If the substrate is missing the run exits 69 rather than using your screen. Every run, refusals included, writes .offstage/runs/<id>/result.json. offstage cloud is one Fly.io app (offstage-api, one machine in sjc) that keeps state in memory and snapshots it to plane.json on a /data volume every 2 s. Customer code submits tasks through the SDK (POST /v1/tasks, GET ?wait=); the SDK or the CLI creates sandboxes and agent runs. The plane checks auth, GUI access, capacity and credit, and keeps a fair queue. A fleet runner on Studio A, running as an operator uid, long-polls /claim for up to 25 s, runs each job as one of eight slot accounts (offstage0–7) via a sessiond op or sudo -u, PUTs events and artifacts back (409 means cancelled), heartbeats every 15 s, and resets the slot (kill, wipe, new uid) before the next claim. Agent runs in a slot call the plane's /v1/model/messages with a run token; the plane calls Anthropic with the customer's key, so the key never reaches the slot. The web console can sign in with Clerk, exchange the token at /v1/auth/clerk, and then use a plane session. What a newcomer cannot tell, or might misread: what 'op relay', 'GUI gate', 'fair queue' and 'omt_' mean. Whether sessiond also runs inside each slot (it appears only as a label on the fleet side). How the local session lane relates to fleet slots. Whether the CLI counts as a customer client (it sends the customer's key but sits in a 'Developer account on Mac' box). Whether the fleet is one box or several (only the notes say 'Studio A'). Where the LAN guard sits. That D3 happens inside D2's handling. From view 1 alone, where tasks come from at all, since the SDK is missing. View 3 also points readers to the wrong view for lane selection.",
+  "mostSeriousProblems": [
+    "Long messages cut through full-height container walls and other lifelines: view 6 C5 crosses 2 lifelines and 6 walls, the view 2 unix-socket arrows cross 2 lifelines and 4 walls, view 4 C1/B1 and view 7 D3 each cross 1 lifeline and 4 walls. This is the main reason the views feel messy.",
+    "Walls and lifelines break at every label row. The leftover dashes (view 4 around x≈625–635, view 7 between the D2 and D4 rows, the Headless lifeline in view 2) look like the dotted 'Local I/O' style, and wall pairs 8–10 px apart (view 5 at x≈493/501 and 757/765) look like extra lifelines.",
+    "View 1, the context view, isn't a real parent of the others. It leaves out the offstage-cloud SDK (where B1 tasks start), Clerk, the Fly volume, the slot accounts and the local lanes, and it is the only view with no boundary containers.",
+    "View 3 is a single arrow (CLI → Run directory) with a wrong pointer ('Return to the first view for lane selection'; it's view 2). It also omits the lanes' own command.log and screen.png writes, which its box lists.",
+    "The hierarchy is flat. Containers, services, datastores (Fly volume, Run directory) and external APIs (Anthropic, Clerk) are all the same red rectangle and differ only by nesting and font size. The only non-text signal is line dash, and containers aren't in the legend.",
+    "Same-machine groupings show up only in subtitles. Developer account, Docker container and helper session are one Mac; operator uid and slot uids are one Studio. No enclosing box shows either, and the LAN guard boundary isn't drawn.",
+    "Label conventions trip readers up. An inline '→' means 'returns' while the arrow means caller→recipient. View 7 shows D2's response before D3 performs the verification behind it, and 'JWKS + user verifies token' is garbled.",
+    "The notes panel (about 22% of the screen height) holds the most important failure content in dense prose and squeezes views 5–7 to roughly 12–13 px text. The selector cuts off every title, so the view list can't be scanned."
+  ],
+  "recommendations": [
+    "1. Fix the crossings first. Draw containers as a tinted header band or a light background fill instead of full-height stroked walls, so arrows only cross lifelines. Reorder columns to keep callers next to the systems they call: in view 7 put Clerk between Web console and Control plane, and in view 6 put Third-party APIs left of Fly so C5 stays short. Give labels a solid background chip so lines aren't cut into dash-like fragments.",
+    "2. Make view 1 a true context map. Add the offstage-cloud SDK, Clerk, Fly volume /data, the slot accounts, and one collapsed 'local lanes' box. Draw the trust containers (Your Mac, Customer clients, Fly offstage-api, Studio A with operator and slot sub-boxes, Third-party). Tag each edge with its workflow letter (A–D) so it maps to the selector.",
+    "3. Fold view 3 into view 2. Add Run directory as the last column, with an A2 arrow from each lane (command.log, screen.png) and one from the CLI (result.json). Fix the 'first view' pointer, or remove it once the merge makes it unnecessary.",
+    "4. Give the notation a shape vocabulary and document it: cylinders for Fly volume and Run directory, dashed outlines for third-party systems, a lighter tint or thinner stroke for containers than for components, and one legend line for containers.",
+    "5. Put failure points on the components they concern: small numbered markers (e.g. ⚠1 on the Fly box for the single machine and ~2 s loss, ⚠2 on Fleet runner for the fail-closed LAN guard, ⚠3 on the lanes for exit 69 with no fallback) keyed to the notes. Then make the notes panel collapsible so the diagrams get the vertical space back.",
+    "6. Tidy the labels. Write responses as '⇢ returns …' or in parentheses instead of an inline '→'. Show D3 as nested inside D2 ('D2a plane verifies token via Clerk JWKS + user') and fix the wording. Use one line-style axis (sync vs async) and mark 'local' in the text only.",
+    "7. Add machine-level boxes (Studio A around the operator and slot uids; your Mac around the developer account, Docker and the helper session) and draw the pf LAN guard on the slot boundary.",
+    "8. Give the selector short view names (e.g. '5 · Fleet claim/run/reset') and keep the full question as the in-view title."
+  ],
+  "total": 31,
+  "verdict": "Good"
+}

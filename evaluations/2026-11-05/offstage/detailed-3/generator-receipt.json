@@ -1,0 +1,9 @@
+{
+  "requested": "claude-opus-5-5",
+  "calls": [
+    [
+      "claude-opus-5-5"
+    ]
+  ],
+  "method": "Source-audited detailed-2 map refined in a further read-only Opus call"
+}

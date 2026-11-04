@@ -1,0 +1,524 @@
+{
+  "title": "How does offstage route a command, or a cloud job, to somewhere off your screen?",
+  "audience": "Engineers onboarding to offstage and offstage cloud",
+  "scope": "Local `offstage run` across headless/container/session lanes, plus cloud tasks, sandboxes and agent runs on fleet Mac slots.",
+  "owner": "Viraat Das (package.json author)",
+  "omissions": [
+    "Billing, CI, maintenance and third-party internals"
+  ],
+  "groups": [
+    {
+      "id": "local_mac",
+      "label": "Developer account on Mac",
+      "description": "Self-hosted Mac: CLI/MCP and unisolated headless processes"
+    },
+    {
+      "id": "helper",
+      "label": "Helper macOS session",
+      "description": "Same Mac, separate uid (computeruse) with its own window server"
+    },
+    {
+      "id": "customer",
+      "label": "Customer clients",
+      "description": "Customer code and browsers calling offstage cloud over HTTPS"
+    },
+    {
+      "id": "fly",
+      "label": "Fly.io offstage-api",
+      "description": "Fly-managed: one machine (sjc) + offstage_data volume at /data"
+    },
+    {
+      "id": "fleet",
+      "label": "Fleet Mac: operator uid",
+      "description": "Self-hosted Studio A: privileged operator account runs the fleet runner"
+    },
+    {
+      "id": "external",
+      "label": "Third-party APIs",
+      "description": "Managed providers: Anthropic model API; optional Clerk social sign-in"
+    },
+    {
+      "id": "fleet_slot",
+      "label": "Fleet Mac: slot uids",
+      "description": "Same Studio A Mac; separate customer uids, reset between jobs"
+    },
+    {
+      "id": "local_container",
+      "label": "Local Docker container",
+      "description": "Same machine: isolated Linux/Xvfb; repo read-only, artifacts writable"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli_mcp",
+      "label": "offstage CLI / MCP",
+      "kind": "client",
+      "tags": [
+        "Node CLI",
+        "MCP stdio"
+      ],
+      "path": "src/cli/api.ts",
+      "description": "Classifies argv/repo files to a lane; refuses or dispatches",
+      "group": "local_mac"
+    },
+    {
+      "id": "headless",
+      "label": "Headless lane",
+      "kind": "worker",
+      "tags": [
+        "execa",
+        "child process"
+      ],
+      "path": "src/lanes/headless/runner.ts",
+      "description": "Runs argv in place via execa; no isolation, stdin ignored",
+      "group": "local_mac"
+    },
+    {
+      "id": "container",
+      "label": "Xvfb container lane",
+      "kind": "worker",
+      "tags": [
+        "Docker",
+        "Xvfb"
+      ],
+      "path": "src/lanes/container/index.ts",
+      "description": "docker run --rm: Xvfb + fluxbox, repo ro; host DISPLAY dropped",
+      "group": "local_container"
+    },
+    {
+      "id": "rundir",
+      "label": "Run directory",
+      "kind": "storage",
+      "tags": [
+        "files",
+        "JSON"
+      ],
+      "path": "src/contract/artifacts.ts",
+      "description": "Per-run dir: command.log, screen.png, result.json LaneResult",
+      "group": "local_mac"
+    },
+    {
+      "id": "helper_sessiond",
+      "label": "Session lane: sessiond",
+      "kind": "service",
+      "tags": [
+        "Swift",
+        "unix socket"
+      ],
+      "path": "native/sessiond/Server.swift",
+      "description": "Runs, captures, injects in computeruse session; checks peer uid",
+      "group": "helper"
+    },
+    {
+      "id": "sdk",
+      "label": "offstage-cloud SDK",
+      "kind": "client",
+      "tags": [
+        "TypeScript",
+        "HTTPS"
+      ],
+      "path": "sdk/src/index.ts",
+      "description": "Customer code: submit/wait tasks, drive sandboxes and agents",
+      "group": "customer"
+    },
+    {
+      "id": "console",
+      "label": "Web console",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "console/src/App.tsx",
+      "description": "SPA served by plane: auth, keys, team, billing, sandboxes",
+      "group": "customer"
+    },
+    {
+      "id": "plane",
+      "label": "Control plane API",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Node"
+      ],
+      "path": "cloud/src/api/app.ts",
+      "description": "Auth, GUI gate, capacity, credit; fair queue; op relay; proxy",
+      "group": "fly"
+    },
+    {
+      "id": "volume",
+      "label": "Fly volume /data",
+      "kind": "storage",
+      "tags": [
+        "JSON snapshot",
+        "files"
+      ],
+      "path": "cloud/src/core/persist.ts",
+      "description": "plane.json snapshot (accounts, keys, tasks, boxes); artifacts",
+      "group": "fly"
+    },
+    {
+      "id": "runner",
+      "label": "Fleet runner",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "LaunchDaemon"
+      ],
+      "path": "src/fleet/runner.ts",
+      "description": "Per-slot claim loops behind LAN guard; heartbeat; reset slots",
+      "group": "fleet"
+    },
+    {
+      "id": "slot",
+      "label": "Slot accounts",
+      "kind": "worker",
+      "tags": [
+        "Swift sessiond",
+        "Node harness"
+      ],
+      "path": "src/fleet/slot-executor.ts",
+      "description": "offstage0–7 accounts; work and agent harness run as slot uid",
+      "group": "fleet_slot"
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic Messages API",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "path": "",
+      "description": "Claude for computer-use agent runs; reached via plane proxy",
+      "group": "external"
+    },
+    {
+      "id": "clerk",
+      "label": "Clerk social sign-in",
+      "kind": "external",
+      "tags": [
+        "HTTPS",
+        "OAuth"
+      ],
+      "path": "console/src/lib/clerk.ts",
+      "description": "Optional GitHub/Google sign-in; plane verifies exchanged token",
+      "group": "external"
+    }
+  ],
+  "edges": [
+    {
+      "from": "cli_mcp",
+      "to": "headless",
+      "label": "A1 execa argv in caller's cwd → exit, log",
+      "mode": "local"
+    },
+    {
+      "from": "cli_mcp",
+      "to": "container",
+      "label": "A1 docker run --rm on Xvfb → exit, screen.png",
+      "mode": "local"
+    },
+    {
+      "from": "cli_mcp",
+      "to": "helper_sessiond",
+      "label": "A1 unix socket: run argv as helper → exit, log",
+      "mode": "local"
+    },
+    {
+      "from": "cli_mcp",
+      "to": "rundir",
+      "label": "A2 file: result.json LaneResult, refusals too",
+      "mode": "local"
+    },
+    {
+      "from": "cli_mcp",
+      "to": "helper_sessiond",
+      "label": "Unix socket verbs: launch, screenshot, input",
+      "mode": "local"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "B1 HTTPS POST /v1/tasks → id; GET ?wait=",
+      "mode": "sync"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "B2 HTTPS long-poll /claim ≤25 s → work or 204",
+      "mode": "async"
+    },
+    {
+      "from": "runner",
+      "to": "slot",
+      "label": "B3/C3 sessiond op or sudo -n -u, as slot uid",
+      "mode": "local"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "B4 HTTPS events + artifact PUT; 409 = cancelled",
+      "mode": "sync"
+    },
+    {
+      "from": "runner",
+      "to": "slot",
+      "label": "B5/C6 sudo -n reset: kill, wipe, new uid",
+      "mode": "local"
+    },
+    {
+      "from": "plane",
+      "to": "volume",
+      "label": "File: plane.json every 2 s + SIGTERM; artifacts",
+      "mode": "local"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "HTTPS heartbeat every 15 s → cancelled ids",
+      "mode": "sync"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "C1 HTTPS: sandbox create, commands, files, agent",
+      "mode": "sync"
+    },
+    {
+      "from": "cli_mcp",
+      "to": "plane",
+      "label": "C1 HTTPS sandbox tools + x-anthropic-api-key",
+      "mode": "sync"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "C2 HTTPS long-poll /ops; POST answers, steps",
+      "mode": "async"
+    },
+    {
+      "from": "slot",
+      "to": "plane",
+      "label": "C4 HTTPS /v1/model/messages with run token",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "anthropic",
+      "label": "C5 HTTPS Messages API with customer's key",
+      "mode": "sync"
+    },
+    {
+      "from": "console",
+      "to": "plane",
+      "label": "HTTPS /v1: auth, keys, team, billing, sandboxes",
+      "mode": "sync"
+    },
+    {
+      "from": "console",
+      "to": "clerk",
+      "label": "HTTPS ClerkJS + OAuth → session token",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "clerk",
+      "label": "HTTPS: JWKS + user for token verification",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Routing: lane choice and cloud dispatch",
+      "text": "classify() reads only argv and repo files: session > container > headless. A refuse signal (installer, .pkg/.dmg, hdiutil) blocks every lane, even with --lane. Cloud: POST /v1/tasks checks auth, GUI gate, capacity, credit; /claim serves sandboxes first, then team-fair tasks.",
+      "source": "src/router/index.ts, src/cli/api.ts, cloud/src/api/app.ts, cloud/src/core/queue.ts"
+    },
+    {
+      "title": "State and result lifecycle",
+      "text": "Local: each run gets .offstage/runs/<id> and a best-effort result.json LaneResult. Cloud: state lives in memory and is written atomically (temp + rename) to /data/plane.json every 2 s when changed and on SIGTERM, so a crash can lose ~2 s of acknowledged writes.",
+      "source": "src/contract/artifacts.ts, cloud/src/server.ts, cloud/src/core/persist.ts"
+    },
+    {
+      "title": "Failure, isolation and retry",
+      "text": "Lanes never throw or fall back to your screen: no substrate → skipped (exit 69). sessiond checks peer uid, refuses input on console. Cloud: an unstarted claim requeues after 20 s (3 tries); a box silent 2 min fails its running tasks, no rerun. Slots claim only behind a fail-closed pf guard.",
+      "source": "src/contract/index.ts, native/sessiond/Input.swift, cloud/src/core/queue.ts, src/fleet/lan-guard.ts"
+    }
+  ],
+  "views": [
+    {
+      "title": "How does offstage execute a command away from your screen?",
+      "scope": "A = local execution. CLI/MCP selects one alternative lane; result persistence is in the next view.",
+      "nodeIds": [
+        "cli_mcp",
+        "headless",
+        "container",
+        "helper_sessiond"
+      ],
+      "edgeIndices": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Refusal beats --lane",
+          "text": "An installer, .pkg/.dmg or hdiutil in argv is refused on every lane, no override; --lane headless can't downgrade a GUI verdict. Nothing runs; the result is errored.",
+          "source": "src/cli/api.ts, src/router/index.ts"
+        },
+        {
+          "title": "No fallback to your display",
+          "text": "No Docker or helper session → skipped, exit 69, never your screen. The container drops DISPLAY; sessiond checks peer uid and refuses input when on the console.",
+          "source": "src/lanes/container/index.ts, native/sessiond/Input.swift"
+        }
+      ]
+    },
+    {
+      "title": "Where are local run results and artifacts stored?",
+      "scope": "A2 follows local execution or refusal. Return to the first view for lane selection and isolation.",
+      "nodeIds": [
+        "cli_mcp",
+        "rundir"
+      ],
+      "edgeIndices": [
+        3
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "One directory per run",
+          "text": "Each run gets .offstage/runs/<id>/. Lanes write logs and captures there; the CLI persists the normalized LaneResult once execution returns, including refusals.",
+          "source": "src/contract/artifacts.ts; src/cli/api.ts"
+        },
+        {
+          "title": "Result writes can fail",
+          "text": "A failed result.json write is reported by the CLI. A run directory is a local archive, not a remote database or a promise of replicated durability.",
+          "source": "src/cli/api.ts"
+        }
+      ]
+    },
+    {
+      "title": "How does the plane admit cloud work and keep its state?",
+      "scope": "B = cloud task; C = sandbox agent. Admission precedes fleet execution (next view); C continues in the agent proxy view.",
+      "nodeIds": [
+        "sdk",
+        "cli_mcp",
+        "plane",
+        "volume"
+      ],
+      "edgeIndices": [
+        5,
+        12,
+        13,
+        10
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Admission before queueing",
+          "text": "POST /v1/tasks re-checks the caller after reading the body, then GUI gate, capacity, credit; a repeated idempotency key replays. GET ?wait= holds until the task ends.",
+          "source": "cloud/src/api/app.ts"
+        },
+        {
+          "title": "Acknowledged is not yet durable",
+          "text": "Writes are acked from memory; plane.json is rewritten atomically every 2 s if changed and on SIGTERM, so a crash can lose ~2 s of acked work.",
+          "source": "cloud/src/server.ts, cloud/src/core/persist.ts"
+        }
+      ]
+    },
+    {
+      "title": "How does a fleet box claim a task, run it in a slot, and wipe it?",
+      "scope": "B2–B5 continue cloud task submission. C3/C6 reuse execution/reset for agents. Heartbeats run independently.",
+      "nodeIds": [
+        "plane",
+        "runner",
+        "slot"
+      ],
+      "edgeIndices": [
+        6,
+        7,
+        8,
+        9,
+        11
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Claims, heartbeats, requeue",
+          "text": "Claim long-polls ≤25 s. Unstarted 20 s after claim → requeue (max 3 tries); box silent 2 min → running task fails, not rerun. Heartbeat (15 s) delivers cancels.",
+          "source": "cloud/src/core/queue.ts, cloud/src/core/store.ts"
+        },
+        {
+          "title": "Guarded claim, reset before the next",
+          "text": "A slot claims only while the pf LAN guard checks out (fails closed). Before its next claim it is reset: processes killed, home wiped, account remade with a new uid.",
+          "source": "src/fleet/lan-guard.ts, src/fleet/reset.ts"
+        }
+      ]
+    },
+    {
+      "title": "How does a sandbox agent run reach Claude without the slot holding a key?",
+      "scope": "C2–C6 continue sandbox admission. Slot → plane → Anthropic keeps the customer key out of the slot. B3/C3 and B5/C6 are shared steps.",
+      "nodeIds": [
+        "plane",
+        "runner",
+        "slot",
+        "anthropic"
+      ],
+      "edgeIndices": [
+        14,
+        7,
+        15,
+        16,
+        9
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "The key stays on the plane",
+          "text": "The customer's Anthropic key stays in plane memory for one run; the slot gets an omt_ token. The proxy checks model, step budget and max_tokens; no streaming.",
+          "source": "cloud/src/api/agent-routes.ts"
+        },
+        {
+          "title": "Op relay and answer retries",
+          "text": "Ops run concurrently as the slot user; each poll reports room. An answer is resent with backoff until the plane takes it, and gets one try once closing.",
+          "source": "src/fleet/sandbox.ts"
+        }
+      ]
+    },
+    {
+      "title": "What does the web console call, and where does its data live?",
+      "scope": "Console calls the plane API; optional social sign-in loads ClerkJS, exchanges its token for a plane session, then signs out of Clerk.",
+      "nodeIds": [
+        "console",
+        "plane",
+        "volume",
+        "clerk"
+      ],
+      "edgeIndices": [
+        17,
+        10,
+        18,
+        19
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Optional social sign-in",
+          "text": "When configured, GitHub/Google auth uses ClerkJS. Console exchanges the token at /v1/auth/clerk, then signs out of Clerk; subsequent API calls use the plane session.",
+          "source": "console/src/lib/clerk.ts; cloud/src/core/clerk.ts"
+        },
+        {
+          "title": "State and admission",
+          "text": "Plane state and artifacts live on /data. New email accounts cannot mint keys or run work before verification; GUI admission is separately gated.",
+          "source": "cloud/src/api/app.ts; cloud/src/server.ts"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "at": "2026-11-05T00:29:42.452Z",
+    "revision": "57eeabc",
+    "dirty": true
+  }
+}

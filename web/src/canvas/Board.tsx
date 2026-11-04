@@ -86,7 +86,7 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
     const unsub = editor.subscribe(() => {
       if (!fitted && editor.loaded) {
         fitted = true
-        if (!editor.isEmpty()) editor.zoomToFit()
+        if (!editor.isEmpty()) editor.zoomToMapView(editor.mapViews()[0]?.id)
       }
       if (editor.camera === last) return
       last = editor.camera
@@ -104,7 +104,8 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
   }, [editor, project])
 
   const transform = `scale(${cam.z}) translate(${cam.x} ${cam.y})`
-  const texts = shapes.filter((s): s is TextShape => s.type === 'text')
+  const focused = editor.activeMapView()
+  const texts = shapes.filter((s): s is TextShape => s.type === 'text' && !(s.mapAnnotation && s.mapView?.id === focused?.id && focused?.details))
 
   return (
     <EditorContext.Provider value={editor}>
@@ -138,7 +139,7 @@ export function Board({ editor, project, onError, children }: { editor: Editor; 
 }
 
 const Stroke = memo(function Stroke({ shape, faded }: { shape: DrawShape; faded: boolean }) {
-  return <path className={`vp-shape vp-ink${faded ? ' is-erasing' : ''}`} data-shape-id={shape.id} data-author={shape.author} d={drawShapePath(shape)} />
+  return <path className={`vp-shape vp-ink${faded ? ' is-erasing' : ''}`} data-shape-id={shape.id} data-author={shape.author} data-map-role={shape.mapRole} d={drawShapePath(shape)} />
 })
 
 const Arrow = memo(function Arrow({ id, ax, ay, bx, by, text, author, route, mode, labelAt, font, faded }: { id: string; ax: number; ay: number; bx: number; by: number; text?: string; author?: 'user' | 'agent'; route?: Point[]; mode?: ArrowShape['mode']; labelAt?: Point; font?: ArrowShape['font']; faded: boolean }) {
@@ -176,7 +177,7 @@ const Picture = memo(function Picture({ shape, faded }: { shape: ImageShape; fad
 const Text = memo(function Text({ shape, faded }: { shape: TextShape; faded: boolean }) {
   return (
     <div
-      className={`vp-shape vp-text-shape${faded ? ' is-erasing' : ''}`}
+      className={`vp-shape vp-text-shape${shape.mapView && shape.font === 'sans' ? ' vp-map-text' : ''}${faded ? ' is-erasing' : ''}`}
       data-shape-id={shape.id} data-author={shape.author}
       style={{ left: shape.x, top: shape.y, fontSize: shape.size ?? TEXT_SIZE, ...(shape.font === 'sans' ? { fontFamily: '"VP Map", Arial, sans-serif' } : {}) }}
     >

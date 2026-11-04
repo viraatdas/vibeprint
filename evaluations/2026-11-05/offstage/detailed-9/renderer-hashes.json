@@ -1,0 +1,7 @@
+{
+  "src/core/map-presentation.ts": "6d757de7ea5d8dae91fe676b11d857af681248b2360aeaf28c8dc09dc4a8cbde",
+  "src/core/map-workflow.ts": "36df45a5da5d67efa0500d246aad4ae248f53fad7b716b57c1f237145b77cd45",
+  "web/src/canvas/editor.ts": "87ab748e49a5db15e974fe690b4348849a4d6dc3ccdebc570c78d429259a37ba",
+  "web/src/ui/Chrome.tsx": "668ef1303d1e7f01f8bbdb56657630222fa3fec28ef762911752ede111cafb8a",
+  "web/src/styles.css": "2073bb63c8e0fc609b47af3e0cc6abf8eb5e2a307103872e674d28118c4bb6bf"
+}

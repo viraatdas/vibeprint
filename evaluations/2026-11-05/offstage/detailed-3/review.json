@@ -1,0 +1,83 @@
+{
+  "reviewedAt": "2026-11-05T00:35:59.629Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each view opens with a plain question as its title (\"How does `offstage run` pick a lane and keep work off your screen?\", \"How does the plane admit cloud work and keep its state?\", \"How does a fleet box claim a task, run it in a slot, and wipe it?\", \"How does a sandbox agent run reach Claude without the slot holding a key?\", \"What does the web console call, and where does its data live?\"). The selector shows the same question, and each view has an audience line (\"Engineers onboarding to offstage and offstage cloud\") and a one-sentence summary. The detail suits onboarding engineers. View 1 only half answers its own title, but that is scored under focus."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Most boxes are runtime actors or stores (CLI/MCP, Helper sessiond, Control plane API, Fleet runner, Fly volume /data, Anthropic Messages API, Clerk), and the five views work as workflow zoom-ins. There are a few strays. \"Headless lane\" is an in-process code path drawn as a peer of a daemon and a container. \"Slot accounts\" (offstage0–7) is a set of identities, yet the key calls a box a \"runtime actor/process\". Frames mix kinds too: a machine (\"Developer's machine\"), a uid (\"Fleet Mac: slot uids\"), a vendor group (\"Third-party APIs\") and an actor category (\"Customer clients\")."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Every view keeps to one workflow and lists what it leaves out (\"Outside this view: … Stripe/Resend and GitHub Actions internals … Slot login seeding, cmio recovery …\"). Deductions: View 1 asks how a lane is picked but never shows the signals that pick it. The whole decision is the CLI box's phrase \"Classifies argv/repo files to a lane\". View 4 starts workflow C at C2 and does not point to C1, which is in view 2. The prose footer takes about 25–35% of every view's height, which buries the diagram."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every edge has a label giving protocol, payload and mode (e.g. \"B2 HTTPS long-poll /claim ≤25 s → work or 204 (async)\", \"C5 HTTPS Messages API with customer's key (sync)\"). The key defines arrow direction (\"caller → recipient, response included\") and step numbering (\"equal step numbers = alternatives\"). Deductions: in view 3 the steps run left to right as heartbeat, B4, B2, B5/C6, B3/C3, so the B2→B3→B4→B5 sequence zig-zags across the page. B2 is a request that returns \"work or 204\", yet it is drawn dashed, which the key defines as \"event/stream\". View 1 has two nearly parallel CLI→sessiond edges (\"Unix socket verbs\" and \"A1 unix socket\") meeting at one arrowhead."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames are explicit trust and deployment zones, and their subtitles say who runs them: \"User's own account (self-hosted)\", \"Fly-managed: one machine (sjc) + offstage_data volume at /data\", \"Self-hosted Studio A: privileged operator account\", \"Managed providers\". External services get a double border. Deduction: in view 1 the frame labelled \"Developer's machine\" leaves out \"Helper macOS session\" and \"Local Docker container\", whose own text says \"Same Mac\" / \"Same machine\". The picture says they are on other hosts. Studio A is likewise split into two sibling frames with nothing enclosing the physical box."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "It is not spaghetti: each view has 4–6 edges and one main direction. But it is cluttered and awkward at 1194×834:\n- Nearly all text below the title is about 7 px, view 5's frame subtitles look even smaller, and everything is one red.\n- In view 4 the left tool palette covers content. The frame subtitle reads \"elf-hosted … ivileged … ccount … nner\", the key's opening words are clipped, and the Fleet runner box's left edge is hidden.\n- Edges cross frame header text: in view 1 the docker edge cuts through the Helper macOS session frame and its subtitle; in view 3 the heartbeat, B2 and B5/C6 edges cross \"Fly.io offstage-api\", \"volume at /data\" and \"reset between jobs\"; in view 5 the JWKS edge crosses \"volume at /data\".\n- Frames have large empty interiors (lower right of Developer's machine in view 1, Customer clients in view 5) while the text stays cramped.\n- View 3's edges bend sharply at their floating labels."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Shapes and line styles carry the meaning, not color: box, cylinder for stored state, double border for external service, solid/dashed/dotted for sync/async/local. A key on every view explains them. Real names are used (offstage-api, plane.json, /v1/tasks, offstage0–7, omt_ token). Deductions: the key is a sentence, not drawn samples. At this size the hand-drawn dashed and dotted lines are hard to tell apart (view 3: B2 vs B5/C6). Frames and boxes are the same red rounded rectangle, told apart only by size. The lanes are named three different ways (\"Headless lane\", \"Helper sessiond\", \"Xvfb container lane\"), and the repo's term \"session lane\" never appears."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The failure and capacity behaviour is concrete:\n- \"Acknowledged is not yet durable … a crash can lose ~2 s of acked work\"\n- \"Unstarted 20 s after claim → requeue (max 3 tries); box silent 2 min → running task fails, not rerun\"\n- \"409 = cancelled\"\n- the pf LAN guard \"fails closed\"\n- \"An answer is resent with backoff … one try once closing\"\n- \"skipped, exit 69, never your screen\"\n- \"one machine (sjc)\"\nDeductions: all of it lives in footer prose rather than at the failing component. Nothing marks the single-machine plane as a single point of failure, and nothing says what happens when Anthropic or Clerk is unreachable."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Capped at 3. Each view carries \"Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified\". Source spot-checks matched: the 2 s snapshot and SIGTERM handler (cloud/src/server.ts:106-113), MAX_ATTEMPTS = 3, CLAIM_ACK_MS = 20_000, BOX_LOST_MS = 2 min (cloud/src/core/store.ts), HEARTBEAT_MS = 15_000 (src/fleet/runner.ts:173), MAX_POLL_MS = 25_000 (cloud/src/core/queue.ts:50), omt_ bearer and no streaming (cloud/src/api/agent-routes.ts:193,203), sjc / offstage_data / /data (cloud/fly.toml), docker --rm with DISPLAY dropped, Clerk POST /v1/auth/clerk then signOut. None of this is a live-runtime check."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A careful newcomer can correctly retell all five workflows: local routing into three lanes, cloud admission with JSON snapshots, fleet claim/run/report/reset, the agent's key-free path to Anthropic through the plane's proxy, and the console with Clerk. What stops it being a two-minute read: the text needs pinch-zoom, view 4 is clipped, view 3's order has to be decoded from step numbers, and no overview shows how the local tool, the plane and the fleet relate. A reader could also wrongly conclude from view 1 that the helper session and Docker run on other machines."
+    }
+  ],
+  "visualVerdict": "Total 30/40, the low end of Good. The engineering content is good: each view is focused and honest about its scope, every edge is labelled, failure behaviour is specific, and the facts I spot-checked against the source match. Visually, though, the user's \\\"messy\\\" is fair. It does not come from tangled lines. It comes from:\n- tiny single-red type everywhere, with no visual hierarchy;\n- a prose footer that eats a quarter to a third of every view;\n- edges cutting through frame header text;\n- step order that zig-zags in the fleet view;\n- one view (the agent→Claude view) partly hidden under the app's tool palette.\nAt 1194×834 it can be read only with zooming. Raising type size, a safe-area margin and cleaner edge routing would fix most of what feels unusable without changing the content.",
+  "coldRead": "What a new person can learn:\n- offstage is a CLI/MCP tool on the developer's own account. It classifies a command and either refuses it (installers, .pkg/.dmg, hdiutil, with no --lane override) or sends it to one of three alternatives: run in place with execa, run in a Docker container with Xvfb (repo read-only, DISPLAY dropped), or run in a second macOS user's session through a unix-socket daemon. It writes result.json into a per-run directory. If the needed substrate is missing, the run is skipped with exit 69 instead of falling back to the real screen.\n- offstage cloud is one Fly.io machine in sjc. It holds state in memory and snapshots plane.json to a volume every 2 s and on SIGTERM, so acknowledged work can be lost in a crash.\n- SDK clients and the CLI submit tasks (POST /v1/tasks, then GET ?wait=) or open sandboxes over HTTPS.\n- A self-hosted Mac Studio's operator account runs a fleet runner. It long-polls /claim, runs the work as one of the offstage0–7 slot uids, PUTs events and artifacts, sends a heartbeat every 15 s that carries cancels, and resets the slot (kill, wipe, new uid) before its next claim.\n- Sandbox agent runs call the plane's /v1/model/messages with a per-run omt_ token. The plane forwards to Anthropic with the customer's key, so the key never reaches the slot.\n- The web console is an SPA served by the plane. It calls /v1 and can use Clerk for GitHub/Google sign-in.\n\nWhat they cannot learn or might get wrong:\n- How a lane is actually chosen (the signals behind it).\n- That the helper session and the Docker container are on the same Mac. View 1 draws them outside \\\"Developer's machine\\\".\n- The order of fleet steps without decoding B2–B5 from the labels.\n- Who sends C1 in the agent view (it is in a sibling view, with no pointer).\n- How the local offstage tool relates to the fleet runner (same package, per the repo, but never shown).\n- What happens when Anthropic or Clerk is down.\n- Whether dashed or dotted is meant on small segments.\n\nI verified only that names and constants match source at revision 57eeabc. Nothing was checked against the live system.",
+  "mostSeriousProblems": [
+    "Legibility at actual size: box bodies, edge labels, key and notes are about 7 px (view 5 smaller still), all in the same red as the titles and frames. At 1194×834 almost nothing below the title can be read without pinch-zoom, and nothing stands out as more important than anything else.",
+    "View 4 runs under the left tool palette. The \"Fleet Mac: operator uid\" subtitle reads \"elf-hosted … ivileged … ccount … nner\", the key's opening words and the first note's title are clipped, and the Fleet runner box's left border is hidden.",
+    "Edges run through frame header text and unrelated frames. View 1: the \"A1 docker run\" edge crosses the Helper macOS session frame and its \"(computeruse) with its own window server\" text. View 3: the heartbeat, B2 and B5/C6 edges cross the \"Fly.io offstage-api\" and \"volume at /data\" headers and \"reset between jobs\". View 5: the JWKS edge crosses \"volume at /data\".",
+    "View 3's steps are out of order on the page: left to right reads heartbeat, B4, B2, B5/C6, B3/C3. The claim→run→report→reset sequence the title asks about has to be rebuilt from the numbers.",
+    "View 1 does not show what its title asks. Nothing drawn explains how a lane is picked; it is one phrase in the CLI box. The three lanes are named inconsistently, and the repo's term \"session lane\" never appears.",
+    "Boundary contradiction in view 1: the \"Developer's machine\" frame excludes the helper session and Docker container, though their own subtitles say \"Same Mac\" / \"Same machine\".",
+    "Prose overload and wasted space: the footer (key, two notes, the out-of-scope list and the review line) takes 25–35% of each view, while frames such as Developer's machine (view 1) and Customer clients (view 5) are mostly empty.",
+    "Cross-view gaps: workflow C starts at C1 in view 2 and continues at C2 in view 4 with no pointer, and no overview view ties the local tool, the plane and the fleet together. Minor: B2's long-poll is drawn dashed (\"event/stream\") though it is a request that returns work or 204."
+  ],
+  "recommendations": [
+    "Set a minimum type size of about 11–12 pt at the 1194 px viewport for box bodies and edge labels, and use more than one ink: dark for titles, red for components, gray for notes and the review line. Shrink frames to fit their contents so the space goes to type, not to empty interiors.",
+    "Reserve safe areas: at least 80 px on the left for the tool palette and clearance above the selector and Submit button. Re-fit view 4 inside them.",
+    "Route edges below frame header bands and into the side of a frame that faces the source, and never through an unrelated frame. In view 1, move the Docker frame or route its edge under the Helper session frame.",
+    "Lay out view 3 in step order (B2 claim → B3 run as slot uid → B4 events/artifacts → B5 reset), with the unnumbered heartbeat off to one side. Either draw B2 solid or define a long-poll line style.",
+    "Add a small router element to view 1: --headed / headless:false / WebGL → container; xcodebuild / simctl / open -a / osascript → session; installer / .pkg / .dmg / hdiutil → refused; anything else → headless. Name the lanes headless / container / session, matching AGENTS.md.",
+    "Draw physical-host frames that enclose the uid zones: a \"Developer's Mac\" containing the user account, the computeruse session and Docker, and a \"Studio A\" containing the operator and slot uids. Rename the inner zones by account.",
+    "Turn the prose key into a drawn legend with sample line styles and shapes. Move the long notes into a collapsible panel or attach short callouts to the component they describe (e.g. \"~2 s loss window\" next to the Fly volume).",
+    "Add cross-view pointers (e.g. \"C1 sandbox create: see 'How does the plane admit…'\") and a one-screen overview view showing how the local tool, plane, fleet, console and third parties connect."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

@@ -1,0 +1,82 @@
+{
+  "reviewedAt": "2026-11-05T00:52:08.451Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each of the six views opens with a one-line question as its title, e.g. 'How does offstage execute a command away from your screen?', 'How does a fleet box claim a task, run it in a slot, and wipe it?', 'How does a sandbox agent run reach Claude without the slot holding a key?'. Each also has an audience line ('Engineers onboarding to offstage and offstage cloud') and a line placing it among the other views ('result persistence is in the next view'). Arrow detail (endpoints, headers, timeouts) suits engineers. Small issue only: the view selector cuts the titles off ('How does offstage execute a command away fro…') and nothing says 'view n of 6'."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Boxes are mostly at one level: processes, services, stores and OS accounts inside labelled trust frames. A few don't fit. 'Headless lane' is a running mode, not a process, yet it gets its own box and vertical line like the sessiond daemon and the container. 'Slot accounts' stands for 8 accounts. 'Run directory' gets a whole view for one arrow. Arrow labels go down to command flags ('docker run --rm', 'sudo -n -u', '409 = cancelled') while the boxes stay at component level. The views zoom in by workflow (A/B/C) rather than by level, and there is no overview view tying the six together."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view sticks to its question, and the footer lists what was left out ('Excluded: Billing, CI, maintenance and third-party internals'). Gaps not covered by that list: the plane's GitHub handling (cloud/src/api/github-routes.ts, cloud/src/core/github.ts) appears nowhere. View 4's reset step ('kill, wipe, new uid') leaves out that a GUI slot needs a login seed (src/fleet/seed.ts) before its next claim. Nothing shows who calls the CLI/MCP (an agent or a person). Labels say 'sessiond op' in the slot, but no slot sessiond box exists. View 2 is one arrow; the note says lanes write command.log and screen.png there, but that isn't drawn. View 6's arrow lists 'billing' while the footer says billing is excluded."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows point one way, from caller to recipient. Every label says what flows, the transport and sync or local ('B2 HTTPS long-poll /claim ≤25 s → work or 204 (sync)'). Steps are numbered (A1–A2, B1–B5, C1–C6), repeated numbers mean alternatives (the three A1s in view 1, the two C1s in view 3), and unnumbered calls are flagged as independent (the 15 s heartbeat). Problems: in view 6 the Clerk steps are unnumbered, which the legend says means independent, but the subtitle describes a sequence (load ClerkJS → exchange token → sign out). The drawing also puts the general '/v1: auth…' arrow above the ClerkJS sign-in, which implies the exchange happens first, and the sign-out step is never drawn. The dotted 'local I/O' style also covers blocking calls like 'docker run' and 'sudo -n reset', so sync vs async is unclear for local steps."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames are labelled with deployment and trust facts: 'Fly-managed: one machine (sjc) + offstage_data volume at /data', 'Self-hosted Studio A: privileged operator account', 'Managed providers', 'Same Mac, separate uid (computeruse)', 'Same machine: isolated Linux/Xvfb; repo read-only'. So internal vs external and managed vs self-hosted are shown. Deductions: frames that share one machine (Developer account, Helper session and Docker container in view 1; operator uid and slot uids in views 4 and 5) are drawn as sibling frames with no outer frame for the host, so the nesting exists only in text. View 5 also puts the Third-party APIs frame between the two Fleet Mac frames, splitting one machine. Neighbouring frames have double borders about 7px apart, which read as stray lines."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "The sequence layout reads clearly left-to-right and top-down, but the drawing is cluttered. Label collisions: view 1's 'A1 docker run…', 'A1 unix socket…' and 'Unix socket verbs…' labels are cut by the Headless line (x≈517) and the 625/633 frame borders. In view 3, the CLI's 'C1 … x-anthropic-api-key' label is cut by the SDK line. In view 4 every one of the five labels crosses a double frame border (512/519 or 739/746). In view 5, labels pass through the Anthropic line (x≈733) and the runner line (x≈524). Avoidable crossings: about 5 in view 5 (C4 crosses two lines; B3/C3, B5/C6 and C5 cross one each), 3 in view 6 (the ClerkJS arrow crosses the API and volume lines; JWKS crosses the volume line), and 3 in view 1 from the docker and socket arrows. Scale changes between views: view 4 uses only x≈290–965 with ~9–11px text and empty margins, while view 2 is large. Each view ends with about 170px of dense ~9–11px text."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "The same conventions hold in all six views: frames are trust/deployment boundaries, rounded boxes are actors, vertical lines mark actors, and arrow style carries meaning. Each view includes a legend, and labels repeat '(sync)' or '(local)', so meaning does not depend on colour (the single red is just the authoring colour). Real names are used (offstage0–7, offstage-api, /v1/tasks, plane.json, omt_). Deductions: the legend defines 'dashed = async delivery', but no dashed arrow appears in any of the six views. Dotted and dashed would be hard to tell apart at this size anyway. The legend is a paragraph of text with no sample lines. One style mixes two axes (local vs remote and sync vs async). The vertical lines are drawn at the same weight and colour as arrows."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The notes carry a lot of operational detail: refusal beats --lane; no fallback, exit 69; result.json write failure reported, run dir not durable; acked writes can lose ~2 s because plane.json is written every 2 s and on SIGTERM; claim long-poll ≤25 s, unstarted after 20 s → requeue, max 3 tries; a box silent for 2 min fails the task without rerunning; 15 s heartbeat delivers cancels; the LAN guard fails closed; reset before the next claim; the key stays in plane memory with no streaming; op answers retried with backoff. Missing: the slot login seed after a reset and the limit on logins per boot that the reset path depends on. The single Fly machine is stated but not called out as a single point of failure. Capacity (8 slots, number of boxes) is not shown. Most of this lives in prose notes rather than in the drawing."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Capped at 3. Each view shows 'Source review 2026-11-05 · 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified' and cites source files. The claims I checked match the code: MAX_POLL_MS 25_000, CLAIM_ACK_MS 20_000, MAX_ATTEMPTS 3, BOX_LOST_MS 2 min, HEARTBEAT_MS 15_000 (cloud/src/core); the 2_000 ms persist plus SIGTERM (cloud/src/server.ts); fly.toml sjc with offstage_data at /data; the omt_ token, no streaming and max_tokens check on /v1/model/messages (agent-routes.ts); x-anthropic-api-key sent by src/cloud/client.ts; exit 69; .offstage/runs/<id>/result.json. The running system was not verified."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can rebuild the main story without help: three local lanes plus refusal; per-run directories; the SDK or CLI calling the Fly plane, which snapshots to /data; the Studio runner claiming work, running it as a slot uid and resetting the slot; model calls proxied through the plane so the key stays off the slot; the console with optional Clerk. But it takes well over two minutes across six dense views, and several misreadings are likely. View 5's column order places Anthropic as if it sat on the Mac. View 6 implies the wrong Clerk order. 'Unix socket verbs' has no visible caller or purpose. The B/C letters only make sense after reading the subtitles. The views link only through prose and the selector."
+    }
+  ],
+  "visualVerdict": "Good, at the low end: 30/40. This is a well-scoped set of six sequence-style views. The question titles are clear, arrows are labelled with transport and sync, steps are numbered, frames carry deployment and trust facts, and the operational notes are unusually rich. Every specific claim I checked against the code matched. The 'messy' feeling is real but comes from layout, not content. Arrow labels are cut by vertical lines and doubled frame borders in four of six views. Column order adds avoidable crossings, worst in view 5 (Anthropic between the two Fleet Mac frames) and view 6. Text is small (~9–11px) and the scale jumps between views (view 4 is shrunk, view 2 is large). Each diagram ends with a dense block of text. One meaning error: view 6's Clerk steps happen in order but are drawn as independent. It is usable, but it needs a layout pass more than a content rewrite.",
+  "coldRead": "What a new engineer can learn, view by view. (1) The offstage CLI/MCP sorts a command into one of three lanes and runs it locally: in place via execa (headless), in a throwaway Docker container with Xvfb and the repo read-only (host DISPLAY dropped), or as the computeruse helper user through a unix socket to sessiond. Installers, .dmg/.pkg files and hdiutil are refused with no override, and a missing substrate means exit 69, never the user's screen. (2) Each run writes .offstage/runs/<id>/ with command.log, screen.png and result.json, refusals included; it is local and not durable. (3) Cloud work comes from the SDK (sandboxes, tasks) or the CLI (sandbox tools plus an Anthropic key) over HTTPS to a single Fly machine. The plane checks auth, the GUI gate, capacity and credit, queues fairly, and snapshots plane.json to /data every 2 s, so a crash can lose about 2 s of acknowledged work. (4) A Studio A runner under the operator account long-polls for claims, runs work as a slot uid via sessiond or sudo, posts events and artifacts, sends a 15 s heartbeat, and resets the slot (kill, wipe, new uid) before the next claim, with requeue and failure rules. (5) For agent runs, the slot calls the plane's /v1/model/messages with a run token and the plane calls Anthropic with the customer's key, so the key never reaches the slot. (6) The web console SPA calls /v1, and optional Clerk sign-in is exchanged for a plane session. What they cannot learn: how the router decides between container and session (the triggers); who calls 'Unix socket verbs' and why; how a slot gets a GUI login session again after a reset; how many boxes and slots exist and how capacity scales; the plane's GitHub integration; what happens if the single Fly machine dies (only the ~2 s loss is stated); billing. Points open to misreading: whether the Headless lane is a separate actor or a child process of the CLI; whether Anthropic is reached from the Mac (view 5 places its column between Mac columns); the order of the Clerk exchange (view 6 draws the /v1 call first); and how B and C relate across views 3–5 without careful reading of the subtitles.",
+  "mostSeriousProblems": [
+    "Lines cut through the text. In view 1, three labels are crossed by the Headless line (x≈517) and the 625/633 frame borders. In view 3, the 'C1 HTTPS sandbox tools + x-anthropic-api-key' label is crossed by the SDK line. In view 4, all five arrow labels cross a double frame border. In view 5, the B3/C3, C4, C5 and B5/C6 labels cross the Anthropic or runner lines. This is the main source of the 'messy' impression.",
+    "Column order causes avoidable crossings. View 5 puts Third-party APIs between 'Fleet Mac: operator uid' and 'Fleet Mac: slot uids', which gives about 5 crossings and splits one machine. View 6 puts the Fly volume between the API and Clerk, which gives 3 crossings. In view 1 the docker run arrow crosses both the Headless and Session lines.",
+    "Small, inconsistent scale. View 4 is shrunk to about 57% of the screen width with ~9–11px text, view 2 is drawn large, and the source lines are about 9px. Each view spends about 170px on dense text, with the same three-line legend repeated in all six.",
+    "View 6 gets the order wrong. The Clerk flow is unnumbered (the legend says that means independent) even though the subtitle describes a sequence. The general '/v1: auth, keys…' arrow sits above the ClerkJS sign-in, implying the token exchange happens before sign-in. The 'sign out of Clerk' step is not drawn. 'billing' appears on the arrow while the footer says billing is excluded.",
+    "Notation problems. The legend defines 'dashed = async delivery', but no dashed arrow is used anywhere. Dotted 'local I/O' covers blocking calls (docker run, sudo -n reset), mixing locality with synchrony. The legend is prose with no sample lines.",
+    "Undeclared omissions. The plane's GitHub handling is missing. The reset in view 4 leaves out that a GUI slot needs a login seed before its next claim. The caller of the CLI/MCP is not shown. The slot's sessiond is mentioned in labels but has no box. View 2 draws only the CLI's result.json write, not the lane writes it describes.",
+    "No outer frame for machines that host several frames: the developer's Mac (account, helper session, Docker) and Studio A (operator and slot uids) appear as siblings, so the host-vs-uid nesting is only in text.",
+    "Moving between views depends on a selector that cuts off titles. There is no index, no 'n of 6', and no overview showing how flows A, B and C and the console fit together."
+  ],
+  "recommendations": [
+    "1. Stop lines crossing text. Give arrow labels an opaque background, or break lines and frame borders behind labels. Keep each label inside the gap next to its source line instead of letting it run across columns. Draw one shared border between neighbouring frames instead of two borders 7px apart.",
+    "2. Reorder columns to cut crossings. View 5: Anthropic | API | Runner | Slots takes it from about 5 crossings to 1. Also wrap both Fleet Mac frames in one 'Studio A' frame. View 6: Clerk | Console | API | Volume (or Console | Clerk | API | Volume) takes it from 3 crossings to 1. View 1: place the docker and socket labels to the right of the Headless line.",
+    "3. Use one scale across all views, with arrow labels at 12px or more at 1194×834. Let view 4 use the empty side margins. Replace the repeated prose legend with a compact key showing sample solid and dotted lines, and shrink or collapse the Source lines.",
+    "4. Fix view 6. Number the Clerk sequence (ClerkJS/OAuth sign-in → POST /v1/auth/clerk exchange → plane verifies via JWKS → sign out of Clerk) and draw the exchange as its own arrow below the sign-in. Remove 'billing' from the arrow or take Billing out of the exclusion list.",
+    "5. Separate the two notation axes. For example, solid for blocking calls and dashed for async or periodic ones, with 'local' shown by the frame or a label tag rather than by the line style. Drop any style that no view uses.",
+    "6. Close the content gaps. Add 'seed GUI login' after B5/C6 in view 4, or name it under Excluded. Add GitHub handling to a view or to the exclusion list. Show the caller (agent via MCP, or a person) at the left of view 1. Either merge view 2 into view 1 or draw the lane writes (command.log, screen.png) into the run directory.",
+    "7. Add an overview view, or 'n of 6' labels and short selector titles, showing how A (local), B (tasks), C (sandbox agent) and the console relate and which view covers each."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

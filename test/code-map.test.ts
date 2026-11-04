@@ -52,7 +52,7 @@ function repo(): string {
  * A stand-in for the `claude` CLI: checks it was asked for read-only tools and a schema,
  * optionally waits, then prints what `claude -p --output-format json` prints.
  */
-function fakeClaude(opts: { delayMs?: number; fail?: boolean; expectedModel?: string } = {}): string {
+function fakeClaude(opts: { delayMs?: number; fail?: boolean; expectedModel?: string; failAudit?: boolean } = {}): string {
   const dir = tmp('bin')
   const bin = path.join(dir, 'claude')
   fs.writeFileSync(
@@ -61,10 +61,11 @@ function fakeClaude(opts: { delayMs?: number; fail?: boolean; expectedModel?: st
 const args = process.argv.slice(2)
 const at = (f) => args[args.indexOf(f) + 1]
 if (${JSON.stringify(opts.expectedModel)} && at('--model') !== ${JSON.stringify(opts.expectedModel)}) {console.error('wrong model');process.exit(2)}
-if (at('--tools') !== 'Read,Grep,Glob' || !args.includes('--json-schema') || !at('-p').includes('quick automatic scan')) {
+if (at('--tools') !== 'Read,Grep,Glob' || !args.includes('--json-schema') || !at('-p').includes('automatic scan')) {
   console.error('unexpected args: ' + args.join(' ')); process.exit(2)
 }
 setTimeout(() => {
+  if (${!!opts.failAudit} && at('-p').includes('SOURCE AUDIT:')) { console.error('Audit unavailable'); process.exit(1) }
   if (${!!opts.fail}) { console.error('Not logged in. Run claude login.'); process.exit(1) }
   console.log(JSON.stringify({ type: 'result', is_error: false, result: '', structured_output: ${JSON.stringify(READ)} }))
 }, ${opts.delayMs ?? 0})
@@ -234,4 +235,13 @@ describe('Map this repo with a model on the machine', () => {
       await d.close()
     }
   })
+})
+
+ test('a failed source audit retains the code-read draft with a visible warning', async () => {
+  const root = repo()
+  const map = await mapWithModel(root, { nodes: [], edges: [] }, { kind: 'claude-code', label: 'Claude Code', author: 'claude', bin: fakeClaude({ failAudit: true }) })
+  assert.deepEqual(map.nodes, READ.nodes)
+  assert.deepEqual(map.edges, READ.edges)
+  assert.match(map.scope!, /Source audit incomplete/)
+  assert.ok(map.verification?.at)
 })

@@ -1,0 +1,4 @@
+{
+  "basis": "../detailed-12/map.json",
+  "method": "Identical source map. Focus on core drawing; show view-specific notes, actual used line-style samples and provenance in readable HTML panel. Original annotation text remains in full-canvas data and exports. Tighten workflow row spacing. Add previous/next view controls and view count. Fresh screenshot review."
+}

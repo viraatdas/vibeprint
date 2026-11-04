@@ -12,7 +12,7 @@ import { importTldraw } from './tldraw-import.js'
 const num = z.number().finite()
 const shapeId = z.string().regex(/^shape:[\w-]{1,80}$/)
 const end = z.object({ x: num, y: num, id: shapeId.optional(), nx: num.optional(), ny: num.optional() })
-const base = { id: shapeId, z: num, author: z.enum(['user', 'agent']).optional(), font: z.enum(['hand', 'sans']).optional() }
+const base = { id: shapeId, z: num, author: z.enum(['user', 'agent']).optional(), font: z.enum(['hand', 'sans']).optional(), mapAnnotation: z.boolean().optional(), mapRole: z.enum(['boundary', 'lifeline']).optional(), mapView: z.object({ id: z.string().max(100), title: z.string().max(120), details: z.object({ notes: z.array(z.object({ title: z.string(), text: z.string(), source: z.string() })).max(3), owner: z.string(), verification: z.object({ at: z.string(), revision: z.string(), dirty: z.boolean() }).optional(), modes: z.array(z.string()) }).optional() }).optional() }
 export const shapeSchema = z.discriminatedUnion('type', [
   z.object({ ...base, type: z.literal('draw'), points: z.array(z.tuple([num, num, num])).min(1).max(20_000), pen: z.boolean().optional(), closed: z.boolean().optional() }),
   z.object({ ...base, type: z.literal('arrow'), start: end, end, text: z.string().max(2_000).optional(), route: z.array(z.object({ x: num, y: num })).max(256).optional(), mode: z.enum(['sync', 'async', 'local']).optional(), labelAt: z.object({ x: num, y: num }).optional() }),

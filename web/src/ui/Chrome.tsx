@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { extractSketch, shapeBounds } from '@shared/canvas'
 import { unionRects } from '@shared/geometry'
 import { batchIsPending, marksOfBatch, summarizeMarks } from '@shared/marks'
@@ -51,6 +51,47 @@ const TOOLS: Array<{ id: ToolId; icon: keyof typeof I; label: string; key: strin
   { id: 'select', icon: 'select', label: 'Select', key: 'v' },
   { id: 'hand', icon: 'hand', label: 'Pan', key: 'h' },
 ]
+
+export function MapViews() {
+  const editor = useEditor()
+  const version = useEditorValue(e => e.docVersion)
+  useEditorValue(e => e.camera)
+  const views = useMemo(() => editor.mapViews(), [editor, version])
+  const first = views[0]?.id
+  const previous = useRef(first)
+  useEffect(() => {
+    if (first && first !== previous.current) editor.zoomToMapView(first)
+    previous.current = first
+  }, [editor, first])
+  if (!views.length) return null
+  const active = editor.activeMapView(views)
+  const index = views.findIndex(v => v.id === active?.id)
+  const details = active?.details
+  return <>
+    <nav className="vp-map-views" aria-label="Map views" onPointerDown={e => e.stopPropagation()}>
+      <button aria-label="Previous diagram" disabled={index <= 0} onClick={() => editor.zoomToMapView(views[index - 1].id)}>‹</button>
+      <select aria-label="Diagram view" value={active?.id ?? ''} onChange={e => editor.zoomToMapView(e.target.value)}>
+        <option value="">All views</option>
+        {views.map((v, i) => <option key={v.id} value={v.id}>{i + 1}/{views.length} · {v.title}</option>)}
+      </select>
+      <button aria-label="Next diagram" disabled={index >= views.length - 1} onClick={() => editor.zoomToMapView(views[Math.max(0, index + 1)].id)}>›</button>
+    </nav>
+    {details && <details className="vp-map-reading" open={window.innerWidth >= 700} onPointerDown={e => e.stopPropagation()}>
+      <summary><strong>AI source notes ▾</strong><span>View {index + 1} of {views.length}</span></summary>
+      <div className="vp-map-note-grid">
+        {details.notes.map((note, i) => <article key={i}><strong>{note.title}</strong><p>{note.text}</p><div className="vp-map-source">{note.source}</div></article>)}
+      </div>
+      <div className="vp-map-key" aria-label="Diagram key">
+        <span>Caller → recipient; response included.</span>
+        <span>Headers = boundaries; faint guides = actors; cylinders = stores.</span>
+        {details.modes.map(mode => <span key={mode}><svg width="25" height="10" aria-hidden="true"><line x1="0" y1="5" x2="25" y2="5" stroke="currentColor" strokeWidth="2" strokeDasharray={mode === 'async' ? '7 4' : mode === 'local' ? '1 4' : undefined}/></svg>{mode === 'async' ? 'Async delivery' : mode === 'local' ? 'Local I/O' : 'Sync request'}</span>)}
+        <span>Equal stages = alternatives; unnumbered calls are independent.</span>
+      </div>
+      <div className="vp-map-provenance">Source review {details.verification?.at.slice(0, 10) || 'undated'} · {details.verification?.revision || 'revision unknown'}{details.verification?.dirty ? ' + local edits' : ''} · Owner: {details.owner} · Live runtime NOT verified</div>
+    </details>}
+  </>
+
+}
 
 export function Toolbar() {
   const editor = useEditor()

@@ -24,7 +24,7 @@ import { TABLE } from '../shared/marks.js'
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.8.1'
+const VERSION = '0.9.0'
 
 export interface McpServerOptions {
   root: string
@@ -518,9 +518,18 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
       description:
         'Draw the components this repo already has, and how they connect, onto the canvas as editable boxes and arrows, and record them as the architecture with every component marked done. ' +
         'Read the code first and pass `nodes` and `edges`; with neither, Vibeprint scans the repo itself (folders, package manifests, imports), which is rougher. ' +
-        'Aim for 4-14 components at the level a person would sketch on a whiteboard: apps, services, workers, databases, queues, third-party APIs. Not files or classes. ' +
+        'Explain the main workflows with runtime actors, meaningful roles, protocol/payload labels, failure behavior and real deployment/trust boundaries. Use presentation metadata and split larger maps into focused views (3-5 actors and at most 6 edges per view); collectively cover every node and edge. Shared actors remain one architecture node. ' +
         'Redrawing replaces your previous map if the user has not edited it; otherwise the new map goes beside it.',
       inputSchema: {
+        title: z.string().optional().describe('The product question this map answers'),
+        audience: z.string().optional(),
+        scope: z.string().optional(),
+        owner: z.string().optional().describe('Documented owner, otherwise Unassigned'),
+        omissions: z.array(z.string()).optional(),
+        groups: z.array(z.object({ id: z.string(), label: z.string(), description: z.string() })).optional(),
+        notes: z.array(z.object({ title: z.string(), text: z.string(), source: z.string() })).optional(),
+        views: z.array(z.object({ kind: z.enum(['overview', 'workflow']).optional(), edgeLabels: z.array(z.string()).optional(), title: z.string(), scope: z.string(), nodeIds: z.array(z.string()), edgeIndices: z.array(z.number().int().min(0)), noteIndices: z.array(z.number().int().min(0)), notes: z.array(z.object({ title: z.string(), text: z.string(), source: z.string() })).optional() })).max(8).optional().describe('Focused views; edgeIndices and noteIndices are zero-based indices into edges and notes. Include both endpoints; cover every actor and flow.'),
+        verification: z.object({ at: z.string(), revision: z.string(), dirty: z.boolean() }).optional().describe('Actual source-review date/revision; never claim live verification'),
         nodes: z
           .array(
             z.looseObject({
@@ -530,12 +539,13 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
               tags: z.array(z.string()).optional().describe('Up to 3 short tags, e.g. the framework: ["Next.js"]'),
               path: z.string().optional().describe('Where the code lives, e.g. "apps/web/"'),
               description: z.string().optional().describe('One line on what it does'),
+              group: z.string().optional().describe('Id of its deployment/trust boundary in groups'),
             }),
           )
           .optional()
           .describe('The components. Omit to let Vibeprint scan the repo.'),
         edges: z
-          .array(z.looseObject({ from: z.string(), to: z.string(), label: z.string().optional().describe('Short: "HTTP", "SQL", "jobs"') }))
+          .array(z.looseObject({ from: z.string(), to: z.string(), label: z.string().optional().describe('Protocol plus payload/action, e.g. HTTPS: enqueue job → id'), mode: z.enum(['sync', 'async', 'local']).optional() }))
           .optional()
           .describe('Who calls or depends on whom, by node id.'),
       },
@@ -545,7 +555,7 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
       safe(() =>
         withBackend(async (b) => {
           const nodes = (args.nodes ?? []) as RepoMap['nodes']
-          const map: RepoMap | undefined = nodes.length ? { nodes, edges: (args.edges ?? []) as RepoMap['edges'] } : undefined
+          const map: RepoMap | undefined = nodes.length ? { ...args, nodes, edges: (args.edges ?? []) as RepoMap['edges'] } : undefined
           const res = await b.map(author(), map)
           const arch = await b.architecture()
           const mapped = arch.nodes.filter((n) => n.status === 'done' && n.statusDetail === 'in the code')

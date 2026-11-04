@@ -1,0 +1,79 @@
+{
+  "reviewedAt": "2026-11-05T00:11:45.038Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 3,
+      "evidence": "The title at top left is the only text that can be read at 1194x834: \"offstage: how do local and cloud commands reach isolated, off-screen execution?\" It states one question clearly. Deduction: the subtitle under it is a single line about 3px tall and cannot be read. The body tries to answer for two audiences at once (a local CLI user and the cloud fleet/plane), and the detail is too small for either of them."
+    },
+    {
+      "id": "abstraction",
+      "score": 2,
+      "evidence": "Containers look like machines or deployments: a top 'developer machine' box, two bottom-left fleet-box boxes, a Fly.io plane box on the right and a small customer-side box at bottom right. Nodes look like processes (CLI/MCP, sessiond, fleet runner, GUI agent, API plane). Deduction: as far as the shapes and the few readable words show, the developer-machine box puts lane concepts (a 'headless lane'-style box) next to runtime processes. The local routing tool and the hosted service are also drawn in one view, with no zoom-in views."
+    },
+    {
+      "id": "focus",
+      "score": 2,
+      "evidence": "About 11 nodes in 6 containers is a reasonable scope. However, each node carries 5–7 lines of description and each edge label is 2–3 lines. Below the diagram (y≈697–760) there is a key, three columns of prose notes and two footer lines. All of it is about 3px text, so nothing at the actual viewing size helps answer the title question. Noise buries the purpose, but no component appears critically missing."
+    },
+    {
+      "id": "flow",
+      "score": 2,
+      "evidence": "Credit: almost every edge has a label block, and at least one dashed line among the long fleet-runner→plane edges (y≈592) shows a second line style. Deductions: none of the labels can be read. Arrowheads can't be seen at this scale, so direction is unknown. Four to five near-parallel lines run down one corridor (x≈660–690) from the developer machine to the plane, and you cannot tell which label belongs to which line. Lines also converge into a knot at the plane node's left and lower-left edge (x≈640–668, y≈520–615)."
+    },
+    {
+      "id": "boundaries",
+      "score": 2,
+      "evidence": "Explicit labelled containers exist, which is better than implicit grouping. Deductions: every container has the same thin red rounded outline, so external, customer, Fly-managed and self-hosted Mac fleet look the same. Container headers can't be read. The two bottom-left fleet-box containers sit side by side with no box around both, so you can't tell whether they are one Mac. The header text of the narrow right-of-centre container (y≈335–355) appears to run into its first node."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "The drawing is a tall, narrow shape filling only about x≈395–800 of a 1194px-wide landscape frame. About two-thirds of the width is empty, and node, edge and key text renders at roughly 3px. The vertical edge bundle from the developer machine passes through the two stacked nodes in the right-of-centre container (x≈680, y≈350–480). The fleet runner (far left) reaches the plane (far right) with 220px-long horizontal edges that fan out of a 40px-wide node. There is no dominant direction: the top half reads down, the bottom half reads left to right, and both converge on a hub at the right middle. It falls just short of full spaghetti, because there are few true crossings."
+    },
+    {
+      "id": "notation",
+      "score": 2,
+      "evidence": "Everything is in one red, which is an authorship colour and not a fault in itself. Shape gives little to fall back on, though: containers and nodes are both thin rounded rectangles, told apart only by nesting. Solid versus dashed edges is the only other visible signal. A 'Key:' line exists at y≈697, but it can't be read at this size, so the conventions are in effect undocumented for this reader. Names may be real, but they can't be read."
+    },
+    {
+      "id": "operations",
+      "score": 1,
+      "evidence": "Nothing on the drawing itself marks a failure point, queue, retry, state store or limit: no special shape, badge or annotated edge. One legend column appears to cover failure and recovery, but it is roughly 3px prose and can't be read. At the viewing size you can't even follow the happy path, let alone behaviour under failure. The repo shows these things exist and could be drawn, e.g. src/fleet/runner.ts:4 long-poll claims and :78 heartbeats."
+    },
+    {
+      "id": "freshness",
+      "score": 2,
+      "evidence": "The component names I can partly make out (offstage CLI/MCP, offstage-sessiond, fleet runner, GUI agent, API plane on Fly.io) match the repo: native/sessiond, src/fleet/runner.ts, src/fleet/gui-agent.ts, cloud/ deployed to Fly. Long runner→plane edges are consistent with the runner long-polling the plane (src/fleet/runner.ts:4). Deductions: no readable date, version or owner, and no production check was done (cap 3)."
+    },
+    {
+      "id": "comprehension",
+      "score": 1,
+      "evidence": "Cold, at 1194x834, a new person can read only the title. They can see about six groups, a hub on the right that most lines converge on, and a box at far left with long lines to that hub. They can't name the components, the three lanes, what any edge carries, which way it flows, or how local work differs from cloud work without the author or a heavy zoom."
+    }
+  ],
+  "visualVerdict": "Score 18/40, the bottom of Mediocre. Up close it is probably a careful, well-annotated map. At its actual iPad size it is unusable. The layout is narrow and tall in a landscape frame, so the content shrinks to roughly 3px text. The labels, which are the diagram's main strength, can't be read. One vertical bundle of edges runs through the nodes in the middle, and lines knot where they meet the API plane hub. The user's sense that it is 'messy and unusable' is accurate. The main causes are scale and density, more than the underlying structure.",
+  "coldRead": "What a newcomer can actually take away at 1194x834:\n- The title question: how local and cloud commands reach isolated, off-screen execution.\n- A top container that is probably the developer machine. It holds a CLI-like node on its left and several nodes on its right, joined by about six labelled edges.\n- A narrow container right of centre with two stacked nodes, plausibly isolated substrates such as the session daemon. Lines from above pass straight through it.\n- Two bottom-left containers, probably fleet-box parts. One holds a runner and the other holds two nodes joined to each other, one possibly a GUI agent.\n- A right-hand container, probably the Fly.io API plane, that nearly every long edge ends at. It links to a node at top right and to a small box at bottom right, which may be the customer or SDK side.\n- One dashed edge among the runner→plane lines, and a block of key and notes at the bottom.\n\nUncertain or unknowable:\n- Every node name beyond the guesses above.\n- What any edge carries, or which way it points. Arrowheads aren't visible.\n- Which of the 4–5 parallel vertical lines goes where.\n- Whether the two fleet-box containers are one machine.\n- What the dashed style means.\n- What the three lanes (headless, container, session) are, and how the router picks one.\n- How the refusal of installers works.\n- Anything about failure or recovery.\n\nAfter reading the repo (not the image): the names I could partly make out are plausible. sessiond, the fleet runner, the GUI agent and the Fly-hosted plane all exist, and the runner long-polls the plane (src/fleet/runner.ts:4). None of that can be confirmed from the image itself.",
+  "mostSeriousProblems": [
+    "Scale: the diagram fills only about x≈395–800 of a 1194px frame. Node text, edge labels and the whole key render at about 3px, so the only readable text is the title.",
+    "Edges overlap nodes: 4–5 near-parallel vertical edges from the developer machine pass through the two stacked nodes in the right-of-centre container (x≈680, y≈350–480) on their way to the API plane. Nobody can tell which line is which.",
+    "A knot at the hub: the long fleet-runner edges (y≈570–615, one dashed), the GUI-agent edge (y≈522) and the vertical bundle all converge on the API plane's left and lower-left edge, so the endpoints and directions are lost.",
+    "No dominant reading direction. The top half flows down and the bottom half flows left to right into a hub at the right middle. The fleet runner is placed at the far left, as far as it could be from the plane it talks to.",
+    "Failure and operations information lives only in a column of illegible prose under the diagram. Nothing on the drawing marks failure points, queues, state or limits.",
+    "Every boundary has the same thin red outline, so external, customer, managed (Fly) and self-hosted (Mac fleet) can't be told apart. The two fleet-box containers aren't grouped as one machine, and one container header appears to collide with its first node."
+  ],
+  "recommendations": [
+    "1. Fill the frame and enlarge the text first. Lay the system out left to right across the full 1194px: developer machine | isolated substrates | API plane | fleet box (or customer → plane → fleet). Aim for text of at least 10–11px. Cut node text to a name plus at most one short line, and edge labels to 2–4 words.",
+    "2. Split into two linked views. View A is local routing: CLI/MCP → the three lanes (headless in place, container with Xvfb, session via sessiond), with the installer/.dmg/.pkg refusal shown. View B is the cloud path: SDK/console → API plane → fleet runner long-poll claim → slot → GUI agent. Keep the title question, but let each view answer half of it.",
+    "3. Re-route the vertical bundle around the substrate container instead of through its nodes. Merge parallel edges that carry the same thing, and make arrowheads visible. Move the fleet runner beside the plane so its claim/heartbeat edges are short.",
+    "4. Put the operational facts on the drawing as small markers on the relevant edge or node, and drop the prose column. Examples: the runner's long-poll and heartbeat, slot reset before reuse, the per-boot login budget, and lanes refusing rather than falling back to the real screen when their substrate is missing.",
+    "5. Give each boundary type its own style and a readable label: customer/external, Fly-managed, self-hosted Mac fleet, developer machine. Draw one Mac box around the operator and GUI-slot parts if they are one machine, and fix the header that collides with its node.",
+    "6. Shrink the key to 2–3 readable entries (solid vs dashed, container vs node). Add a legible date, version or source commit, and an owner, in the title area."
+  ],
+  "total": 18,
+  "verdict": "Mediocre"
+}

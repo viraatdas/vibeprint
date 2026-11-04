@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-11-04T23:57:42.962Z",
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "mapper": {
+    "mode": "claude-code",
+    "active": true,
+    "label": "Claude Code",
+    "task": "map",
+    "startedAt": "2026-11-04T23:55:54.786Z"
+  },
+  "source": "Live Offstage canvas, fitted to iPad landscape viewport; no canvas edits"
+}

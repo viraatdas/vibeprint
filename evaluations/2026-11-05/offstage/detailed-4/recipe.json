@@ -1,0 +1,5 @@
+{
+  "basis": "../detailed-3/map.json",
+  "method": "Reuse source-reviewed map; no additional model generation. Fix developer account boundary label, session lane name and local execution title; shorten omissions. New renderer detours around captions and fits clear of the tool palette. Judge separately on fresh screenshots.",
+  "sourceCorrections": "../detailed-3/source-corrections.json"
+}

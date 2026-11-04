@@ -8,9 +8,50 @@ import { VibeprintCore } from '../src/core/core.js'
 import { wrapMapText } from '../src/core/map-presentation.js'
 import { mapTextWidth, MAP_FLOW_SIZE, MAP_FLOW_LINE } from '../src/shared/map-font.js'
 import type { Rect } from '../src/shared/types.js'
+import type { RepoMap } from '../src/shared/types.js'
 import { drawPresentedMap } from '../src/core/map-presentation.js'
 import { arrowRoute, distToShape, shapeBounds, type ArrowShape } from '../src/shared/canvas.js'
 import { shapeSchema } from '../src/server/canvas.js'
+
+test('focused views retain shared actor and edge bindings through canvas validation', () => {
+  const map: RepoMap = {
+    title: 'How do jobs reach a worker?', owner: 'Jobs team',
+    verification: { at: '2026-11-05T00:00:00.000Z', revision: 'abc123', dirty: false },
+    groups: [{ id: 'local', label: 'Local processes', description: 'User-operated machine' }],
+    nodes: ['client', 'queue', 'worker'].map(id => ({ id, label: id, group: 'local', description: `Runtime ${id}` })),
+    edges: [{ from: 'client', to: 'queue', label: 'enqueue job' }, { from: 'worker', to: 'queue', label: 'claim job' }],
+    views: [
+      { kind: 'overview', title: 'Submit a job', scope: 'Submission', nodeIds: ['client', 'queue'], edgeIndices: [0], edgeLabels: ['Submit'], noteIndices: [] },
+      { title: 'Claim and execute', scope: 'Execution', nodeIds: ['client', 'queue', 'worker'], edgeIndices: [0, 1], noteIndices: [], notes: [{ title: 'Queue unavailable', text: 'Worker waits before trying again.', source: 'worker.ts' }] },
+    ],
+  }
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vp-map-views-'))
+  try {
+    const core = new VibeprintCore(root), result = mapCode(core, [], map, 'claude')
+    assert.equal(result.nodes, 3)
+    assert.equal(result.edges, 2)
+    assert.equal(core.graph.nodes.length, 3)
+    assert.equal(core.graph.edges.length, 2)
+    const saved = result.put.map(s => shapeSchema.parse(JSON.parse(JSON.stringify(s))))
+    assert.equal(new Set(saved.map(s => s.mapView?.id)).size, 2)
+    const details = saved.flatMap(s => s.mapView?.details ? [s.mapView.details] : [])
+    assert.equal(details.length, 2, 'one reading-panel record per view survives persistence')
+    assert.deepEqual(details[1].notes, map.views![1].notes)
+    assert.deepEqual(details[1].verification, map.verification)
+    assert.equal(details[1].owner, 'Jobs team')
+    assert.ok(saved.some(s => s.mapAnnotation), 'full-canvas source notes remain available for export')
+    assert.ok(saved.some(s => s.type === 'arrow' && s.text?.includes('Submit')))
+    assert.equal(core.graph.edges[0].label, 'enqueue job', 'short context labels must not rewrite graph semantics')
+    assert.ok(saved.some(s => s.type === 'text' && s.text === 'Worker waits before trying again.'))
+    assert.equal(core.graph.edges.find(e => e.label === 'enqueue job')?.shapeIds.length, 2)
+    const queue = core.graph.nodes.find(n => n.label === 'queue')!
+    assert.equal(new Set(queue.shapeIds.map(id => saved.find(s => s.id === id)!.mapView!.id)).size, 2)
+    const incomplete = drawPresentedMap({ ...map, views: [map.views![0]] }, { x: 0, y: 0 })
+    assert.equal(incomplete.nodeShapes.size, 3, 'incomplete view plans fall back to the complete map')
+    assert.equal(incomplete.edges.length, 2)
+    assert.ok(incomplete.shapes.every(s => !s.mapView))
+  } finally { fs.rmSync(root, { recursive: true, force: true }) }
+})
 
 test('bundled map font wraps punctuation, wide glyphs and long source paths without overflow', () => {
   for (const value of ['NEEDS_LOGIN Every 30s', 'WWWMMM', 'src/interpret/long-filename-that-must-wrap.ts', '127.0.0.1 → cookie']) {

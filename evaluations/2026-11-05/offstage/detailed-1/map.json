@@ -1,0 +1,311 @@
+{
+  "title": "offstage: how do local and cloud commands reach isolated, off-screen execution?",
+  "audience": "Engineers onboarding to offstage (npm CLI/MCP) and offstage cloud",
+  "scope": "Local route/run across the headless, container and session lanes; cloud sandbox and task flow from the SDK through the Fly plane to fleet slots.",
+  "omissions": [
+    "Clerk sign-in, Stripe billing, Resend mail and GitHub App runner registration (plane)",
+    "Fleet upkeep: fleetd reconcile, slot seeding via loopback VNC, recordings, fleet doctor",
+    "Marketing site (Vercel), launch film, bench and chaos tooling: not runtime"
+  ],
+  "owner": "Viraat Das (package.json author)",
+  "groups": [
+    {
+      "id": "dev",
+      "label": "Developer machine",
+      "description": "User's machine: agent-driven offstage CLI/MCP, SDK or browser; user-run"
+    },
+    {
+      "id": "localiso",
+      "label": "Isolated substrates, same machine",
+      "description": "Same machine, off the display: Docker+Xvfb, or a 2nd macOS account"
+    },
+    {
+      "id": "plane",
+      "label": "Fly.io control plane",
+      "description": "Fly.io app offstage-api: 1 machine + /data volume; run by Exla"
+    },
+    {
+      "id": "fleet",
+      "label": "Fleet box: operator",
+      "description": "Exla's fleet Mac (Studio A), operator account; outbound HTTPS only"
+    },
+    {
+      "id": "slot",
+      "label": "Fleet box: slot accounts",
+      "description": "Slot users offstage0–7 on the fleet Mac; reset to a new uid per use"
+    },
+    {
+      "id": "ext",
+      "label": "Model provider",
+      "description": "Anthropic's hosted API; slots reach it only via the plane's proxy"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "offstage",
+      "label": "offstage CLI / MCP",
+      "kind": "service",
+      "tags": [
+        "Node",
+        "MCP stdio"
+      ],
+      "path": "src/cli/api.ts",
+      "description": "MCP/CLI entry: classify() picks lane, refusal gates, LaneRunner dispatch, result",
+      "group": "dev"
+    },
+    {
+      "id": "headless",
+      "label": "Headless lane process",
+      "kind": "worker",
+      "tags": [
+        "execa"
+      ],
+      "path": "src/lanes/headless/runner.ts",
+      "description": "Default lane: spawns argv in place (no shell), tails log, parses test failures",
+      "group": "dev"
+    },
+    {
+      "id": "runs",
+      "label": "Repo + .offstage/runs",
+      "kind": "storage",
+      "tags": [
+        "filesystem"
+      ],
+      "path": "src/contract/artifacts.ts",
+      "description": "Repo read by the router; per-run dir with command.log, screen.png, result.json",
+      "group": "dev"
+    },
+    {
+      "id": "cloudclient",
+      "label": "SDK & web console",
+      "kind": "client",
+      "tags": [
+        "TypeScript",
+        "React"
+      ],
+      "path": "sdk/src/index.ts",
+      "description": "Customer code (sk_offstage_ key) and console (sign-in): tasks, sandboxes, keys, replays",
+      "group": "dev"
+    },
+    {
+      "id": "container",
+      "label": "Docker container + Xvfb",
+      "kind": "worker",
+      "tags": [
+        "Docker",
+        "Xvfb"
+      ],
+      "path": "src/lanes/container/index.ts",
+      "description": "Headed browser work on a virtual display; repo mounted ro, --rm, skipped if no runtime",
+      "group": "localiso"
+    },
+    {
+      "id": "sessiond",
+      "label": "Helper offstage-sessiond",
+      "kind": "service",
+      "tags": [
+        "Swift",
+        "unix socket"
+      ],
+      "path": "native/sessiond/",
+      "description": "Runs in the computeruse account's GUI session: spawn, screenshot, input via session tap",
+      "group": "localiso"
+    },
+    {
+      "id": "plane",
+      "label": "offstage-api plane",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Fly.io"
+      ],
+      "path": "cloud/src/plane.ts",
+      "description": "Auth/quota/billing gates, fair task queue, sandbox op queue, model proxy; holds ≤50 s",
+      "group": "plane"
+    },
+    {
+      "id": "planestate",
+      "label": "/data snapshot + artifacts",
+      "kind": "database",
+      "tags": [
+        "JSON file",
+        "Fly volume"
+      ],
+      "path": "cloud/src/core/persist.ts",
+      "description": "In-memory stores snapshotted to /data/plane.json; artifacts and archived logs in /data",
+      "group": "plane"
+    },
+    {
+      "id": "runner",
+      "label": "Fleet runner (fleet run)",
+      "kind": "worker",
+      "tags": [
+        "LaunchDaemon"
+      ],
+      "path": "src/fleet/runner.ts",
+      "description": "One claim loop per slot; offers only ready slots, checks LAN guard, resets after work",
+      "group": "fleet"
+    },
+    {
+      "id": "slotd",
+      "label": "Slot sessiond + workload",
+      "kind": "worker",
+      "tags": [
+        "Swift",
+        "macOS user"
+      ],
+      "path": "native/sessiond/",
+      "description": "Per-customer slot user: commands run as its uid via its sessiond, or sudo -u if headless",
+      "group": "slot"
+    },
+    {
+      "id": "guiagent",
+      "label": "GUI agent harness",
+      "kind": "worker",
+      "tags": [
+        "node -e",
+        "computer use"
+      ],
+      "path": "src/fleet/gui-agent.ts",
+      "description": "Inside a gui slot: screenshot → ask model → post action via sessiond, until done/limits",
+      "group": "slot"
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic Messages API",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "path": "",
+      "description": "Model behind agent runs; called by the plane's proxy with the customer's key",
+      "group": "ext"
+    }
+  ],
+  "edges": [
+    {
+      "from": "offstage",
+      "to": "runs",
+      "label": "A1 fs read: repo configs to classify argv",
+      "mode": "local"
+    },
+    {
+      "from": "offstage",
+      "to": "headless",
+      "label": "A2 headless: execa spawn argv → exit code",
+      "mode": "sync"
+    },
+    {
+      "from": "offstage",
+      "to": "container",
+      "label": "A2 container: docker run --rm → exit, screen",
+      "mode": "sync"
+    },
+    {
+      "from": "offstage",
+      "to": "sessiond",
+      "label": "A2 session: Unix socket JSON run/shot/input",
+      "mode": "sync"
+    },
+    {
+      "from": "offstage",
+      "to": "runs",
+      "label": "A3 fs write: result.json in .offstage/runs",
+      "mode": "local"
+    },
+    {
+      "from": "offstage",
+      "to": "plane",
+      "label": "B1 HTTPS: sandbox create / agent goal / kill",
+      "mode": "sync"
+    },
+    {
+      "from": "cloudclient",
+      "to": "plane",
+      "label": "B1 HTTPS Bearer key: task, sandbox, command",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "planestate",
+      "label": "fs: snapshot every 2 s; artifacts, logs",
+      "mode": "local"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "B2 HTTPS long-poll ≤25 s: claim, then ops",
+      "mode": "async"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "HTTPS heartbeat every 15 s → cancelled ids",
+      "mode": "async"
+    },
+    {
+      "from": "runner",
+      "to": "slotd",
+      "label": "B3 sessiond socket / sudo -n -u: run → exit",
+      "mode": "sync"
+    },
+    {
+      "from": "runner",
+      "to": "plane",
+      "label": "B4 HTTPS: op result, events, steps, artifacts",
+      "mode": "sync"
+    },
+    {
+      "from": "runner",
+      "to": "slotd",
+      "label": "B5 sudo -n fleet reset: new account, new uid",
+      "mode": "sync"
+    },
+    {
+      "from": "slotd",
+      "to": "guiagent",
+      "label": "spawn node -e harness for an agent op",
+      "mode": "local"
+    },
+    {
+      "from": "guiagent",
+      "to": "slotd",
+      "label": "Unix socket: screenshot / post input",
+      "mode": "sync"
+    },
+    {
+      "from": "guiagent",
+      "to": "plane",
+      "label": "HTTPS /v1/model/messages, run token",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "anthropic",
+      "label": "HTTPS Messages API, customer's key",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Routing and dispatch",
+      "text": "classify() reads argv and repo configs, never runs them: session > container > headless, plus a refuse flag. run() refuses that on every lane, and a forced headless downgrade, else calls the lane's run(). Cloud: a box's ≤25 s claim long-poll takes a waiting sandbox first, else the fairest task.",
+      "source": "src/router/index.ts; src/cli/api.ts; cloud/src/api/app.ts; cloud/src/core/queue.ts"
+    },
+    {
+      "title": "Where results and state live",
+      "text": "Local: each run gets .offstage/runs/<id>/ (command.log, screen.png, result.json); a failed write adds a diagnostic, never changes the verdict. Plane: in-memory stores snapshot atomically to /data/plane.json every 2 s if changed and on SIGTERM; in-flight sandbox ops are lost on restart.",
+      "source": "src/contract/artifacts.ts; src/cli/api.ts; cloud/src/server.ts; cloud/src/core/persist.ts; cloud/Dockerfile"
+    },
+    {
+      "title": "Failure and isolation",
+      "text": "Missing substrate → skipped with a fix, never your screen. sessiond checks peer uid and refuses input on-console. Unstarted claims requeue; started work on a lost box fails. No claim without LAN guard; dirty slots reset to a new uid; slots get a run token, not the model key.",
+      "source": "src/lanes/session/index.ts; native/sessiond/Input.swift; native/sessiond/Peer.swift; cloud/src/core/queue.ts; src/fleet/run.ts; src/fleet/reset.ts; cloud/src/api/agent-routes.ts"
+    }
+  ],
+  "verification": {
+    "at": "2026-11-05T00:09:37.085Z",
+    "revision": "57eeabc",
+    "dirty": true
+  }
+}

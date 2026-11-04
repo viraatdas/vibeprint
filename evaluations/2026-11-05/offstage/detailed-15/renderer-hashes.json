@@ -1,0 +1,13 @@
+{
+  "src/core/map-presentation.ts": "ec26d3a9bd5bed2022d003f1c54bbd64368d0f461d1e67a61899e218c832d76b",
+  "src/core/map-routing.ts": "8d715fcb7d9ff631e3bb9794d59f159196bd44bb1c998cfc821eb82c0e9acb84",
+  "src/core/map-workflow.ts": "e25a807368cca83b3042dc9cd62c6d74b9870c0cc8353d085e120a7723c213ad",
+  "src/core/map-context.ts": "051932f33d56a329ac0e0a4e09e021240c6d5ea859d1e207a9bb694ae04bac6b",
+  "src/core/map-shapes.ts": "13c5b6e0f72b5aed1548cb9642f8ecfb8e02fe16ba90c2a4dc6e508413ac7f02",
+  "src/shared/map-font.ts": "184b2443e0c1953cfead571a7c7986b2b1612a72ac23b187e5c938e402d47aca",
+  "web/src/canvas/editor.ts": "4c6ed0c298d3b3d888d4c701ab360645c6a4786133491820d4556a272c1da12d",
+  "web/src/canvas/Board.tsx": "dd00e6d90355d2c53758f031ce11db3205ed2c37ddb13e0a262308b8a43cdcde",
+  "web/src/canvas/png.ts": "0424e9ddf003fe7f811db1a8105198fd70ac65a6b585f2a541f4c1f941511ccf",
+  "web/src/ui/Chrome.tsx": "3e2a3cd331285dbea2da2d6bc0a11260666296cc3e85d1d42cc729d6b6c15109",
+  "web/src/styles.css": "89e7fbb536261ed8528adb29aeb5056af53a92db47cffe6998abe220e4ba7051"
+}

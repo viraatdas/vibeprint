@@ -1,0 +1,4 @@
+{
+  "basis": "../detailed-8/map.json",
+  "method": "Correct awaited long-poll claim/ops to sync request/reply, consistent with source. Sort shared B3/C3 and B5/C6 steps by the dominant workflow in that view, so agent C2 precedes C3. Other content unchanged. Fresh screenshots and independent review."
+}

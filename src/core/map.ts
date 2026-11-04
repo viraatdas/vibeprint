@@ -183,7 +183,7 @@ export function cleanMap(map: RepoMap): RepoMap {
 }
 
 /** Lay the map out in rows (clients, then services, then data) and turn it into shapes. */
-export function drawMap(map: RepoMap, origin: { x: number; y: number }) {
+export function drawMap(map: RepoMap, origin: { x: number; y: number }): ReturnType<typeof drawPresentedMap> {
   if (map.title && map.groups?.length) return drawPresentedMap(map, origin)
   const byId = new Map(map.nodes.map((n) => [n.id, n]))
   const lines = rankRows(map).flatMap((r) => Array.from({ length: Math.ceil(r.length / PER_ROW) }, (_, i) => r.slice(i * PER_ROW, (i + 1) * PER_ROW)))
@@ -477,7 +477,7 @@ export function mapCode(core: VibeprintCore, canvas: Shape[], input: RepoMap, au
       ...core.graph.edges
         .filter((e) => e.origin === 'ink' && keptIds.has(e.from) && keptIds.has(e.to))
         .map((e) => ({ id: e.id, from: e.from, to: e.to, label: e.label, shapeIds: e.shapeIds.filter((id) => rest.has(id)) })),
-      ...edges.map((e) => ({ from: `map:${e.from}`, to: `map:${e.to}`, label: e.label, shapeIds: [e.shapeId] })),
+      ...edges.map((e) => ({ from: `map:${e.from}`, to: `map:${e.to}`, label: e.label, shapeIds: e.shapeIds ?? [e.shapeId] })),
     ],
   }
 

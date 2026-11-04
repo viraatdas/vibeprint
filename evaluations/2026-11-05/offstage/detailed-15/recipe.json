@@ -1,0 +1,4 @@
+{
+  "basis": "../detailed-13/map.json",
+  "method": "Source-backed artifact writers and session-client ownership; scope cloud context explicitly; repair cross-view pointer; nested Clerk token verification; exclude GUI seed setup explicitly; remove unrelated persistence from sign-in. Header-only boundary containers, faint actor guides, cylinder stores and external actor labels."
+}

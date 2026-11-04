@@ -22,6 +22,17 @@ interface ShapeBase {
   author?: 'user' | 'agent'
   /** Typeset map text; handwritten ink remains the default. */
   font?: 'hand' | 'sans'
+  /** All shapes in a focused map view share this navigation bookmark. */
+  mapView?: { id: string; title: string; details?: {
+    notes: Array<{ title: string; text: string; source: string }>
+    owner: string
+    verification?: { at: string; revision: string; dirty: boolean }
+    modes: string[]
+  } }
+  /** Source notes remain in full-canvas exports; focused views show a reading panel. */
+  mapAnnotation?: boolean
+  /** Structural guides have less visual weight than actors and calls. */
+  mapRole?: 'boundary' | 'lifeline'
 }
 
 export interface DrawShape extends ShapeBase {

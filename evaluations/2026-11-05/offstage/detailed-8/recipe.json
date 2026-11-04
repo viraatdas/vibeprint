@@ -1,0 +1,4 @@
+{
+  "basis": "../detailed-6/map.json",
+  "method": "Actor-column workflow renderer with measured role and row heights. Split local result persistence into its own view to limit four actors per view. Name workflow letters and continuations. Added result-directory/write-failure notes verified against src/contract/artifacts.ts and src/cli/api.ts. No new generation call; fresh screenshot review."
+}

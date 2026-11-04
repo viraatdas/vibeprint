@@ -19,7 +19,7 @@ interface HistoryEntry {
   after: Change
 }
 
-export const MIN_ZOOM = 0.1
+export const MIN_ZOOM = 0.02
 export const MAX_ZOOM = 8
 const HISTORY_LIMIT = 200
 
@@ -336,14 +336,38 @@ export class Editor {
     this.zoomToBounds(b)
   }
 
+  /** Bookmarks follow the editable shapes, including moves and deletions. */
+  mapViews() {
+    const grouped = new Map<string, { id: string; title: string; details?: NonNullable<Shape['mapView']>['details']; shapes: Map<string, Shape> }>()
+    for (const shape of this.shapes()) {
+      if (!shape.mapView) continue
+      const view = grouped.get(shape.mapView.id) ?? { ...shape.mapView, shapes: new Map<string, Shape>() }
+      view.shapes.set(shape.id, shape)
+      grouped.set(view.id, view)
+    }
+    return [...grouped.values()].map(view => ({ id: view.id, title: view.title, details: view.details, bounds: docBounds(new Map([...view.shapes].filter(([,s]) => !s.mapAnnotation))) || docBounds(view.shapes)! }))
+  }
+
+  activeMapView(views = this.mapViews()) {
+    const { camera, viewport } = this
+    const cx = viewport.w / (2 * camera.z) - camera.x, cy = viewport.h / (2 * camera.z) - camera.y
+    return views.find(v => cx >= v.bounds.x && cx <= v.bounds.x + v.bounds.w && cy >= v.bounds.y && cy <= v.bounds.y + v.bounds.h && (viewport.w / camera.z <= v.bounds.w * 1.6 || viewport.h / camera.z <= v.bounds.h * 1.6))
+  }
+
+  zoomToMapView(id?: string) {
+    const view = this.mapViews().find(v => v.id === id)
+    if (view) this.zoomToBounds(view.bounds, { readingPanel: !!view.details })
+    else this.zoomToFit()
+  }
+
   /** Fit a page rectangle on screen, never zooming in past 100%. */
-  zoomToBounds(b: Rect, opts: { animate?: boolean } = {}) {
+  zoomToBounds(b: Rect, opts: { animate?: boolean; readingPanel?: boolean } = {}) {
     const { w, h } = this.viewport
     if (!w || !h) return
     // Keep clear of the top bar (and a toast under it) as well as the edges.
-    const top = 88, bottom = 72
-    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - 96) / Math.max(1, b.w), (h - top - bottom) / Math.max(1, b.h))))
-    const target = { x: w / (2 * z) - (b.x + b.w / 2), y: (h + top - bottom) / (2 * z) - (b.y + b.h / 2), z }
+    const top = 72, bottom = opts.readingPanel ? (w >= 700 ? 280 : 160) : 100, left = 88, right = 24
+    const z = Math.min(1, Math.max(MIN_ZOOM, Math.min((w - left - right) / Math.max(1, b.w), (h - top - bottom) / Math.max(1, b.h))))
+    const target = { x: (w + left - right) / (2 * z) - (b.x + b.w / 2), y: (h + top - bottom) / (2 * z) - (b.y + b.h / 2), z }
     if (opts.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) this.animateTo(target, 420)
     else this.setCamera(target)
   }

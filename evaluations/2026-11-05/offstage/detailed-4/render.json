@@ -1,0 +1,578 @@
+{
+  "capturedAt": "2026-11-05T00:36:59.912Z",
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "captures": [
+    {
+      "title": "How does offstage execute a command away from your screen?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 285.29074210526323,
+        "y": 194.96222910216716,
+        "z": 0.45136948015651207
+      },
+      "selected": "shape:map7a00b646a73aa3d7",
+      "text": [
+        {
+          "text": "How does offstage execute a command away from your screen?",
+          "renderedSize": 14.443823365008386
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · CLI/MCP classifies argv, refuses or runs it headless, in a container or in the helper session, writes result.json; session verbs drive the helper.",
+          "renderedSize": 8.576020122973729
+        },
+        {
+          "text": "Developer account on Mac",
+          "renderedSize": 9.930128563443265
+        },
+        {
+          "text": "Self-hosted Mac: CLI/MCP and unisolated headless processes",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Helper macOS session",
+          "renderedSize": 9.930128563443265
+        },
+        {
+          "text": "Same Mac, separate uid\n(computeruse) with its own\nwindow server",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Local Docker container",
+          "renderedSize": 9.930128563443265
+        },
+        {
+          "text": "Same machine: isolated\nLinux/Xvfb; repo read-only,\nartifacts writable",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "offstage CLI /\nMCP",
+          "renderedSize": 11.284237003912802
+        },
+        {
+          "text": "Classifies argv/repo\nfiles to a lane;\nrefuses or\ndispatches",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Headless lane",
+          "renderedSize": 11.284237003912802
+        },
+        {
+          "text": "Runs argv in place\nvia execa; no\nisolation, stdin\nignored",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Xvfb container\nlane",
+          "renderedSize": 11.284237003912802
+        },
+        {
+          "text": "docker run --rm:\nXvfb + fluxbox, repo\nro; host DISPLAY\ndropped",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Run directory",
+          "renderedSize": 11.284237003912802
+        },
+        {
+          "text": "Per-run dir:\ncommand.log,\nscreen.png,\nresult.json\nLaneResult",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Session lane:\nsessiond",
+          "renderedSize": 11.284237003912802
+        },
+        {
+          "text": "Runs, captures,\ninjects in\ncomputeruse\nsession; checks\npeer uid",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; dotted (local) = file/IPC. A/B/C = workflows; equal step numbers =\nalternatives; unnumbered calls are independent.",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Refusal beats --lane",
+          "renderedSize": 9.478759083286754
+        },
+        {
+          "text": "An installer, .pkg/.dmg or hdiutil in argv is refused on every lane, no override;\n--lane headless can't downgrade a GUI verdict. Nothing runs; the result is errored.",
+          "renderedSize": 9.478759083286754
+        },
+        {
+          "text": "Source: src/cli/api.ts, src/router/index.ts",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "No fallback to your display",
+          "renderedSize": 9.478759083286754
+        },
+        {
+          "text": "No Docker or helper session → skipped, exit 69, never your screen. The container\ndrops DISPLAY; sessiond checks peer uid and refuses input when on the console.",
+          "renderedSize": 9.478759083286754
+        },
+        {
+          "text": "Source: src/lanes/container/index.ts, native/sessiond/Input.swift",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Outside this view: Other workflows: use the Diagram view selector; Billing, CI, maintenance and third-party internals.",
+          "renderedSize": 9.027389603130242
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 9.027389603130242
+        }
+      ]
+    },
+    {
+      "title": "How does the plane admit cloud work and keep its state?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -3242.8224631578946,
+        "y": 213.16842105263152,
+        "z": 0.41281912004345467
+      },
+      "selected": "shape:mapc32e5c2b962d6567",
+      "text": [
+        {
+          "text": "How does the plane admit cloud work and keep its state?",
+          "renderedSize": 13.21021184139055
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · SDK and MCP clients submit tasks or open sandboxes; the plane admits them and snapshots its\nin-memory state to the Fly volume.",
+          "renderedSize": 7.843563280825639
+        },
+        {
+          "text": "Developer account on\nMac",
+          "renderedSize": 9.082020640956003
+        },
+        {
+          "text": "Self-hosted Mac: CLI/MCP\nand unisolated headless\nprocesses",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Customer clients",
+          "renderedSize": 9.082020640956003
+        },
+        {
+          "text": "Customer code and\nbrowsers calling offstage\ncloud over HTTPS",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 9.082020640956003
+        },
+        {
+          "text": "Fly-managed: one machine (sjc) + offstage_data volume at /data",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "offstage CLI /\nMCP",
+          "renderedSize": 10.320478001086366
+        },
+        {
+          "text": "Classifies argv/repo\nfiles to a lane;\nrefuses or\ndispatches",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "offstage-cloud\nSDK",
+          "renderedSize": 10.320478001086366
+        },
+        {
+          "text": "Customer code:\nsubmit/wait tasks,\ndrive sandboxes\nand agents",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 10.320478001086366
+        },
+        {
+          "text": "Auth, GUI gate,\ncapacity, credit; fair\nqueue; op relay;\nproxy",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Fly volume\n/data",
+          "renderedSize": 10.320478001086366
+        },
+        {
+          "text": "plane.json snapshot\n(accounts, keys,\ntasks, boxes);\nartifacts",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state. Arrows: caller → recipient, response included; solid\n(sync) = awaited request/reply; dotted (local) = file/IPC. A/B/C = workflows; equal step numbers = alternatives; unnumbered calls are\nindependent.",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Admission before queueing",
+          "renderedSize": 8.669201520912548
+        },
+        {
+          "text": "POST /v1/tasks re-checks the caller after reading the body, then GUI\ngate, capacity, credit; a repeated idempotency key replays. GET\n?wait= holds until the task ends.",
+          "renderedSize": 8.669201520912548
+        },
+        {
+          "text": "Source: cloud/src/api/app.ts",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Acknowledged is not yet durable",
+          "renderedSize": 8.669201520912548
+        },
+        {
+          "text": "Writes are acked from memory; plane.json is rewritten atomically\nevery 2 s if changed and on SIGTERM, so a crash can lose ~2 s of\nacked work.",
+          "renderedSize": 8.669201520912548
+        },
+        {
+          "text": "Source: cloud/src/server.ts, cloud/src/core/persist.ts",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Outside this view: Other workflows: use the Diagram view selector; Billing, CI, maintenance and third-party internals.",
+          "renderedSize": 8.256382400869093
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 8.256382400869093
+        }
+      ]
+    },
+    {
+      "title": "How does a fleet box claim a task, run it in a slot, and wipe it?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -6731.619831578948,
+        "y": 186.7547987616099,
+        "z": 0.4712060979612677
+      },
+      "selected": "shape:mapf3c5ed70e933ce97",
+      "text": [
+        {
+          "text": "How does a fleet box claim a task, run it in a slot, and wipe it?",
+          "renderedSize": 15.078595134760567
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · Per-slot loops long-poll /claim, run work as the slot uid, report events and artifacts, then reset; a\nseparate heartbeat carries cancels.",
+          "renderedSize": 8.952915861264087
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 10.36653415514789
+        },
+        {
+          "text": "Fly-managed: one machine (sjc) + offstage_data volume at /data",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Fleet Mac: operator uid",
+          "renderedSize": 10.36653415514789
+        },
+        {
+          "text": "Self-hosted Studio A: privileged operator account runs the fleet runner",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Fleet Mac: slot uids",
+          "renderedSize": 10.36653415514789
+        },
+        {
+          "text": "Same Studio A Mac; separate customer uids,\nreset between jobs",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 11.780152449031693
+        },
+        {
+          "text": "Auth, GUI gate,\ncapacity, credit; fair\nqueue; op relay;\nproxy",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Fleet runner",
+          "renderedSize": 11.780152449031693
+        },
+        {
+          "text": "Per-slot claim loops\nbehind LAN guard;\nheartbeat; reset\nslots",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Slot accounts",
+          "renderedSize": 11.780152449031693
+        },
+        {
+          "text": "offstage0–7\naccounts; work and\nagent harness run\nas slot uid",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process. Arrows: caller → recipient, response included; dashed (async) =\nevent/stream; dotted (local) = file/IPC; solid (sync) = awaited request/reply. A/B/C = workflows; equal step numbers = alternatives; unnumbered\ncalls are independent.",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Claims, heartbeats, requeue",
+          "renderedSize": 9.895328057186623
+        },
+        {
+          "text": "Claim long-polls ≤25 s. Unstarted 20 s after claim → requeue (max\n3 tries); box silent 2 min → running task fails, not rerun. Heartbeat\n(15 s) delivers cancels.",
+          "renderedSize": 9.895328057186623
+        },
+        {
+          "text": "Source: cloud/src/core/queue.ts, cloud/src/core/store.ts",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Guarded claim, reset before the next",
+          "renderedSize": 9.895328057186623
+        },
+        {
+          "text": "A slot claims only while the pf LAN guard checks out (fails closed).\nBefore its next claim it is reset: processes killed, home wiped,\naccount remade with a new uid.",
+          "renderedSize": 9.895328057186623
+        },
+        {
+          "text": "Source: src/fleet/lan-guard.ts, src/fleet/reset.ts",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Outside this view: Other workflows: use the Diagram view selector; Billing, CI, maintenance and third-party internals.",
+          "renderedSize": 9.424121959225355
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 9.424121959225355
+        }
+      ]
+    },
+    {
+      "title": "How does a sandbox agent run reach Claude without the slot holding a key?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -10449.635692791127,
+        "y": 244.7738575323475,
+        "z": 0.5273992694204057
+      },
+      "selected": "shape:map16b16869f65bf66b",
+      "text": [
+        {
+          "text": "How does a sandbox agent run reach Claude without the slot holding a key?",
+          "renderedSize": 16.876776621452983
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · The box long-polls a sandbox's ops and runs each as the slot uid; the harness calls Claude via the plane's proxy; closing resets the slot.",
+          "renderedSize": 10.020586118987708
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 11.602783927248925
+        },
+        {
+          "text": "Fly-managed: one\nmachine (sjc) +\noffstage_data volume at\n/data",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Fleet Mac: operator uid",
+          "renderedSize": 11.602783927248925
+        },
+        {
+          "text": "Self-hosted Studio A:\nprivileged operator\naccount runs the fleet\nrunner",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Third-party APIs",
+          "renderedSize": 11.602783927248925
+        },
+        {
+          "text": "Managed providers:\nAnthropic model API;\noptional Clerk social\nsign-in",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Fleet Mac: slot uids",
+          "renderedSize": 11.602783927248925
+        },
+        {
+          "text": "Same Studio A Mac;\nseparate customer uids,\nreset between jobs",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 13.184981735510142
+        },
+        {
+          "text": "Auth, GUI gate,\ncapacity, credit; fair\nqueue; op relay;\nproxy",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Fleet runner",
+          "renderedSize": 13.184981735510142
+        },
+        {
+          "text": "Per-slot claim loops\nbehind LAN guard;\nheartbeat; reset\nslots",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Slot accounts",
+          "renderedSize": 13.184981735510142
+        },
+        {
+          "text": "offstage0–7\naccounts; work and\nagent harness run\nas slot uid",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Anthropic\nMessages API",
+          "renderedSize": 13.184981735510142
+        },
+        {
+          "text": "Claude for\ncomputer-use agent\nruns; reached via\nplane proxy",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; double border = external service. Arrows: caller → recipient, response included; dashed (async) = event/stream; dotted (local) =\nfile/IPC; solid (sync) = awaited request/reply. A/B/C = workflows; equal step numbers = alternatives; unnumbered calls are independent.",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "The key stays on the plane",
+          "renderedSize": 11.07538465782852
+        },
+        {
+          "text": "The customer's Anthropic key stays in plane memory for one run; the slot gets an\nomt_ token. The proxy checks model, step budget and max_tokens; no streaming.",
+          "renderedSize": 11.07538465782852
+        },
+        {
+          "text": "Source: cloud/src/api/agent-routes.ts",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Op relay and answer retries",
+          "renderedSize": 11.07538465782852
+        },
+        {
+          "text": "Ops run concurrently as the slot user; each poll reports room. An answer is resent\nwith backoff until the plane takes it, and gets one try once closing.",
+          "renderedSize": 11.07538465782852
+        },
+        {
+          "text": "Source: src/fleet/sandbox.ts",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Outside this view: Other workflows: use the Diagram view selector; Billing, CI, maintenance and third-party internals.",
+          "renderedSize": 10.547985388408115
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 10.547985388408115
+        }
+      ]
+    },
+    {
+      "title": "What does the web console call, and where does its data live?",
+      "filename": "view-5.png",
+      "camera": {
+        "x": -13675.339194736844,
+        "y": 215.83498452012384,
+        "z": 0.4077188885557852
+      },
+      "selected": "shape:map57f455f7775a75ad",
+      "text": [
+        {
+          "text": "What does the web console call, and where does its data live?",
+          "renderedSize": 13.047004433785126
+        },
+        {
+          "text": "Engineers onboarding to offstage and offstage cloud · Console calls the plane API; optional social sign-in loads ClerkJS, exchanges its token for a plane\nsession, then signs out of Clerk.",
+          "renderedSize": 7.7466588825599185
+        },
+        {
+          "text": "Customer clients",
+          "renderedSize": 8.969815548227274
+        },
+        {
+          "text": "Customer code and\nbrowsers calling offstage\ncloud over HTTPS",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Fly.io offstage-api",
+          "renderedSize": 8.969815548227274
+        },
+        {
+          "text": "Fly-managed: one machine (sjc) + offstage_data volume at /data",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Third-party APIs",
+          "renderedSize": 8.969815548227274
+        },
+        {
+          "text": "Managed providers:\nAnthropic model API;\noptional Clerk social\nsign-in",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Web console",
+          "renderedSize": 10.19297221389463
+        },
+        {
+          "text": "SPA served by\nplane: auth, keys,\nteam, billing,\nsandboxes",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Control plane\nAPI",
+          "renderedSize": 10.19297221389463
+        },
+        {
+          "text": "Auth, GUI gate,\ncapacity, credit; fair\nqueue; op relay;\nproxy",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Fly volume\n/data",
+          "renderedSize": 10.19297221389463
+        },
+        {
+          "text": "plane.json snapshot\n(accounts, keys,\ntasks, boxes);\nartifacts",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Clerk social\nsign-in",
+          "renderedSize": 10.19297221389463
+        },
+        {
+          "text": "Optional\nGitHub/Google\nsign-in; plane\nverifies exchanged\ntoken",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external service. Arrows: caller →\nrecipient, response included; solid (sync) = awaited request/reply; dotted (local) = file/IPC.",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Optional social sign-in",
+          "renderedSize": 8.56209665967149
+        },
+        {
+          "text": "When configured, GitHub/Google auth uses ClerkJS. Console\nexchanges the token at /v1/auth/clerk, then signs out of Clerk;\nsubsequent API calls use the plane session.",
+          "renderedSize": 8.56209665967149
+        },
+        {
+          "text": "Source: console/src/lib/clerk.ts; cloud/src/core/clerk.ts",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "State and admission",
+          "renderedSize": 8.56209665967149
+        },
+        {
+          "text": "Plane state and artifacts live on /data. New email accounts cannot\nmint keys or run work before verification; GUI admission is\nseparately gated.",
+          "renderedSize": 8.56209665967149
+        },
+        {
+          "text": "Source: cloud/src/api/app.ts; cloud/src/server.ts",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Outside this view: Other workflows: use the Diagram view selector; Billing, CI, maintenance and third-party internals.",
+          "renderedSize": 8.154377771115705
+        },
+        {
+          "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+          "renderedSize": 8.154377771115705
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,83 @@
+{
+  "reviewedAt": "2026-11-05T00:55:56.293Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "All six views open with one specific question as the title: 'How does offstage execute a command away from your screen?', 'Where are local run results and artifacts stored?', 'How does the plane admit cloud work and keep its state?', 'How does a fleet box claim a task, run it in a slot, and wipe it?', 'How does a sandbox agent run reach Claude without the slot holding a key?' and 'How does the console sign in and access cloud state?'. Each one also names its audience ('Engineers onboarding to offstage and offstage cloud'), and the level of detail suits engineers: sudo -n -u, 409 = cancelled, /v1/auth/clerk. One small issue at the set level, not enough to lower the score: the header shows a session slug ('vp-offstage-detailed-bxVu9u') where a title should be, and the view selector cuts the titles off ('How does offstage execute a command away fro…')."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Columns are mostly runtime participants (processes, stores, OS accounts, external APIs) inside deployment frames, which is a consistent level. A few are off-level. 'Headless lane' is a code path, not a process. 'offstage CLI / MCP' folds two entry points and the router into one lifeline. 'Control plane API' packs auth, GUI gate, capacity, credit, fair queue, op relay and proxy into one box, while storage gets its own column ('Fly volume /data'). 'Slot accounts' turns offstage0–7 into one lifeline. The views are sibling workflows rather than zoom levels: no overview links down into them, so the step letters (A/B/C/D, 'B3/C3', 'B5/C6') are the only thing tying them together."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view answers its own question and lists its exclusions ('Excluded: Billing, CI, maintenance and third-party internals'). Visible gaps: View 2 is a whole view for one arrow. Its note says 'Lanes write logs and captures there', but no lane is drawn, and the actual path '.offstage/runs/<id>/' appears only in the footnote, not in the Run directory box. In View 1, lane choice and refusal are only box text and footnote, with no branch drawn. View 4 leaves out how a GUI slot gets a logged-in session before it can be claimed. Noise: the same three-line legend paragraph and the two footer lines repeat in all six views. 'Billing' is listed as excluded, yet View 6 shows 'keys, team, billing, sandboxes' and the Control plane API box lists 'credit'."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is labeled with protocol, payload and response, and carries a (sync) or (local) tag. Step numbers give the order (B2→B3/C3→B4→B5/C6 in View 4; D1→D4 in View 6), and unnumbered calls (heartbeat, 'Unix socket verbs') are marked as independent. Deductions: (1) The legend defines 'dashed = async delivery', but no view contains a dashed arrow. (2) Responses are written inside labels with '→' even when the arrowhead points the other way. In View 4 the B2/B4/heartbeat arrows point left toward the plane, while the text reads '/claim ≤25 s → work or 204'. (3) In View 3, the C1 arrows sit above B1, so the step letters don't run top to bottom. (4) Shared steps ('B3/C3', 'B5/C6') only make sense if you read the other views."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames are labeled with trust and deployment facts: 'Self-hosted Mac', 'Local Docker container — Same machine… repo read-only', 'Helper macOS session — separate uid (computeruse)', 'Fly.io offstage-api — Fly-managed: one machine (sjc) + offstage_data volume', 'Fleet Mac: operator uid — privileged' vs 'slot uids — separate customer uids', 'Third-party APIs — outside offstage trust boundary'. Managed vs self-hosted is stated outright. Deductions: the physical host nesting is only in text ('Same Mac', 'Same Studio A Mac'). No enclosing Mac frame groups the developer account, container and helper session, or the operator and slot uids. Adjacent frames sit about 7px apart (e.g. View 4 x≈512/519 and 739/746; View 5 x≈425/432, 625/632, 825/832), which reads as one double rule. Frames and component boxes use the same red sketch stroke, so only nesting and font size tell them apart."
+    },
+    {
+      "id": "layout",
+      "score": 2,
+      "evidence": "Every view reads in one clear direction (top-to-bottom sequence, left-to-right actors), but the set is cluttered and awkward at 1194x834. (1) The text scale jumps between views: View 2's body text is about 16px, while View 4's legend and notes are about 9px. View 4 also uses only the middle ~57% of the width, leaving wide empty margins. (2) Legend, two notes, sources and two footer lines take up roughly 35–40% of the height of every view as a wall of small red text. (3) Crossings that a different actor order would avoid. View 1: three arrows cross the Headless lifeline and two cross the Xvfb lifeline. View 3: C1 and B1 cross the CLI lifeline. View 5: C5 runs the full width, crossing the runner and slot lifelines and six frame edges, and C4 crosses the runner. View 6: D3 crosses the console lifeline. (4) Label backgrounds cut gaps into lifelines and frame borders (View 1 x≈516; View 4 borders at x≈512/519 and 739/746), so solid lines look broken or dashed. (5) The hand-drawn wobble and corner overshoots on every box and frame add visual noise."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Every view carries a legend ('columns = actors; frames = trust/deployment boundaries… Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives'). Line style is backed up by text tags '(sync)' and '(local)', a good non-color signal. Names match the real system (offstage-api, plane.json, offstage0–7, sessiond, /v1/tasks). The single red is a consistent authorship color and isn't treated here as missing meaning. Deductions: one legend entry (dashed) is never used. Dotted and dashed are hard to tell apart at this size, especially next to lines that the label masks have broken up. The '→ response' convention inside labels clashes with the arrowheads. 'Equal stages are alternatives' is an easy rule to miss, and three arrows in View 1 and two in View 3 depend on it."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The failure and non-functional detail is unusually good, but it is all in footnote prose, not drawn. Examples: 'Refusal beats --lane… no override', 'No Docker or helper session → skipped, exit 69, never your screen', 'A failed result.json write is reported', 'a repeated idempotency key replays', 'acked from memory… a crash can lose ~2 s of acked work', 'one machine (sjc)', 'Unstarted 20 s after claim → requeue (max 3 tries); box silent 2 min → running task fails, not rerun', '409 = cancelled', 'LAN guard… fails closed', 'answer is resent with backoff', 'step budget and max_tokens'. No alternate or failure branch is drawn on any lifeline. The single Fly machine is stated but never called out as a single point of failure. Slot readiness (login/seed) and per-box capacity limits don't appear."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Each view ends with 'Source review 2026-11-05 · 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified', and each note cites source files. Spot checks against source agree: MAX_POLL_MS 25_000 (cloud/src/core/queue.ts), MAX_ATTEMPTS 3, HEARTBEAT_MS 15_000, CLAIM_ACK_MS 20_000, BOX_LOST_MS 2 min (store.ts), 2_000 ms write plus SIGTERM handler (server.ts), primary_region sjc and offstage_data → /data (fly.toml), exit 69 for a missing substrate (src/cli/index.ts), the x-anthropic-api-key header (src/cloud/client.ts) and .offstage/runs/<id>/result.json (src/cli/api.ts). Capped at 3 because the live runtime was not verified, which the diagram itself says."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Without help, a newcomer can explain: local commands go through one of three lanes (in place, Docker+Xvfb, or a second macOS uid via sessiond), installers are refused, and nothing falls back to the real screen. The cloud is one Fly machine whose state is a JSON snapshot on a volume. Fleet runners pull work by long-poll, run it as a slot uid, then wipe the slot. The plane proxies Claude so the slot never holds the customer key. The console signs in through Clerk and then uses a plane session. They can't tell: how the router decides on a lane, how the six flows fit into one system (there's no overview), whether cloud slots use the local lanes, what a 'sessiond op' is, how many boxes or slots exist, or how GUI slots get logged in. Most of this comes from about 150 words of small footnote per view, not from the drawing, so it takes careful reading rather than a two-minute glance."
+    }
+  ],
+  "visualVerdict": "30/40, Good (low end). Not unusable. Each view is a small, orderly sequence diagram (2–5 actors, 1–5 arrows) with a precise question as its title, labeled and step-numbered arrows, and named trust frames. Every number I spot-checked matches the code. The 'messy' feeling is real, though, and it comes from how the views look, not from wrong content. About 40% of every screen is small, all-red prose. The text scale swings from about 16px (View 2) to about 9px (View 4). Frame borders and lifelines are cut up by label masks and doubled where frames touch. Several long arrows cross lifelines that a different actor order would avoid. The views also stand alone, with no overview tying them together.",
+  "coldRead": "From the pictures alone, here is what a new engineer learns. offstage has a local half: the CLI/MCP classifies a command and either runs it in place (headless), in a throwaway Docker container with Xvfb (repo read-only, DISPLAY dropped), or in a second macOS account through a unix socket to sessiond. Installers and disk images are refused outright, and each run writes command.log, screen.png and result.json to a per-run directory. offstage cloud is a separate half. Customer SDKs, the browser console and the local MCP call a single Fly.io machine (sjc) whose API does auth, admission, a fair queue and op relay, and saves its state as plane.json on a volume every 2 s, so a crash can lose about 2 s of acknowledged work. A fleet Mac ('Studio A') runs a privileged runner that long-polls the plane for tasks, runs them as one of eight slot uids, reports events and artifacts, sends a heartbeat every 15 s, and resets the slot after each job. Sandbox agent runs reach Anthropic through the plane, so only the plane holds the customer's key and the slot gets a scoped token. The console's optional GitHub/Google sign-in goes through Clerk and is exchanged for a plane session. What I'm unsure of, or what a reader can't get from the images: how the router actually picks a lane. How the step letters connect the views without flipping back and forth (B1 is in View 3, B2–B5 in View 4, C2–C6 split across Views 4–5). Whether cloud slots reuse the local lanes or sessiond in the same way. What a 'sessiond op' is. How many fleet boxes exist and how capacity is gated. How a GUI slot gets a logged-in session after a reset. What 'dashed = async' refers to, since no dashed arrow appears. Most of what I learned came from reading the footnotes, not from the shapes.",
+  "mostSeriousProblems": [
+    "Text scale and legibility are inconsistent at the real 1194x834 size. View 4's notes and legend are about 9px while View 2's are about 16px, and View 4 uses only the middle ~57% of the width, so the densest view gets the smallest text.",
+    "Every view ends in a 10–11 line block of small red prose (repeated legend, two notes, sources, 'Other workflows', review line). It takes about 35–40% of the height and carries most of the engineering insight, so the diagram reads as a document with a sketch on top.",
+    "Lines are visually broken up. Label backgrounds cut gaps into lifelines and frame borders (View 1 x≈516; View 4 x≈512/519, 739/746), and adjacent frames sit about 7px apart as double rules. Solid structure looks dashed, which collides with the legend's dashed/dotted line styles.",
+    "Crossings a different actor order would avoid: View 5's C5 runs plane→Anthropic across the full width (two lifelines, six frame edges) because Anthropic is placed far right. View 1's star of four arrows from the leftmost CLI crosses the Headless lifeline three times and the Xvfb lifeline twice. View 3's C1 and B1 both cross the CLI lifeline.",
+    "The arrow conventions contradict themselves. The legend defines dashed = async, but no view uses it. Response text is written with '→' inside labels whose arrowheads point the other way (View 4: left-pointing B2 reads '/claim ≤25 s → work or 204').",
+    "No overview ties the set together. The six views are linked only by step letters (A, B1/B2–B5, C1–C6, D1–D4, 'B3/C3', 'B5/C6') and subtitles, the header is a session slug rather than a title, and the selector truncates the view titles.",
+    "Failure behavior lives only in footnotes. Refusal (View 1), result-write failure (View 2), requeue and box-lost (View 4) and answer retry (View 5) are prose, never drawn as alternate paths, and View 2 is a whole view for one arrow while its note says lanes write there and no lane is drawn."
+  ],
+  "recommendations": [
+    "Use one fixed type scale across all views, with a minimum of about 12px for labels and notes at 1194 wide, and let busy views like View 4 use the full canvas width instead of shrinking to fit.",
+    "Take the legend paragraph off every canvas and put it in one shared, collapsible key. Drop the unused 'dashed = async' entry. Shrink the footer to one line (date · commit · owner · 'runtime not verified').",
+    "Turn the most important footnotes into callouts anchored to the arrow or lifeline they describe, or draw them as alt/opt frames: a 'refused' branch from CLI/MCP in View 1, a 'not started in 20 s → requeue ×3' and 'box silent 2 min → fail' branch in View 4, a 'write failed' outcome in View 2.",
+    "Reorder actors to cut crossings. View 5: put Anthropic Messages API left of the Control plane API (3 crossings → 1). View 1: put CLI/MCP between Headless and Xvfb (5 crossings → 2). View 3: put the CLI/MCP column left of the SDK column (2 → 1).",
+    "Stop label masks from cutting holes in frame borders and lifelines. Shift labels into the gaps between lifelines, or keep lines visible behind a translucent label. Space adjacent frames at least 20px apart, or draw a shared host frame ('Developer's Mac', 'Studio A Mac') around the uid and container frames so physical nesting is drawn, not just written.",
+    "Show responses as dashed return arrows, or start response text with 'returns:' instead of '→', so the text never points against the arrowhead.",
+    "Fold View 2 into View 1, with lanes writing logs and captures to the run directory and the CLI writing result.json. Then add an overview view that names the set ('offstage and offstage cloud: request paths') and maps the four flows (A local, B task, C sandbox agent, D console) and the views they live in.",
+    "Close the visible content gaps: draw how a GUI slot gets its logged-in session before it can be claimed, or list it under exclusions. Reconcile 'Excluded: Billing' with the 'billing' and 'credit' labels. Mark the single Fly machine explicitly as a single point of failure.",
+    "Separate frames from components visually without giving color a meaning: thinner or lighter frame strokes and heavier component strokes. Consider a less wobbly stroke so the hand-drawn jitter doesn't compete with real crossings."
+  ],
+  "total": 30,
+  "verdict": "Good"
+}

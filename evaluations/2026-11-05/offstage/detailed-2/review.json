@@ -1,0 +1,81 @@
+{
+  "reviewedAt": "2026-11-05T00:29:04.439Z",
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a question title that it actually answers: \"How does `offstage run` choose a lane and keep the work off your screen?\", \"How does a cloud task reach a Mac slot and come back as a result?\", \"How do sandboxes and agent runs drive a slot through the plane?\", \"What does the web console talk to, and where is its state kept?\". Each also has an audience line (\"Engineers onboarding to offstage and offstage cloud\") and a one-sentence answer. The selector shows the question for the current view. The detail (file paths, protocols, timings) suits onboarding engineers. No deduction here; how readable that detail is gets scored under layout."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Mostly consistent. Frames are deployment/trust zones, boxes are processes and cylinders are stores. View 1 is a real zoom-in on the \"offstage CLI/MCP + router\" box, which view 3 shows collapsed. Some mixed levels: \"Slot accounts + sessiond\" puts eight OS accounts and a daemon in one box, while view 1 draws sessiond as its own node (\"Helper offstage-sessiond\"). \"offstage CLI/MCP + router\" joins a process and a module. \"Headless lane (in place)\" is named as a concept, but its sibling \"Xvfb web container\" is named as the substrate."
+    },
+    {
+      "id": "focus",
+      "score": 2,
+      "evidence": "Each diagram is small and on-topic, and \"Outside this view\" names what is left out. But the same notes block appears in every view, whatever the view is about. View 4 (console) spends most of its notes on \"Local: run() makes .offstage/runs/<id>…\" and \"Orphaned claims requeue on restore\". View 1 (local CLI) carries \"Cloud submit checks auth, GUI gate, capacity, credit\" and the claim requeue rules. View 3 repeats the local lane precedence. Things missing from the drawings: view 1's title promises \"off your screen\", but the user's real screen/console session is not drawn, nor is the caller (agent, MCP client or terminal), and the refusal outcome is only in prose. View 4 asks what the console talks to but leaves out Clerk, which the console's browser code loads directly from clerk.offstage.cloud (console/src/lib/clerk.ts:4-9)."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Every arrow is directed and labeled with protocol, payload and sync/async/local, e.g. \"B2 HTTPS long-poll /claim → … (async)\" and \"C5 HTTPS Messages API with the customer's key (sync)\". The key defines solid, dashed and dotted lines. Deductions: (1) In view 2, both \"B3 sudo -n fleet reset: kill, wipe, new uid\" and \"B3/C3 sessiond run op\" are numbered B3, so the reset looks simultaneous with the run instead of coming after B4's report. (2) The heartbeat edge and view 1's \"Socket: launch, screenshot, input, apps\" have no number. (3) \"A1\" labels three different edges, and nothing says they are alternatives. (4) View 3, the C view, reuses B3 labels. (5) View 1 draws two separate router→sessiond arrows that arrive at almost the same point."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Frames are strong and labeled: \"Developer's machine — User's own account (self-hosted)\", \"Helper macOS session — Same Mac, separate uid (computeruse) with its own window server\", \"Fly.io offstage-api — Fly-managed: one machine (sjc)\", \"Fleet Mac box — Self-hosted Mac (Studio A)\", \"Third-party APIs — Managed SaaS\". Gaps: in views 2 and 3, the operator-uid \"Fleet runner\" and the \"Slot accounts\" that run customer code share one frame with no boundary between them. That operator-vs-slot uid line is the box's main isolation boundary, yet view 1 does draw the matching uid boundary for computeruse. View 1 also places a \"Same Mac\" session outside a frame called \"Developer's machine\"."
+    },
+    {
+      "id": "layout",
+      "score": 1,
+      "evidence": "At 1194×834, views 2 and 3 are scaled down until box descriptions, edge labels and notes are about 5–6 px. Every label, e.g. \"B4 HTTPS: started/log/end events, artifact PUT (sync)\", needs pinch-zoom, and dashed and dotted lines are hard to tell apart. View 1's detail text is about 7–8 px, small but legible. Only view 4, the simplest view (3 nodes, 2 edges), reads comfortably. Space is wasted while text shrinks: view 3's Fly.io frame runs y≈153–622 around one box at y≈408–472; view 2's Customer clients and Fleet Mac box frames are half empty; view 1's main frame has an empty bottom band; the notes take about a quarter of every view. Visible defects: \"Helper offstage-session d\" breaks mid-word (view 1). In view 2, the heartbeat label runs into the frame subtitle \"…operator-run runner, slot accounts\", and the three runner→plane edges bunch into one cluster of arrowheads at the Control plane's bottom edge. In its favor: almost no true crossings, and view 1 fans out cleanly from top to bottom. Not spaghetti, but two of four views cannot be read at actual size."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Shapes are consistent and meaningful (frame, rounded box, cylinder, double-bordered external service), line style gives a non-color cue, every view has a key, and real names are used (offstage-api, plane.json, offstage0–7, Studio A, /v1/model/messages). The single red is an authorship color; shape and style carry the meaning, so this is not a deduction. Deductions: the step-number scheme (A1/B3/C3, repeated numbers for alternatives, the combined \"B3/C3\") is not in the key, and at view 2/3 scale dashed (async) and dotted (local) are barely distinguishable."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "Much is explicit: heartbeat every 15 s returning cancelled ids, the long-poll claim, \"unstarted claims requeue after 20 s (3 tries)\", \"a box silent 2 min fails running tasks, no rerun\", an in-memory queue snapshotted every 2 s where \"a crash can lose ~2 s of acked writes\", one Fly machine, a fail-closed pf guard, a reset that gives a new uid, no substrate → skipped (exit 69), sessiond refusing input on the console, and idempotent create retry. Deductions: nearly all of it sits in a prose block instead of on the edges or components it describes, and in views 2 and 3 that prose is too small to read. The box's known capacity and failure limits (login budget, cmio/SEP recovery) are deferred to \"Outside this view\"."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer reads \"Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified\". Spot-checks against the code match: HEARTBEAT_MS 15_000, CLAIM_ACK_MS 20_000, MAX_ATTEMPTS 3 and BOX_LOST_MS 2 min (cloud/src/core/store.ts:32-60); the 2 s snapshot and SIGTERM (cloud/src/server.ts:112-113); exit 69 (src/contract/index.ts:542); session > container > headless (src/router/index.ts:59); the /ops route (cloud/src/api/sandbox-routes.ts:443); sjc and offstage_data at /data (cloud/fly.toml). Small inaccuracies: the reset carries the run step's number, and \"Clerk sign-in … on the plane\" hides that the console browser talks to Clerk directly. The live system was not verified, so this cannot go above 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 2,
+      "evidence": "From views 1 and 4, a newcomer can get the three-lane fan-out and how the console's state is kept. But views 2 and 3, which carry the core cloud product path, need zooming to read. Once zoomed, readers would likely get the order of run and reset wrong (both B3). Nothing says whether view 1's \"Helper offstage-sessiond\" and the fleet's \"Slot accounts + sessiond\" are the same daemon, or how the local tool and the cloud fit together. What makes the router pick each lane is only in prose. Someone still has to walk them through it."
+    }
+  ],
+  "visualVerdict": "27/40, Mediocre (top of the band). The engineering content is good and mostly accurate: real names, protocols, timings, step numbers, labeled trust frames and a key in every view. The presentation is where it fails. \"Messy\" is half fair: there are almost no crossings, but the views are cramped and inconsistent, and the same notes block is repeated in every view. \"Unusable\" is fair for views 2 and 3, which carry the main cloud path. At iPad size their text is about 5–6 px and cannot be read without zooming. View 1 is small but readable; only view 4 (the simplest) is comfortable. Fix the scale and per-view focus first; the content mostly holds up.",
+  "coldRead": "What a newcomer can learn: offstage is a local CLI/MCP process. Its router takes a command and either runs it in place (headless), runs it in a Docker container with Xvfb, or sends it over a unix socket to a daemon (offstage-sessiond) in a second macOS account with its own window server. Each run writes result.json under .offstage/runs. offstage cloud is an SDK (and the console) calling one Fly.io control plane over HTTPS. The plane keeps an in-memory queue, snapshots it to a volume every 2 s, and proxies model calls to Anthropic with the customer's key. Self-hosted Mac boxes long-poll the plane to claim tasks or sandbox ops, run them as slot accounts offstage0–7, send events and artifacts back, heartbeat every 15 s, and reset the slot (kill, wipe, new uid). Sandboxes relay ops over a long-poll, and the in-slot agent harness reaches Claude only through the plane's /v1/model/messages proxy.\n\nWhat they cannot learn, or would likely get wrong: (1) Any detail in views 2 and 3 at actual size, without pinch-zoom. (2) The order of a task's life: run and reset are both labeled B3, the heartbeat has no number, and A1/C1 are each used for alternatives without saying so. (3) What makes each lane get chosen, and what a refusal looks like; both exist only in prose, and the user's real screen, which the whole tool protects, is never drawn. (4) Whether the computeruse helper's sessiond and the fleet slots' sessiond are the same daemon, and that the fleet runner ships in the offstage package. I inferred both from AGENTS.md, not from the image. (5) That the console's browser talks to Clerk directly. (6) The box's capacity and failure limits (login budget, cmio/SEP), which are listed only as out of scope.\n\nUncertainties: in view 2, the B2 label's tail reads like \\\"sandbox/task(204\\\" at this size, and I can't tell whether that is a rendering defect or my own misreading. I couldn't confirm whether the \\\"Outside this view\\\" question list can be clicked.",
+  "mostSeriousProblems": [
+    "Views 2 and 3 (the cloud task flow and the sandbox/agent flow, the core of offstage cloud) are scaled so far down that box descriptions, edge labels and notes are about 5–6 px at 1194×834. They can't be read without zooming, and dashed (async) vs dotted (local) lines are nearly indistinguishable.",
+    "The space is there to fix this: view 3's Fly.io frame runs y≈153–622 around one box about 64 px tall; view 2's Customer clients and Fleet Mac box frames are half empty; notes take about a quarter of every view.",
+    "Step numbering is inconsistent and in one place wrong: view 2 numbers both the reset and the run \"B3\", so reset appears to happen at run time instead of after B4's report. The heartbeat and view 1's direct-session socket edge have no number. A1 and C1 each label alternatives without saying so. View 3, the C view, reuses B3 labels. The key never explains the scheme.",
+    "Every view repeats the same notes block regardless of its question. The console view carries local run() lifecycle and claim-requeue text; the local CLI view carries cloud admission and requeue rules.",
+    "Actors the titles imply are missing from the drawings. View 1 promises to keep work \"off your screen\" but never draws the user's screen/console or the caller (agent/MCP client/terminal), and the refusal outcome is prose only. View 4 asks what the console talks to but omits Clerk, which the console's browser loads directly (console/src/lib/clerk.ts).",
+    "In views 2 and 3, the operator-uid Fleet runner and the customer-code Slot accounts share one frame with no boundary between them. That is the box's main isolation boundary, and view 1 does draw the equivalent uid boundary for computeruse.",
+    "Rendering defects: \"Helper offstage-session d\" breaks mid-word (view 1). In view 2, the heartbeat label runs into the Fleet Mac box subtitle, and three runner→plane edges bunch into one cluster of arrowheads at the Control plane's bottom edge."
+  ],
+  "recommendations": [
+    "1. Make every view readable at 1194×834. Lay out views 2 and 3 so box text and edge labels are at least the size of view 1's (about 8 px), ideally view 4's (about 12 px). Shrink frames to their contents (especially view 3's Fly.io column), place the Fleet Mac box beside the plane instead of below it, and split view 3 into \"sandbox ops\" and \"agent model proxy\" if it still doesn't fit.",
+    "2. Make the notes per-view and shrink them. Keep only the routing notes in view 1, the queue/claim/requeue notes in view 2, the sandbox/agent notes in view 3 and the state notes in view 4. Put the shared lifecycle text in one place, not in every view.",
+    "3. Fix step order. View 2: B1 submit, B2 claim, B3 run, B4 events/artifacts, B5 reset; draw the heartbeat as a separate periodic edge (e.g. \"every 15 s\"). View 3: use only C numbers. View 1: merge the two router→sessiond arrows into one. Add a key line: \"same number = alternatives; unnumbered = periodic/direct\".",
+    "4. Draw what the titles promise. View 1: add the caller (agent/MCP client/terminal), the user's real console/screen in its own frame with an \"offstage never draws here\" note, and a refusal end state (installer, .pkg/.dmg, hdiutil). View 4: add Clerk (browser → clerk.offstage.cloud OAuth, then POST /v1/auth/clerk) and say where Stripe and Resend sit.",
+    "5. In views 2 and 3, draw the operator uid vs slot uid boundary inside the Fleet Mac box. In view 1, rename \"Developer's machine\" to \"User's account\" or put both frames inside a single \"same Mac\" frame.",
+    "6. Move the key failure facts onto the edges they belong to as short badges (claim: \"requeue after 20 s ×3\"; heartbeat: \"silent 2 min → fail running\"; plane→volume: \"≤2 s loss on crash\"), so they stay readable even when the prose is skipped.",
+    "7. Fix the text defects: the \"offstage-session d\" wrap, the heartbeat label running into the frame subtitle, and the bunched arrowheads at the Control plane (space where the edges arrive along its edge). Then say somewhere that the computeruse helper's sessiond and the fleet slots' sessiond are the same daemon, if that is confirmed."
+  ],
+  "total": 27,
+  "verdict": "Mediocre"
+}

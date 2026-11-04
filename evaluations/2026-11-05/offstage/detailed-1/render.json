@@ -1,0 +1,215 @@
+{
+  "capturedAt": "2026-11-05T00:09:37.843Z",
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": 2567.4644768545995,
+    "y": 571.1807121661723,
+    "z": 0.15406682705770075
+  },
+  "text": [
+    {
+      "text": "offstage: how do local and cloud commands reach isolated, off-screen execution?",
+      "renderedSize": 4.930138465846424
+    },
+    {
+      "text": "Engineers onboarding to offstage (npm CLI/MCP) and offstage cloud · Local route/run across the headless, container and session lanes; cloud sandbox and task flow from the SDK through the Fly plane to fleet slots.",
+      "renderedSize": 2.9272697140963144
+    },
+    {
+      "text": "Developer machine",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "User's machine: agent-driven offstage CLI/MCP, SDK or browser; user-run",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Isolated substrates,\nsame machine",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "Same machine, off the\ndisplay: Docker+Xvfb, or\na 2nd macOS account",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Fly.io control plane",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "Fly.io app offstage-api: 1 machine + /data volume; run by Exla",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Fleet box: operator",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "Exla's fleet Mac (Studio\nA), operator account;\noutbound HTTPS only",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Fleet box: slot accounts",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "Slot users offstage0–7 on the fleet Mac; reset to a new uid per use",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Model provider",
+      "renderedSize": 3.3894701952694164
+    },
+    {
+      "text": "Anthropic's hosted API;\nslots reach it only via the\nplane's proxy",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "offstage CLI /\nMCP",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "MCP/CLI entry:\nclassify() picks lane,\nrefusal gates,\nLaneRunner\ndispatch, result",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Headless lane\nprocess",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Default lane:\nspawns argv in\nplace (no shell),\ntails log, parses test\nfailures",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Repo +\n.offstage/runs",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Repo read by the\nrouter; per-run dir\nwith command.log,\nscreen.png,\nresult.json",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "SDK & web\nconsole",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Customer code\n(sk_offstage_ key)\nand console\n(sign-in): tasks,\nsandboxes, keys,\nreplays",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Docker\ncontainer +\nXvfb",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Headed browser\nwork on a virtual\ndisplay; repo\nmounted ro, --rm,\nskipped if no\nruntime",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Helper\noffstage-session\nd",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Runs in the\ncomputeruse\naccount's GUI\nsession: spawn,\nscreenshot, input\nvia session tap",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "offstage-api\nplane",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Auth/quota/billing\ngates, fair task\nqueue, sandbox op\nqueue, model proxy;\nholds ≤50 s",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "/data snapshot\n+ artifacts",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "In-memory stores\nsnapshotted to\n/data/plane.json;\nartifacts and\narchived logs in\n/data",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Fleet runner\n(fleet run)",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "One claim loop per\nslot; offers only\nready slots, checks\nLAN guard, resets\nafter work",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Slot sessiond +\nworkload",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Per-customer slot\nuser: commands run\nas its uid via its\nsessiond, or sudo -u\nif headless",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "GUI agent\nharness",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Inside a gui slot:\nscreenshot → ask\nmodel → post action\nvia sessiond, until\ndone/limits",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Anthropic\nMessages API",
+      "renderedSize": 3.851670676442519
+    },
+    {
+      "text": "Model behind agent\nruns; called by the\nplane's proxy with\nthe customer's key",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Key: frames = trust/deployment zones; box = runtime actor/process; cylinder = stored state; double border = external service. Arrows: caller → recipient, response included; dotted (local) = file/IPC; solid (sync) = awaited request/reply; dashed (async) =\nevent/stream.",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Routing and dispatch",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "classify() reads argv and repo configs, never runs them: session > container >\nheadless, plus a refuse flag. run() refuses that on every lane, and a forced\nheadless downgrade, else calls the lane's run(). Cloud: a box's ≤25 s claim\nlong-poll takes a waiting sandbox first, else the fairest task.",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "Source: src/router/index.ts; src/cli/api.ts; cloud/src/api/app.ts;\ncloud/src/core/queue.ts",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Where results and state live",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "Local: each run gets .offstage/runs/<id>/ (command.log, screen.png,\nresult.json); a failed write adds a diagnostic, never changes the verdict. Plane:\nin-memory stores snapshot atomically to /data/plane.json every 2 s if changed\nand on SIGTERM; in-flight sandbox ops are lost on restart.",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "Source: src/contract/artifacts.ts; src/cli/api.ts; cloud/src/server.ts;\ncloud/src/core/persist.ts; cloud/Dockerfile",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Failure and isolation",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "Missing substrate → skipped with a fix, never your screen. sessiond checks\npeer uid and refuses input on-console. Unstarted claims requeue; started work\non a lost box fails. No claim without LAN guard; dirty slots reset to a new uid;\nslots get a run token, not the model key.",
+      "renderedSize": 3.2354033682117156
+    },
+    {
+      "text": "Source: src/lanes/session/index.ts; native/sessiond/Input.swift;\nnative/sessiond/Peer.swift; cloud/src/core/queue.ts; src/fleet/run.ts;\nsrc/fleet/reset.ts; cloud/src/api/agent-routes.ts",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Outside this view: Clerk sign-in, Stripe billing, Resend mail and GitHub App runner registration (plane); Fleet upkeep: fleetd reconcile, slot seeding via loopback VNC, recordings, fleet doctor; Marketing site (Vercel), launch film, bench and chaos tooling:\nnot runtime.",
+      "renderedSize": 3.0813365411540152
+    },
+    {
+      "text": "Source review 2026-11-05 · revision 57eeabc + local edits · Owner: Viraat Das (package.json author) · Live runtime NOT verified",
+      "renderedSize": 3.0813365411540152
+    }
+  ],
+  "errors": []
+}

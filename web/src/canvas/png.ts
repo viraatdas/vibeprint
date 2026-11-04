@@ -50,7 +50,10 @@ export async function exportSketchPng(doc: Doc, ink: string, agent = AGENT_COLOR
     ctx.strokeStyle = ctx.fillStyle
     switch (s.type) {
       case 'draw':
+        ctx.save()
+        ctx.globalAlpha = s.mapRole === 'boundary' ? .45 : s.mapRole === 'lifeline' ? .25 : 1
         ctx.fill(new Path2D(drawShapePath(s)))
+        ctx.restore()
         break
       case 'arrow': {
         const { a, b: end } = arrowPoints(s, doc)
@@ -89,6 +92,12 @@ export async function exportSketchPng(doc: Doc, ink: string, agent = AGENT_COLOR
       case 'text': {
         const size = s.size ?? TEXT_SIZE
         ctx.font = `${size}px ${s.font === 'sans' ? '"VP Map", Arial, sans-serif' : '"VP Hand", cursive'}`
+        if (s.mapView && s.font === 'sans') {
+          const previousFill = ctx.fillStyle
+          ctx.fillStyle = '#ffffff'
+          ctx.fillRect(s.x - 4, s.y - 4, Math.max(...s.text.split('\n').map(line => ctx.measureText(line).width)) + 8, s.h + 8)
+          ctx.fillStyle = previousFill
+        }
         ctx.textBaseline = 'middle'
         s.text.split('\n').forEach((line, i) => ctx.fillText(line, s.x, s.y + (i + 0.5) * size * TEXT_LINE))
         break
