@@ -124,3 +124,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
 - **By:** worker · 2026-11-04T00:27:00Z
+
+## worker: Show the schema as tables with example rows (0.7.0)
+- **Did:** Released 0.7.0. Each database on the map gets a Tables button: the model on the machine (Claude API, else the installed Claude Code or Codex, read-only) finds the schema in the code and draws its tables beside the database, with column types, primary/foreign keys and example rows consistent across tables. "show me the schema" in the chat starts the same reading; connected agents get show_table and an instruction to use it when asked or when the user sketches a table. Tables are a new mark type that lands at once (no review, no batch cap), never changes the architecture, can be removed, and replaces a same-named table in place; placement searches for the nearest free spot around the database, and the view moves to new tables. Verified: 116/116 tests locally and in CI (fake Claude Code covers the button, chat and 409/422 paths). A real Claude Code run on a Prisma repo took 26s and drew 4 tables (User, Book, Loan, Review) with keys and consistent ids. Browser renders at iPad size: the chip, 3 tables beside Postgres with nothing truncated, the Remove card, no console errors. CI run 41748719014 printed + vibeprint@0.7.0; the release link started 0.7.0 from a clean cache.
+- **Interfaces:** MarkType 'table', MarkData.table / MarkInput.table (TableSpec {name, columns[{name,type?,key?,references?}], rows, source?}) | MCP tool show_table (17 tools) | POST /api/schema {target?} -> {reading, target?} | MapperInfo.task 'map'|'schema', outcome 'tables'|'none', count | src/interpret/code-map.ts schemaWithModel, schemaDigest, SCHEMA_SCHEMA | placeAround() in src/core/placement.ts
+- **Delivery:** verified; release; target=npm:vibeprint@0.7.0; revision=33a834d; verifiedAt=2026-11-04T00:43:00Z; checks=4
+- **Follow-ups:**
+  - Try Tables and the 0.6 drawing changes on a real iPad — checked in headless Chromium at iPad size only
+  - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
+- **By:** worker · 2026-11-04T00:43:00Z
