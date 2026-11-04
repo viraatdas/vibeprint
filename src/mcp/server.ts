@@ -24,7 +24,7 @@ import { TABLE } from '../shared/marks.js'
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.7.0'
+const VERSION = '0.8.1'
 
 export interface McpServerOptions {
   root: string
