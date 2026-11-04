@@ -5,6 +5,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { WebSocketServer } from 'ws'
+import { gitHead } from '../core/git-head.js'
 import { FILES, VIBEPRINT_DIR, VibeprintCore, VibeprintError } from '../core/core.js'
 import { readDaemonInfo } from '../core/daemon-client.js'
 import { DEFAULT_PORT, TOKEN_COOKIE, TOKEN_HEADER, type ActivityEvent, type ClientConfig, type DaemonInfo, type WaitResult } from '../shared/api.js'
@@ -21,7 +22,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.5.0'
+const VERSION = '0.6.0'
 
 export interface DaemonOptions {
   root: string
@@ -669,13 +670,42 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   return { port, token, core, canvas, git: gitCp, urls, lanUrls, relay, close }
 }
 
+/** Whether version a is newer than b (plain x.y.z; a prerelease never counts as newer). */
+export function newerVersion(a: string, b: string): boolean {
+  if (!/^\d+\.\d+\.\d+$/.test(a)) return false
+  const pa = a.split('.').map(Number)
+  const pb = b.split(/[.-]/).slice(0, 3).map(Number)
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] > (pb[i] || 0)
+  return false
+}
+
+/**
+ * The latest vibeprint on npm, when it is newer than this one. \`npx vibeprint\` keeps running
+ * the copy it cached the first time, so without this a fix never reaches the user.
+ */
+async function latestRelease(env: NodeJS.ProcessEnv = process.env): Promise<string | null> {
+  if (env.VIBEPRINT_NO_UPDATE_CHECK || env.CI) return null
+  try {
+    const res = await fetch('https://registry.npmjs.org/vibeprint/latest', { signal: AbortSignal.timeout(3000), headers: { accept: 'application/json' } })
+    if (!res.ok) return null
+    const { version } = (await res.json()) as { version?: string }
+    return typeof version === 'string' && newerVersion(version, VERSION) ? version : null
+  } catch {
+    return null
+  }
+}
+
 export async function runDaemon(opts: DaemonOptions): Promise<void> {
+  const update = latestRelease()
   const d = await startDaemon(opts)
   const claude = opts.claude ?? claudeConfig()
   const out = (s = '') => process.stdout.write(s + '\n')
   out()
   out(`  vibeprint · ${path.basename(d.core.root)}`)
   out()
+  const head = gitHead(d.core.root)
+  const on = [head.worktree ? 'worktree' : '', head.branch ? `branch ${head.branch}` : ''].filter(Boolean).join(', ')
+  out(`  folder      ${d.core.root}${on ? `   (${on})` : ''}`)
   const lanUrl = d.lanUrls[0]
   const relayBase = d.relay ? await d.relay.waitReady(5000) : null
   const relayUrl = relayBase ? `${relayBase}?t=${d.token}` : null
@@ -693,6 +723,16 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
   out(`  map         ${m.mode === 'none' ? 'quick scan (install Claude Code or Codex, or set ANTHROPIC_API_KEY, to have the code read)' : `quick scan, then ${m.label} reads the code`}`)
   out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
   out(`  state       ${path.join(VIBEPRINT_DIR)}/ ${d.git.enabled ? '(committed at checkpoints)' : '(not committed)'}`)
+  // Started from npx's cache, or installed with npm -g.
+  const command = /[\\/]_npx[\\/]/.test(process.argv[1] ?? '') ? 'npx vibeprint@latest' : 'npm install -g vibeprint@latest'
+  const tellUpdate = (latest: string) => {
+    d.core.setUpdate({ latest, current: VERSION, command })
+    out(`  update      vibeprint ${latest} is out (this is ${VERSION}). Stop this and run: ${command}`)
+  }
+  // Wait a moment so the notice lands in the banner; a slow registry reports later.
+  const quick = await Promise.race([update, new Promise<undefined>((r) => setTimeout(r, 1500, undefined))])
+  if (quick) tellUpdate(quick)
+  else if (quick === undefined) void update.then((v) => v && tellUpdate(v))
   out()
   if (ipadUrl) {
     try {

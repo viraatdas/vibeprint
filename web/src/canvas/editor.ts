@@ -140,7 +140,11 @@ export class Editor {
    * A local edit, synced to every device. Recorded for undo unless `history` is false;
    * `before` overrides the recorded prior state (for gestures previewed live).
    */
-  change(put: Shape[], del: string[] = [], opts: { history?: boolean; before?: Map<string, Shape | null> } = {}) {
+  /**
+   * `silent`: update the document and sync it, but don't re-render (a stroke in progress,
+   * which the input layer paints itself).
+   */
+  change(put: Shape[], del: string[] = [], opts: { history?: boolean; before?: Map<string, Shape | null>; silent?: boolean } = {}) {
     const before: Change = new Map()
     const after: Change = new Map()
     for (const s of put) {
@@ -161,7 +165,7 @@ export class Editor {
       this.redoStack = []
     }
     this.send(after)
-    this.emit()
+    if (!opts.silent) this.emit()
   }
 
   canUndo() {

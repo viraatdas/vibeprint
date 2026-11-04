@@ -24,7 +24,9 @@ vibeprint init        # .vibeprint/, the agent rule in AGENTS.md, .mcp.json for 
 vibeprint             # starts the canvas; prints a laptop URL, an iPad URL and a QR code
 ```
 
-Or without installing: `npx vibeprint init`, then `npx vibeprint`.
+Or without installing: `npx vibeprint@latest init`, then `npx vibeprint@latest`. Keep the `@latest`: without it npx keeps running the copy it cached the first time. When a newer release is out, the banner and the canvas say so.
+
+Run it from the checkout you're working in. Each folder (a clone, or a `git worktree`) gets its own canvas, map and `.vibeprint/`; the top bar shows the folder and its branch.
 
 Scan the QR code with the iPad, then **Share → Add to Home Screen** for a full-screen canvas. The iPad link carries an access token; the laptop link at `localhost` doesn't need one. The token and the link stay the same across restarts, so the home-screen icon keeps working.
 

@@ -28,6 +28,7 @@ import {
   type SketchShape,
   type VibeprintState,
 } from '../shared/types.js'
+import { gitHead } from './git-head.js'
 import { mergeInterpretation } from './merge.js'
 import { obstacles, placeNear } from './placement.js'
 
@@ -88,6 +89,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   sketch: Sketch | null = null
   interpreter: InterpreterInfo = { mode: 'heuristic', active: false }
   mapper: MapperInfo = { mode: 'none', active: false }
+  update: { latest: string; current: string; command: string } | null = null
   agents: Record<string, string> = {}
 
   private autosave: boolean
@@ -180,7 +182,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
 
   getState(): VibeprintState {
     return {
-      project: { name: path.basename(this.root), root: this.root },
+      project: { name: path.basename(this.root), root: this.root, ...gitHead(this.root) },
       graph: this.graph,
       marks: this.marks,
       batches: this.batches,
@@ -193,6 +195,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       },
       interpreter: this.interpreter,
       mapper: this.mapper,
+      ...(this.update ? { update: this.update } : {}),
       agents: this.agents,
     }
   }
@@ -755,6 +758,11 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   touchAgent(author: string): void {
     this.agents[author] = isoNow()
     this.changed('agents')
+  }
+
+  setUpdate(update: { latest: string; current: string; command: string }): void {
+    this.update = update
+    this.changed('interpreter')
   }
 
   setMapper(info: Partial<MapperInfo>): void {

@@ -243,6 +243,41 @@ button:disabled {
   font-weight: 600;
   font-size: 14px;
 }
+.vp-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--vp-muted);
+}
+.vp-branch span {
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.vp-branch svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+.vp-update {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--vp-agent) 45%, white);
+  background: var(--vp-surface);
+  color: var(--vp-agent-ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+@media (max-width: 560px) {
+  .vp-branch {
+    display: none;
+  }
+}
 .vp-conn {
   width: 8px;
   height: 8px;
@@ -685,7 +720,9 @@ button:disabled {
   pointer-events: none;
 }
 .vp-start-card {
-  pointer-events: auto;
+  /* The card sits where people start drawing: ink goes straight through it to the canvas,
+     and only its button takes a tap. */
+  pointer-events: none;
   max-width: 360px;
   padding: 22px 24px 20px;
   border-radius: 16px;
@@ -705,6 +742,7 @@ button:disabled {
   color: var(--vp-muted);
 }
 .vp-start-card .vp-btn {
+  pointer-events: auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;

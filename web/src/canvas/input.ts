@@ -28,7 +28,7 @@ const DOUBLE_TAP_MS = 350
 
 type Gesture =
   | { kind: 'none' }
-  | { kind: 'draw'; pid: number; shape: DrawShape; points: InkPoint[]; pen: boolean; sentAt: number; sent: boolean }
+  | { kind: 'draw'; pid: number; shape: DrawShape; points: InkPoint[]; pen: boolean; sentAt: number; sent: boolean; ahead: InkPoint[] }
   | { kind: 'arrow'; pid: number; shape: ArrowShape; origin: Point; live: boolean }
   | { kind: 'erase'; pid: number; hits: Set<string>; last: Point }
   | { kind: 'pan'; pid: number; last: Point; byTouch: boolean }
@@ -106,8 +106,11 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
     penSeen = localStorage.getItem('vp:pen') === '1'
   } catch {}
 
+  // The stage doesn't move during a gesture; reading its rect per Pencil sample forces a
+  // layout each time (a Pencil sends 120-240 a second).
+  let rect: DOMRect | null = null
   const local = (e: { clientX: number; clientY: number }): Point => {
-    const r = stage.getBoundingClientRect()
+    const r = rect ?? stage.getBoundingClientRect()
     return { x: e.clientX - r.left, y: e.clientY - r.top }
   }
   const touches = () => [...pointers.entries()].filter(([, p]) => p.type === 'touch')
@@ -115,7 +118,8 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
 
   // ---- draw -------------------------------------------------------------------------------
 
-  const pressure = (e: PointerEvent, pen: boolean) => (pen ? (e.pressure > 0 ? e.pressure : 0.5) : 0.5)
+  // A light Pencil touch still makes a line you can see; pressing harder thickens it.
+  const pressure = (e: PointerEvent, pen: boolean) => (pen ? (e.pressure > 0 ? 0.3 + 0.7 * Math.min(1, e.pressure) : 0.5) : 0.5)
 
   const addInk = (g: Extract<Gesture, { kind: 'draw' }>, e: PointerEvent) => {
     const events = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : []
@@ -125,18 +129,38 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
       if (Math.hypot(p.x - last[0], p.y - last[1]) < 0.4 / z()) continue
       g.points.push([p.x, p.y, pressure(ev, g.pen)])
     }
-    host.paintLive(strokePath(g.points, g.pen, false))
+    // Where the browser predicts the next samples, the ink reaches a little ahead of the
+    // stroke so it keeps up with the tip; the prediction is shown, never saved.
+    const ahead = typeof e.getPredictedEvents === 'function' ? e.getPredictedEvents() : []
+    g.ahead = ahead.slice(0, 3).map((ev) => {
+      const p = editor.screenToPage(local(ev))
+      return [p.x, p.y, pressure(ev, g.pen)] as InkPoint
+    })
+    paintSoon(g)
     const now = performance.now()
     if (now - g.sentAt > SEND_MS) {
       g.sentAt = now
       g.sent = true
-      editor.change([{ ...g.shape, points: g.points.slice() }], [], { history: false })
+      editor.change([{ ...g.shape, points: g.points.slice() }], [], { history: false, silent: true })
     }
+  }
+
+  // A Pencil sends up to 240 samples a second; the outline is rebuilt once per frame.
+  let paintFrame = 0
+  const paintSoon = (g: Extract<Gesture, { kind: 'draw' }>) => {
+    if (paintFrame) return
+    paintFrame = requestAnimationFrame(() => {
+      paintFrame = 0
+      if (editor.liveId !== g.shape.id) return
+      host.paintLive(strokePath(g.ahead.length ? [...g.points, ...g.ahead] : g.points, g.pen, false))
+    })
   }
 
   const finishDraw = (g: Extract<Gesture, { kind: 'draw' }>) => {
     const points = g.points.map(([x, y, p]) => [r2(x), r2(y), r2(p)] as InkPoint)
     editor.liveId = null
+    cancelAnimationFrame(paintFrame)
+    paintFrame = 0
     editor.change([{ ...g.shape, points }], [], { before: new Map([[g.shape.id, null]]) })
   }
 
@@ -257,6 +281,7 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
     if (e.button === 2) return
     // Taps inside the text box belong to the text box (caret, selection, Scribble).
     if ((e.target as Element | null)?.closest?.('.vp-text-input')) return
+    if (!pointers.size) rect = stage.getBoundingClientRect()
     const sp = local(e)
     pointers.set(e.pointerId, { type: e.pointerType, x: sp.x, y: sp.y })
     try {
@@ -301,9 +326,12 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
         const pen = e.pointerType === 'pen'
         const shape: DrawShape = { id: uid(), z: editor.nextZ(), type: 'draw', points: [], ...(pen ? { pen: true } : {}) }
         const points: InkPoint[] = [[page.x, page.y, pressure(e, pen)]]
-        gesture = { kind: 'draw', pid: e.pointerId, shape, points, pen, sentAt: performance.now(), sent: false }
+        gesture = { kind: 'draw', pid: e.pointerId, shape, points, pen, sentAt: performance.now(), sent: false, ahead: [] }
         editor.liveId = shape.id
         host.paintLive(strokePath(points, pen, false))
+        // Once per stroke, so whatever waits for drawing to start (the empty-canvas card) hears it;
+        // the samples that follow stay silent.
+        editor.emit()
         return
       }
       case 'arrow': {
@@ -410,6 +438,7 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
   const onUp = (e: PointerEvent) => {
     const had = pointers.has(e.pointerId)
     pointers.delete(e.pointerId)
+    if (!pointers.size) queueMicrotask(() => !pointers.size && (rect = null))
     if (!had) return
     editor.input({ type: 'pointer', name: 'pointer_up' })
     const g = gesture
@@ -584,6 +613,17 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
     delete stage.dataset.space
   }
 
+  // iOS holds a new touch while it decides whether it is a text selection, the magnifier or
+  // Scribble, which delays the start of a Pencil stroke and can cancel it midway. While drawing,
+  // the canvas handles every touch itself. (Text and select keep the defaults, so tapping into
+  // a text still brings up the keyboard.)
+  const onTouch = (e: TouchEvent) => {
+    if (editor.tool === 'text' || editor.tool === 'select' || editor.editing) return
+    if ((e.target as Element | null)?.closest?.('.vp-text-input')) return
+    if (e.cancelable) e.preventDefault()
+  }
+  stage.addEventListener('touchstart', onTouch, { passive: false })
+  stage.addEventListener('touchmove', onTouch, { passive: false })
   stage.addEventListener('pointerdown', onDown)
   stage.addEventListener('pointermove', onMove)
   stage.addEventListener('pointerup', onUp)
@@ -599,6 +639,8 @@ export function attachInput(editor: Editor, host: InputHost): () => void {
   addEventListener('paste', onPaste)
   addEventListener('blur', onBlur)
   return () => {
+    stage.removeEventListener('touchstart', onTouch)
+    stage.removeEventListener('touchmove', onTouch)
     stage.removeEventListener('pointerdown', onDown)
     stage.removeEventListener('pointermove', onMove)
     stage.removeEventListener('pointerup', onUp)

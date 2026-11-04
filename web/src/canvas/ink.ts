@@ -8,9 +8,10 @@ import type { Point } from '@shared/types'
 function options(pen: boolean, last: boolean) {
   return {
     size: INK_SIZE,
-    thinning: pen ? 0.62 : 0.5,
+    // A Pencil's samples are already smooth: little streamlining keeps the ink at the tip.
+    thinning: pen ? 0.5 : 0.5,
     smoothing: 0.5,
-    streamline: pen ? 0.38 : 0.45,
+    streamline: pen ? 0.22 : 0.45,
     simulatePressure: !pen,
     last,
     start: { cap: true, taper: 0 },

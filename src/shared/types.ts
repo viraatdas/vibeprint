@@ -339,7 +339,8 @@ export interface MapperInfo {
 }
 
 export interface VibeprintState {
-  project: { name: string; root: string }
+  /** The folder vibeprint runs in (the git toplevel: a worktree has its own) and its branch. */
+  project: { name: string; root: string; branch?: string; worktree?: boolean }
   graph: Graph
   marks: Mark[]
   batches: Batch[]
@@ -347,6 +348,8 @@ export interface VibeprintState {
   sketch: { seq: number; createdAt: string | null; shapeCount: number; hasImage: boolean }
   interpreter: InterpreterInfo
   mapper: MapperInfo
+  /** A newer vibeprint on npm than the one running, when the CLI found one. */
+  update?: { latest: string; current: string; command: string }
   /** Agents seen through MCP recently (author -> last seen ISO time). */
   agents: Record<string, string>
 }

@@ -14,17 +14,16 @@ interface MapRecord {
   origin: { x: number; y: number }
 }
 
+// Generous gaps: the map is something to sketch on, and the arrows need room to read.
 const BOX_H = 88
-const GAP_X = 90
-const GAP_Y = 130
-const PER_ROW = 5
+const GAP_X = 150
+const GAP_Y = 180
+const PER_ROW = 4
 const MAX_NODES = 24
 const r2 = (n: number) => Math.round(n * 100) / 100
 
 const DATA = new Set(['database', 'cache', 'queue', 'storage', 'search'])
 const CLIENT = new Set(['client', 'frontend', 'mobile', 'web'])
-/** Data stores and other companies' APIs: the bottom row, under whatever uses them. */
-const isBottom = (kind?: string) => DATA.has(kind ?? '') || kind === 'external'
 
 /**
  * Rows by dependency depth: callers above what they call, so arrows point down and seldom run
@@ -33,7 +32,12 @@ const isBottom = (kind?: string) => DATA.has(kind ?? '') || kind === 'external'
 function rankRows(map: RepoMap): string[][] {
   const kind = new Map(map.nodes.map((n) => [n.id, n.kind]))
   const ids = map.nodes.map((n) => n.id)
-  const upper = ids.filter((id) => !isBottom(kind.get(id)))
+  // Something outside that only calls in (a coding agent, a webhook sender) is drawn with the
+  // clients at the top; data stores and the outside services the code calls go on the bottom row.
+  const caller = (id: string) => map.edges.some((e) => e.from === id) && !map.edges.some((e) => e.to === id)
+  const atBottom = (id: string) => DATA.has(kind.get(id) ?? '') || (kind.get(id) === 'external' && !caller(id))
+  const top = (id: string) => CLIENT.has(kind.get(id) ?? '') || (kind.get(id) === 'external' && caller(id))
+  const upper = ids.filter((id) => !atBottom(id))
   const out = new Map(upper.map((id) => [id, [] as string[]]))
   const indeg = new Map(upper.map((id) => [id, 0]))
   for (const e of map.edges) {
@@ -52,7 +56,7 @@ function rankRows(map: RepoMap): string[][] {
     }
     state.set(id, 2)
   }
-  const starts = [...upper].sort((a, b) => Number(!CLIENT.has(kind.get(a) ?? '')) - Number(!CLIENT.has(kind.get(b) ?? '')) || indeg.get(a)! - indeg.get(b)!)
+  const starts = [...upper].sort((a, b) => Number(!top(a)) - Number(!top(b)) || indeg.get(a)! - indeg.get(b)!)
   for (const id of starts) if (!state.has(id)) visit(id)
   // Longest path from the top, over the acyclic edges.
   const rank = new Map<string, number>()
@@ -70,7 +74,7 @@ function rankRows(map: RepoMap): string[][] {
   for (const id of upper) if (!linked.has(id)) rank.set(id, CLIENT.has(kind.get(id) ?? '') ? 0 : Math.min(1, maxRank))
   const rows: string[][] = Array.from({ length: Math.max(0, ...rank.values()) + 1 }, () => [])
   for (const id of upper) rows[rank.get(id)!].push(id)
-  const bottom = [...ids.filter((id) => DATA.has(kind.get(id) ?? '')), ...ids.filter((id) => kind.get(id) === 'external')]
+  const bottom = [...ids.filter((id) => DATA.has(kind.get(id) ?? '')), ...ids.filter((id) => kind.get(id) === 'external' && atBottom(id))]
   return [...rows.filter((r) => r.length), ...(bottom.length ? [bottom] : [])]
 }
 
@@ -107,6 +111,45 @@ function handBox(x: number, y: number, w: number, h: number, seed: string): InkP
   }
   pts.push([r2(corners[4][0]), r2(corners[4][1]), 0.5])
   return pts
+}
+
+/** Drawn as a cylinder, the way a data store is drawn on a whiteboard. */
+const CYLINDER = new Set(['database', 'cache', 'storage'])
+const CYL_H = BOX_H + 12
+
+/**
+ * A cylinder in two strokes: the outline (the back of the lid, the sides and the bottom) and
+ * the front of the lid. Arrows attach to the outline.
+ */
+function handCylinder(x: number, y: number, w: number, h: number, seed: string): { body: InkPoint[]; lip: InkPoint[] } {
+  const rnd = rng(seed)
+  const j = (a: number) => (rnd() - 0.5) * 2 * a
+  const rx = w / 2
+  const ry = Math.min(14, h * 0.16)
+  const cx = x + rx
+  const top = y + ry
+  const bottom = y + h - ry
+  const pt = (px: number, py: number): InkPoint => [r2(px + j(0.6)), r2(py + j(0.6)), 0.5]
+  const arc = (out: InkPoint[], cy: number, from: number, to: number) => {
+    const n = 20
+    for (let i = 0; i <= n; i++) {
+      const t = from + ((to - from) * i) / n
+      out.push(pt(cx + rx * Math.cos(t), cy + ry * Math.sin(t)))
+    }
+  }
+  const line = (out: InkPoint[], ax: number, ay: number, by: number) => {
+    const steps = Math.max(2, Math.ceil(Math.abs(by - ay) / 12))
+    for (let i = 1; i < steps; i++) out.push(pt(ax, ay + ((by - ay) * i) / steps))
+  }
+  const body: InkPoint[] = []
+  arc(body, top, Math.PI, 2 * Math.PI) // the back of the lid, left to right
+  line(body, x + w, top, bottom)
+  arc(body, bottom, 0, Math.PI) // the bottom, right to left
+  line(body, x, bottom, top)
+  body.push(pt(x, top + 2))
+  const lip: InkPoint[] = []
+  arc(lip, top, Math.PI, 0)
+  return { body, lip }
 }
 
 const labelWidth = (text: string, size = TEXT_SIZE) => Math.round(text.length * size * 0.54)
@@ -258,6 +301,7 @@ function drawMap(map: RepoMap, origin: { x: number; y: number }) {
   let z = 1
   const final = rectsOf(lines)
   const left = Math.min(...[...final.values()].map((r) => r.x))
+  const at = new Map<string, { x: number; y: number; w: number; h: number }>()
   lines.forEach((line, row) => {
     const y = origin.y + row * (BOX_H + GAP_Y)
     line.forEach((id) => {
@@ -267,29 +311,63 @@ function drawMap(map: RepoMap, origin: { x: number; y: number }) {
       const box = newId()
       const text = newId()
       const lw = labelWidth(n.label)
-      shapes.push({ id: box, z: z++, type: 'draw', points: handBox(x, y, w, BOX_H, n.id), closed: true })
-      shapes.push({ id: text, z: z++, type: 'text', x: r2(x + (w - lw) / 2), y: r2(y + (BOX_H - TEXT_SIZE * TEXT_LINE) / 2), w: lw, h: r2(TEXT_SIZE * TEXT_LINE), text: n.label, size: TEXT_SIZE })
+      const th = TEXT_SIZE * TEXT_LINE
+      const ids = [box, text]
+      if (CYLINDER.has(n.kind ?? '')) {
+        const { body, lip } = handCylinder(x, y, w, CYL_H, n.id)
+        const lid = newId()
+        shapes.push({ id: box, z: z++, type: 'draw', points: body, closed: true })
+        shapes.push({ id: lid, z: z++, type: 'draw', points: lip })
+        // The label sits on the face, under the lid.
+        shapes.push({ id: text, z: z++, type: 'text', x: r2(x + (w - lw) / 2), y: r2(y + 28 + (CYL_H - 28 - th) / 2 - 4), w: lw, h: r2(th), text: n.label, size: TEXT_SIZE })
+        ids.push(lid)
+        at.set(id, { x, y, w, h: CYL_H })
+      } else {
+        shapes.push({ id: box, z: z++, type: 'draw', points: handBox(x, y, w, BOX_H, n.id), closed: true })
+        shapes.push({ id: text, z: z++, type: 'text', x: r2(x + (w - lw) / 2), y: r2(y + (BOX_H - th) / 2), w: lw, h: r2(th), text: n.label, size: TEXT_SIZE })
+        at.set(id, { x, y, w, h: BOX_H })
+      }
       boxOf.set(id, box)
-      nodeShapes.set(id, [box, text])
+      nodeShapes.set(id, ids)
     })
   })
-  const edges: Array<RepoMapEdge & { shapeId: string }> = []
-  for (const e of map.edges) {
-    const a = boxOf.get(e.from)
-    const b = boxOf.get(e.to)
-    if (!a || !b) continue
-    const id = newId()
-    const from = shapes.find((s) => s.id === a)!
-    const to = shapes.find((s) => s.id === b)!
-    const c = (s: Shape) => {
-      const pts = s.type === 'draw' ? s.points : []
-      const xs = pts.map((p) => p[0])
-      const ys = pts.map((p) => p[1])
-      return { x: r2((Math.min(...xs) + Math.max(...xs)) / 2), y: r2((Math.min(...ys) + Math.max(...ys)) / 2) }
+  // Arrows meeting the same side of a box spread out along it, in the order of where they
+  // come from, instead of all landing on its middle.
+  const drawn = map.edges.filter((e) => boxOf.has(e.from) && boxOf.has(e.to))
+  const mid = (id: string) => ({ x: at.get(id)!.x + at.get(id)!.w / 2, y: at.get(id)!.y + at.get(id)!.h / 2 })
+  const sides = new Map<string, Array<{ key: string; along: number }>>()
+  const anchor = new Map<string, { nx: number; ny: number }>()
+  drawn.forEach((e, i) => {
+    for (const [self, other, key] of [[e.from, e.to, `${i}s`], [e.to, e.from, `${i}e`]] as const) {
+      const a = mid(self)
+      const b = mid(other)
+      const vertical = Math.abs(b.y - a.y) > BOX_H / 2
+      const side = vertical ? (b.y < a.y ? 'top' : 'bottom') : b.x < a.x ? 'left' : 'right'
+      const list = sides.get(`${self}:${side}`) ?? []
+      list.push({ key, along: vertical ? b.x : b.y })
+      sides.set(`${self}:${side}`, list)
     }
-    shapes.push({ id, z: z++, type: 'arrow', start: { ...c(from), id: a, nx: 0.5, ny: 0.5 }, end: { ...c(to), id: b, nx: 0.5, ny: 0.5 }, ...(e.label ? { text: e.label.slice(0, 40) } : {}) })
-    edges.push({ ...e, shapeId: id })
+  })
+  for (const [where, list] of sides) {
+    const vertical = where.endsWith(':top') || where.endsWith(':bottom')
+    list.sort((p, q) => p.along - q.along)
+    const step = Math.min(0.2, 0.56 / list.length)
+    list.forEach(({ key }, k) => {
+      const f = r2(0.5 + (k - (list.length - 1) / 2) * step * (vertical ? 1 : 0.8))
+      anchor.set(key, vertical ? { nx: f, ny: 0.5 } : { nx: 0.5, ny: f })
+    })
   }
+  const edges: Array<RepoMapEdge & { shapeId: string }> = []
+  drawn.forEach((e, i) => {
+    const id = newId()
+    const end = (node: string, key: string) => {
+      const r = at.get(node)!
+      const { nx, ny } = anchor.get(key) ?? { nx: 0.5, ny: 0.5 }
+      return { x: r2(r.x + nx * r.w), y: r2(r.y + ny * r.h), id: boxOf.get(node)!, nx, ny }
+    }
+    shapes.push({ id, z: z++, type: 'arrow', start: end(e.from, `${i}s`), end: end(e.to, `${i}e`), ...(e.label ? { text: e.label.slice(0, 40) } : {}) })
+    edges.push({ ...e, shapeId: id })
+  })
   // An edge label sits at the middle of its arrow. Where it would land on a box or another
   // label it stays off the canvas (the architecture keeps it).
   const doc = new Map(shapes.map((s) => [s.id, s]))

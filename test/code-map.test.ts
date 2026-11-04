@@ -173,7 +173,7 @@ describe('Map this repo with a model on the machine', () => {
       // The quick map's shapes are gone; only the redrawn map is on the canvas.
       const ids = new Set(d.canvas.list().map((x) => x.id))
       assert.ok(res.shapeIds.every((id: string) => !ids.has(id)))
-      assert.equal(d.canvas.list().filter((x) => x.type === 'draw').length, 4)
+      assert.equal(d.canvas.list().filter((x) => x.type === 'draw' && x.closed).length, 4)
     } finally {
       await d.close()
     }

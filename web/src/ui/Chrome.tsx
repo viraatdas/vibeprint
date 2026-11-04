@@ -23,6 +23,14 @@ const I = {
   eyeOff: <path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 3.9M6.4 6.9C3.9 8.6 2.5 12 2.5 12S6 18.5 12 18.5c1.6 0 3-.4 4.3-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" />,
   panel: <path d="M4 5h16v14H4zM15 5v14" />,
   trash: <path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5" />,
+  branch: (
+    <>
+      <path d="M7 7v10M17 9v.5a4 4 0 0 1-4 4h-2a4 4 0 0 0-4 3.5" />
+      <circle cx="7" cy="5" r="2" />
+      <circle cx="7" cy="19" r="2" />
+      <circle cx="17" cy="7" r="2" />
+    </>
+  ),
   map: <path d="M9 3.5h6v4.5H9zM3.5 16h6v4.5h-6zM14.5 16h6v4.5h-6zM12 8v4M6.5 16v-1.5a2.5 2.5 0 0 1 2.5-2.5h6a2.5 2.5 0 0 1 2.5 2.5V16" />,
 }
 
@@ -167,13 +175,15 @@ export function EmptyStart() {
   const live = useUi((s) => !!s.vp)
   const { mapping, run } = useMapRepo()
   const reading = useUi((s) => !!s.vp?.mapper?.active)
-  if (!empty || hasGraph || !live || reading) return null
+  // Gone the moment the first stroke starts, not when it ends.
+  const drawing = useEditorValue((e) => !!e.liveId)
+  if (!empty || hasGraph || !live || reading || drawing) return null
   return (
     <div className="vp-start">
-      <div className="vp-start-card" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="vp-start-card">
         <p className="vp-start-title">Sketch the system you want to build.</p>
         <p className="vp-start-body">Already have code? Map it first, then draw your changes on top.</p>
-        <button className="vp-btn vp-btn-ink" onClick={run} disabled={mapping}>
+        <button className="vp-btn vp-btn-ink" onClick={run} disabled={mapping} onPointerDown={(e) => e.stopPropagation()}>
           <Icon name="map" />
           <span>{mapping ? 'Mapping the code…' : 'Map this repo'}</span>
         </button>
@@ -213,7 +223,16 @@ export function TopBar() {
     <header className="vp-top" onPointerDown={(e) => e.stopPropagation()}>
       <div className="vp-top-left">
         <span className={`vp-conn vp-conn-${connection}`} title={connection === 'live' ? 'Connected' : 'Connecting'} />
-        <span className="vp-project">{vp?.project.name ?? 'vibeprint'}</span>
+        <span className="vp-project" title={vp ? `Running in ${vp.project.root}` : undefined}>
+          {vp?.project.name ?? 'vibeprint'}
+        </span>
+        {vp?.project.branch && (
+          <span className="vp-branch" title={`${vp.project.worktree ? 'Worktree' : 'Branch'} ${vp.project.branch} in ${vp.project.root}`}>
+            <Icon name="branch" />
+            <span>{vp.project.branch}</span>
+          </span>
+        )}
+        {vp?.update && <UpdateChip {...vp.update} />}
       </div>
       <div className="vp-top-right">
         {agents.map(([name]) => (
@@ -226,7 +245,7 @@ export function TopBar() {
           className={`vp-pill${reading ? ' is-reading' : ''}`}
           onClick={mapRepo}
           disabled={mapping || reading}
-          title={reading ? `${reader?.label} is reading the code to redraw the map` : 'Draw the components this repo already has, and how they connect'}
+          title={reading ? `${reader?.label} is reading the code to redraw the map` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
         >
           <Icon name="map" />
           <span className="vp-pill-label">{mapping ? 'Mapping…' : reading ? 'Reading the code…' : 'Map this repo'}</span>
@@ -240,6 +259,23 @@ export function TopBar() {
         </button>
       </div>
     </header>
+  )
+}
+
+/** A newer release is out: one tap copies the command that restarts on it. */
+function UpdateChip({ latest, current, command: cmd }: { latest: string; current: string; command: string }) {
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(cmd)
+      toast(`Copied "${cmd}". Stop vibeprint in the terminal and run it to update to ${latest}.`, 6000)
+    } catch {
+      toast(`To update to ${latest}, stop vibeprint in the terminal and run: ${cmd}`, 8000)
+    }
+  }
+  return (
+    <button className="vp-update" onClick={copy} title={`This is ${current}. Restart with ${cmd} to get ${latest}.`}>
+      Update to {latest}
+    </button>
   )
 }
 

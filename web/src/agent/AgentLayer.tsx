@@ -53,16 +53,17 @@ export function AgentLayer() {
               </g>
             ))}
 
-          {/* Progress: boxes go from dashed to solid with a check */}
+          {/* Progress: boxes go from dashed to solid with a check. A map of the existing code
+              is all done; marking every box of it would only bury the new work. */}
           {layout.nodes
-            .filter((n) => n.node.status !== 'planned' && !n.node.removed)
+            .filter((n) => n.node.status !== 'planned' && !n.node.removed && !(n.node.fromCode && n.node.status === 'done'))
             .map(({ node, rect }) => (
               <StatusMark key={`s-${node.id}-${node.status}`} id={node.id} rect={rect} status={node.status} />
             ))}
 
           {/* Faint interpretation tags */}
           {layout.nodes
-            .filter((n) => !n.node.removed && shownTags[n.node.id]?.length)
+            .filter((n) => !n.node.removed && !n.node.fromCode && shownTags[n.node.id]?.length)
             .map(({ node, rect }) => (
               <text key={`t-${node.id}-${shownTags[node.id].join()}`} className="vp-tag" x={rect.x + 2} y={rect.y + rect.h + 20}>
                 {shownTags[node.id].join('  ·  ')}

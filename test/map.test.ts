@@ -99,7 +99,8 @@ describe('drawing a map', () => {
     apply(canvas, plan)
     assert.equal(plan.nodes, 4)
     assert.equal(plan.edges, 3, 'the edge to an unknown node is dropped')
-    assert.equal(plan.put.filter((s) => s.type === 'draw').length, 4)
+    assert.equal(plan.put.filter((s) => s.type === 'draw' && s.closed).length, 4, 'one outline per component')
+    assert.equal(plan.put.filter((s) => s.type === 'draw' && !s.closed).length, 1, 'the database is a cylinder, its lid a second stroke')
     assert.equal(plan.put.filter((s) => s.type === 'text').length, 4)
     const arrows = plan.put.filter((s) => s.type === 'arrow')
     assert.equal(arrows.length, 3)
@@ -138,6 +139,48 @@ describe('drawing a map', () => {
     const reading = interpretHeuristic({ sketch: core.sketch!, previous: core.graph, openQuestions: [] })
     assert.deepEqual(reading.nodes.map((n) => n.label).sort(), ['API', 'Postgres', 'Stripe', 'Web app'])
     assert.equal(reading.edges.length, 3)
+  })
+
+  test('an outside caller sits with the clients, and arrows into one side of a box spread out', () => {
+    const core = freshCore()
+    const canvas = new Map<string, Shape>()
+    const map: RepoMap = {
+      nodes: [
+        { id: 'web', label: 'Web app', kind: 'client' },
+        { id: 'cli', label: 'CLI', kind: 'client' },
+        { id: 'agent', label: 'Coding agent', kind: 'external' },
+        { id: 'api', label: 'API', kind: 'service' },
+        { id: 'db', label: 'Postgres', kind: 'database' },
+        { id: 'claude', label: 'Claude API', kind: 'external' },
+      ],
+      edges: [
+        { from: 'web', to: 'api' },
+        { from: 'cli', to: 'api' },
+        { from: 'agent', to: 'api' },
+        { from: 'api', to: 'db' },
+        { from: 'api', to: 'claude' },
+      ],
+    }
+    const plan = mapCode(core, [], map, 'vibeprint')
+    apply(canvas, plan)
+    const outline = (label: string) => {
+      const t = plan.put.find((s) => s.type === 'text' && s.text === label)!
+      const tb = shapeBounds(t, canvas)
+      return plan.put.find((s) => s.type === 'draw' && s.closed && (() => {
+        const b = shapeBounds(s, canvas)
+        return tb.x >= b.x && tb.x + tb.w <= b.x + b.w && tb.y >= b.y && tb.y + tb.h <= b.y + b.h
+      })())!
+    }
+    const y = (label: string) => shapeBounds(outline(label), canvas).y
+    assert.ok(Math.abs(y('Coding agent') - y('Web app')) < 5, 'the agent only calls in, so it is drawn at the top')
+    assert.ok(y('Claude API') > y('API'), 'a service the code calls stays at the bottom')
+    // Three arrows come into the top of the API: each lands somewhere else on it.
+    const api = outline('API').id
+    const ins = plan.put.filter((s) => s.type === 'arrow' && s.end.id === api) as Array<Extract<Shape, { type: 'arrow' }>>
+    assert.equal(ins.length, 3)
+    const lands = ins.map((s) => Math.round(arrowPoints(s, canvas).b.x))
+    assert.equal(new Set(lands).size, 3, `distinct landing points: ${lands}`)
+    assert.ok(Math.max(...lands) - Math.min(...lands) > 30)
   })
 
   test('mapping again replaces an untouched map in place and keeps node ids', () => {
