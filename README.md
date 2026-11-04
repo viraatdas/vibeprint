@@ -66,6 +66,10 @@ Tap **Map this repo** (top bar, or the card on an empty canvas). It happens in t
 
 The map lands as ordinary ink beside anything you've drawn, laid out with callers above what they call, and becomes the architecture with every component marked done. Boxes you draw afterwards come in as planned work next to what's built. Mapping again replaces the previous map if nobody has edited it; an edited map stays and the new one goes beside it. Connected agents hear about the map and can correct it with marks, or redraw it with `map_architecture`.
 
+### Seeing the schema
+
+Each database on the map gets a **Tables** button. Tap it and the model on your machine (the same one that reads the code for the map) finds the schema in the code (migrations, ORM models, `schema.prisma`, `schema.sql`) and draws its tables beside the database: the columns with their types, primary and foreign keys, and a few example rows. The columns come from the code; the rows are made up to fit the types and keys. Asking in the chat works too ("show me the schema"), and so does asking your coding agent, which draws tables with `show_table`. A table drawn again replaces the old one; tap its × to remove it.
+
 ### Drawing
 
 Tools: pen, arrow, text, eraser, select, pan, plus undo and redo. With an Apple Pencil the Pencil draws with pressure and fingers move the canvas: one finger pans, two pinch to zoom, and a quick two-finger tap undoes. Without a stylus a finger draws. Arrows that start or end inside a box stay attached to it when you move the box. Tap with the text tool to type (Scribble works too). Paste or drop an image to put it on the canvas. On a keyboard: `D` `A` `T` `E` `V` `H` pick tools, space-drag pans, ⌘/Ctrl-scroll or a pinch zooms, ⌘Z / ⇧⌘Z undo and redo, ⇧1 fits the drawing on screen. Every open device shows the same drawing live.
@@ -86,6 +90,7 @@ The laptop view is the same canvas plus a panel: **Chat** (talk to the built-in 
 | `rewrite` | Propose a corrected label or kind. |
 | `annotate` | Pin a margin note or question to a node, edge, or spot. |
 | `set_status` | Report progress: `planned`, `building`, `done`, `blocked`. Lands immediately. |
+| `show_table` | Draw tables beside a database: columns with types and keys, and example rows. Lands immediately; the user can remove it. |
 | `propose` | Several marks as one batch. |
 | `finish_batch` | Mark your current batch ready for review. |
 | `list_marks` | Marks and their outcomes. |
@@ -117,7 +122,8 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | `--no-relay`, `VIBEPRINT_RELAY` | Turn off the hosted relay, or point it at your own (`VIBEPRINT_RELAY=https://relay.example.com`). |
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |
-| `VIBEPRINT_MAPPER` | What reads the code for **Map this repo**: `api`, `claude`, `codex`, or `off` for the quick map only (default: the first available, in that order). |
+| `VIBEPRINT_MAPPER` | What reads the code for **Map this repo** and **Tables**: `api`, `claude`, `codex`, or `off` for the quick map only (default: the first available, in that order). |
+| `VIBEPRINT_NO_UPDATE_CHECK` | Set to skip the check for a newer release at startup. |
 | `VIBEPRINT_AUTHOR` | Override the author name an MCP client's marks carry (default: detected `claude` / `codex`). |
 
 ## Development

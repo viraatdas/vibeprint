@@ -114,3 +114,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it
   - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
 - **By:** worker · 2026-11-03T23:45:00Z
+
+## worker: Easier iPad drawing, a roomier map, the worktree in view (0.6.0)
+- **Did:** Released 0.6.0. Drawing: a Pencil stroke no longer re-renders the board while it is drawn, the stage position is read once per stroke, the stroke outline is rebuilt once per frame (not per 240 Hz sample), predicted samples extend the live ink where the browser has them, and while drawing iOS no longer holds touches for text selection, the magnifier or Scribble. On an empty canvas the start card swallowed strokes that began on it; ink now goes through it and the card hides as a stroke starts. Map: wider gaps, at most 4 per row, data stores as cylinders, arrow ends spread along each box side, outside callers (a coding agent) on the top row, and no blue done outline, check or tag line on components from the code. Worktree: the top bar and banner show the folder and branch (read from .git, linked worktrees included); the CLI checks npm at start and shows an update notice with the right command for npx or a global install; README says npx vibeprint@latest. tldraw's TestFlight app and repo were not used: the user dropped tldraw for its license, and its app is its own product. Verified: 108/108 tests locally and in CI; browser runs at iPad size checked mouse, synthetic Pencil (pressure 0.2 → 0.44) and touch-after-pen strokes, the live stroke painting mid-stroke, drawing through the start card, the card's button, and the top bar. CI run 41746361109 failed once on a Sigstore 409 (TLOG_CREATE_ENTRY_ERROR) before publishing; the rerun printed + vibeprint@0.6.0 and the GitHub release link started 0.6.0 from a clean cache.
+- **Interfaces:** VibeprintState.project.branch/worktree | VibeprintState.update {latest,current,command} | VIBEPRINT_NO_UPDATE_CHECK | src/core/git-head.ts gitHead() | newerVersion() in src/server/daemon.ts | Editor.change opts.silent
+- **Delivery:** verified; release; target=npm:vibeprint@0.6.0; revision=2af4bb0; verifiedAt=2026-11-04T00:27:00Z; checks=4
+- **Follow-ups:**
+  - Try 0.6 on a real iPad with an Apple Pencil — the touch suppression and predicted ink were only emulated in Chromium
+  - Unset TLDRAW_LICENSE_KEY on the relay after 2026-11-17 — only 0.2.0 installs read it
+  - Run netlify login and npm login on the laptop — Rudder copies the laptop's stale logins over fresh ones on cloud machines
+- **By:** worker · 2026-11-04T00:27:00Z

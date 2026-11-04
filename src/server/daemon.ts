@@ -12,7 +12,8 @@ import { DEFAULT_PORT, TOKEN_COOKIE, TOKEN_HEADER, type ActivityEvent, type Clie
 import { describeMark } from '../shared/marks.js'
 import type { InterpretationResult, MarkStatus, RepoMap, SketchShape } from '../shared/types.js'
 import { mapCode, mapState } from '../core/map.js'
-import { detectMapper, mapWithModel, type Mapper } from '../interpret/code-map.js'
+import { detectMapper, mapWithModel, schemaWithModel, type Mapper } from '../interpret/code-map.js'
+import { nodeLabel } from '../shared/graph.js'
 import { scanRepo } from '../core/repo-scan.js'
 import { CanvasRoom } from './canvas.js'
 import { GitCheckpointer } from './git.js'
@@ -22,7 +23,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 export const AGENT_COLOR = '#2e5bff'
 export const INK_COLOR = '#1d1d1f'
-const VERSION = '0.6.0'
+const VERSION = '0.7.0'
 
 export interface DaemonOptions {
   root: string
@@ -305,7 +306,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     const ctrl = new AbortController()
     reading = ctrl
     const now = () => new Date().toISOString()
-    core.setMapper({ active: true, startedAt: now(), finishedAt: undefined, outcome: undefined, lastError: undefined })
+    core.setMapper({ active: true, task: 'map', startedAt: now(), finishedAt: undefined, outcome: undefined, count: undefined, lastError: undefined })
     try {
       const map = await mapWithModel(root, scan, mapper, { signal: ctrl.signal, model: claude.model })
       if (ctrl.signal.aborted) return
@@ -329,6 +330,51 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
       }
     }
   }
+
+  // ---- schema: a database's tables with example rows, read from the code -------
+  /** Start reading the schema; the tables land as marks beside the database when it's done. */
+  const showSchema = (targetId?: string): { reading: string; target?: string } => {
+    if (!mapper) {
+      throw new VibeprintError('Nothing on this machine can read the code: install Claude Code or Codex, or set ANTHROPIC_API_KEY. Or ask your coding agent in the chat: "show me the schema".', 422)
+    }
+    if (core.mapper.active) throw new VibeprintError(`${mapper.label} is already reading the code. Try again when it's done.`, 409)
+    const live = core.graph.nodes.filter((n) => !n.removed)
+    const node = targetId ? live.find((n) => n.id === targetId) : live.find((n) => n.kind === 'database')
+    if (targetId && !node) throw new VibeprintError(`No component ${targetId} on the canvas.`, 404)
+    const ctrl = new AbortController()
+    reading = ctrl
+    const now = () => new Date().toISOString()
+    core.setMapper({ active: true, task: 'schema', startedAt: now(), finishedAt: undefined, outcome: undefined, count: undefined, lastError: undefined })
+    void (async () => {
+      try {
+        const store = node ? { label: nodeLabel(node), kind: node.kind, path: node.tags.find((t) => t.includes('/')) } : null
+        const { tables, note } = await schemaWithModel(root, store, mapper, { signal: ctrl.signal, model: claude.model })
+        if (ctrl.signal.aborted) return
+        if (!tables.length) {
+          core.addChat('agent', mapper.author, note || `${mapper.label} found no tables in the code.`)
+          core.setMapper({ outcome: 'none', count: 0 })
+          return
+        }
+        const inputs = tables.slice(0, 12).map((table) => ({ type: 'table' as const, ...(node ? { target: node.id } : {}), table }))
+        core.addMarks(mapper.author, inputs, { ...(note ? { message: note } : {}), skipLimits: true })
+        core.setMapper({ outcome: 'tables', count: inputs.length })
+      } catch (err) {
+        if (ctrl.signal.aborted) return
+        const msg = ((err as Error).message ?? String(err)).slice(0, 300)
+        log(`schema: ${mapper.label} could not read it: ${msg}`)
+        core.setMapper({ outcome: 'failed', lastError: msg })
+        core.addChat('system', 'vibeprint', `Couldn't read the schema with ${mapper.label} (${msg}). Your coding agent can draw it with show_table.`)
+      } finally {
+        if (reading === ctrl) {
+          reading = null
+          core.setMapper({ active: false, finishedAt: now() })
+        }
+      }
+    })()
+    return { reading: mapper.label, ...(node ? { target: node.id } : {}) }
+  }
+  // "show me the schema", "what do the tables look like", "draw the data model"
+  const asksForSchema = (text: string) => /\b(schema|tables?|data ?model|columns)\b/i.test(text) && /\b(show|see|what|draw|how|look|give)\b/i.test(text)
 
   // ---- chat assistant (only with an API key) --------------------------------
   const chatReply = async (text: string) => {
@@ -517,6 +563,10 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
           ...(mapper ? { reading: mapper.label } : {}),
         })
       }
+      case 'POST /api/schema': {
+        const body = await readJson<{ target?: string }>(req)
+        return send(res, 200, showSchema(body.target || undefined))
+      }
       case 'POST /api/interpretation': {
         const body = await readJson<{ author?: string; result: InterpretationResult }>(req)
         running?.abort()
@@ -554,7 +604,18 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         const author = role === 'user' ? 'you' : (body.author ?? 'agent').toLowerCase()
         if (role !== 'user') core.touchAgent(author)
         const message = core.addChat(role, author, body.text)
-        if (role === 'user') void chatReply(body.text)
+        if (role === 'user') {
+          void chatReply(body.text)
+          // Asked to see the schema: read it here when this machine can (a connected agent may
+          // answer too; a table it draws with the same name replaces this one).
+          if (mapper && !core.mapper.active && asksForSchema(body.text)) {
+            const said = body.text.toLowerCase()
+            const named = core.graph.nodes.find((n) => !n.removed && said.includes(nodeLabel(n).toLowerCase()))
+            try {
+              showSchema(named?.id)
+            } catch {}
+          }
+        }
         return send(res, 200, { message })
       }
       case 'GET /api/wait': {

@@ -2,9 +2,9 @@ import { EventEmitter } from 'node:events'
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
-import { roundRect, unionRects } from '../shared/geometry.js'
+import { rectsOverlap, roundRect, unionRects } from '../shared/geometry.js'
 import { emptyGraph, nodeKind, nodeLabel, resolveRef, slugify, targetName, targetOrigin, targetRect, uniqueId } from '../shared/graph.js'
-import { addBoxSize, describeMark, noteSize, summarizeMarks } from '../shared/marks.js'
+import { addBoxSize, describeMark, noteSize, summarizeMarks, TABLE, tableSize } from '../shared/marks.js'
 import {
   AGENT_RULE,
   LIMITS,
@@ -27,10 +27,11 @@ import {
   type Sketch,
   type SketchShape,
   type VibeprintState,
+  type TableSpec,
 } from '../shared/types.js'
 import { gitHead } from './git-head.js'
 import { mergeInterpretation } from './merge.js'
-import { obstacles, placeNear } from './placement.js'
+import { obstacles, placeAround, placeNear } from './placement.js'
 
 export class VibeprintError extends Error {
   status: number
@@ -230,7 +231,8 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
         marks: ms.map((m) => ({ id: m.id, type: m.type, describe: describeMark(m, g) })),
       }))
     const decided = this.marks
-      .filter((m) => m.status !== 'pending' && m.type !== 'status' && m.decidedAt)
+      // Status updates and tables land on their own; they aren't the user's decisions.
+      .filter((m) => m.status !== 'pending' && m.type !== 'status' && m.type !== 'table' && m.decidedAt)
       .sort((a, b) => (b.decidedAt ?? '').localeCompare(a.decidedAt ?? ''))
       .slice(0, 12)
     return {
@@ -257,7 +259,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       rule: AGENT_RULE,
       ...(this.sketch?.source === 'map' && g.interpretedBy === 'vibeprint'
         ? {
-            mapNote: this.mapper.active
+            mapNote: this.mapper.active && this.mapper.task !== 'schema'
               ? `This map is a quick scan of folders and imports; ${this.mapper.label} is reading the code and will redraw it in a minute.`
               : 'This map came from a quick scan of folder names and imports, not from reading the code. If it is wrong, read the code and redraw it with map_architecture.',
           }
@@ -451,12 +453,16 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     if (!Array.isArray(inputs) || inputs.length === 0) throw new VibeprintError('No marks given.')
     author = (author || 'agent').trim().toLowerCase()
     this.touchAgent(author)
-    const proposals = inputs.filter((i) => i.type !== 'status')
-    const statuses = inputs.filter((i) => i.type === 'status')
+    // Status updates and tables only report: they skip review and the batch cap.
+    const reports = (i: MarkInput) => i.type === 'status' || i.type === 'table'
+    const proposals = inputs.filter((i) => !reports(i))
+    const statuses = inputs.filter(reports)
 
     // Validate everything before touching state, so a batch lands whole or not at all.
     const built: Array<{ input: MarkInput; target: MarkTarget; data: MarkData }> = []
     const placedSoFar: Mark[] = []
+    // A table shown again (same name, same place) replaces the one already there.
+    const replacing = new Set<Mark>()
     const taken = new Set(this.graph.nodes.map((n) => n.id))
     for (const m of this.marks) if (m.data.nodeId) taken.add(m.data.nodeId)
 
@@ -511,6 +517,21 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
           data.size = noteSize(data.text)
           data.offset = this.place(target, data.size, 'margin', placedSoFar)
           break
+        case 'table': {
+          const table = cleanTable(input.table)
+          data.table = table
+          const t = this.resolveTarget(input.target, input.at, false, ['node'])
+          target = t
+          const here = (o: MarkTarget) => (o.kind === 'node' && t.kind === 'node' ? o.id === t.id : o.kind === 'point' && t.kind === 'point')
+          for (const m of this.marks) {
+            if (m.type === 'table' && m.status === 'accepted' && here(m.target) && m.data.table?.name.toLowerCase() === table.name.toLowerCase()) replacing.add(m)
+          }
+          data.size = tableSize(table)
+          // A table shown again stays where it was, if it still fits there.
+          const was = [...replacing].find((m) => m.data.table?.name.toLowerCase() === table.name.toLowerCase())?.data.offset
+          data.offset = was && this.fits(target, was, data.size, placedSoFar, replacing) ? was : this.place(target, data.size, 'around', placedSoFar, replacing)
+          break
+        }
         case 'status':
           target = this.resolveTarget(input.target, undefined, true, ['node'])
           if (!input.status || !NODE_STATUSES.includes(input.status)) {
@@ -553,8 +574,12 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
 
     const created: Mark[] = []
     const now = isoNow()
+    for (const m of replacing) {
+      m.status = 'rejected'
+      m.decidedAt = now
+    }
     for (const { input, target, data } of built) {
-      const isStatus = input.type === 'status'
+      const isStatus = reports(input)
       const mark: Mark = {
         id: rid('m_'),
         author,
@@ -573,7 +598,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       created.push(mark)
     }
 
-    const isNewBatch = batch && batch.markIds.length === built.filter((b) => b.input.type !== 'status').length
+    const isNewBatch = batch && batch.markIds.length === built.filter((b) => !reports(b.input)).length
     for (const b of [batch, progress]) {
       if (!b) continue
       b.summary = summarizeMarks(b.markIds.map((id) => this.marks.find((m) => m.id === id)!).filter(Boolean))
@@ -587,15 +612,27 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     for (const m of created.filter((x) => x.type === 'status')) {
       this.addChat('system', author, `${author}: ${targetName(this.graph, m.target)} → ${m.data.nodeStatus}${m.data.detail ? ` · ${m.data.detail}` : ''}`)
     }
+    const tables = created.filter((x) => x.type === 'table')
+    if (tables.length) {
+      const names = tables.map((m) => m.data.table!.name)
+      this.addChat('agent', author, opts.message ?? `${tables.length === 1 ? 'Here is' : `Here are ${tables.length} tables:`} ${names.join(', ')}${tables.length === 1 ? ', with example rows.' : '. The rows are examples.'}`)
+    }
     if (created.some((m) => m.type === 'status')) this.markDirty('graph')
     this.markDirty('marks')
     this.changed('marks', 'graph')
     return { marks: created, batch, progress }
   }
 
-  private place(target: MarkTarget, size: { w: number; h: number }, prefer: 'side' | 'margin', extra: Mark[]): { x: number; y: number } {
+  private fits(target: MarkTarget, offset: { x: number; y: number }, size: { w: number; h: number }, extra: Mark[], skip?: Set<Mark>): boolean {
     const anchor = targetRect(this.graph, target) ?? { x: 0, y: 0, w: 0, h: 0 }
-    const blockers = obstacles(this.graph, this.sketch, [...this.marks, ...extra])
+    const box = { x: anchor.x + offset.x, y: anchor.y + offset.y, w: size.w, h: size.h }
+    return !obstacles(this.graph, this.sketch, [...this.marks.filter((m) => !skip?.has(m)), ...extra]).some((b) => rectsOverlap(box, b, 14))
+  }
+
+  private place(target: MarkTarget, size: { w: number; h: number }, prefer: 'side' | 'margin' | 'around', extra: Mark[], skip?: Set<Mark>): { x: number; y: number } {
+    const anchor = targetRect(this.graph, target) ?? { x: 0, y: 0, w: 0, h: 0 }
+    const blockers = obstacles(this.graph, this.sketch, [...this.marks.filter((m) => !skip?.has(m)), ...extra])
+    if (prefer === 'around') return placeAround(anchor, size, blockers)
     return placeNear(anchor, size, blockers, prefer)
   }
 
@@ -638,7 +675,9 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     // Adds first, so edges between two new nodes in the same batch resolve.
     const ordered = [...ms].sort((a, b) => (a.type === 'add' ? 0 : 1) - (b.type === 'add' ? 0 : 1))
     for (const m of ordered) {
-      if (m.status !== 'pending') continue
+      // A table lands accepted (it only shows something); rejecting it takes it off the canvas.
+      const removable = m.type === 'table' && m.status === 'accepted' && decision === 'reject'
+      if (m.status !== 'pending' && !removable) continue
       m.status = decision === 'accept' ? 'accepted' : 'rejected'
       m.decidedAt = now
       if (decision === 'accept') this.applyAccepted(m)
@@ -735,6 +774,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
         }
         break
       case 'note':
+      case 'table':
         break
     }
     g.version++
@@ -775,3 +815,28 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
     this.changed('interpreter')
   }
 }
+
+const cell = (v: unknown, max = 80) => (v === null || v === undefined ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, max)
+
+/** Check a table from an agent and trim it to what fits on the canvas. */
+export function cleanTable(t: TableSpec | undefined): TableSpec {
+  if (!t || typeof t !== 'object') throw new VibeprintError('table needs { name, columns: [{ name, type?, key?, references? }], rows: [[...]] }.')
+  const name = cell(t.name, 60)
+  if (!name) throw new VibeprintError('table needs a name.')
+  const columns = (Array.isArray(t.columns) ? t.columns : [])
+    .filter((c) => c && cell(c.name))
+    .slice(0, TABLE.maxColumns)
+    .map((c) => ({
+      name: cell(c.name, 40),
+      ...(cell(c.type) ? { type: cell(c.type, 30) } : {}),
+      ...(c.key === 'primary' || c.key === 'foreign' ? { key: c.key } : {}),
+      ...(cell(c.references) ? { references: cell(c.references, 60) } : {}),
+    }))
+  if (!columns.length) throw new VibeprintError(`table "${name}" needs at least one column.`)
+  const rows = (Array.isArray(t.rows) ? t.rows : [])
+    .filter(Array.isArray)
+    .slice(0, TABLE.maxRows)
+    .map((r) => columns.map((_, i) => cell(r[i])))
+  return { name, columns, rows, ...(cell(t.source) ? { source: cell(t.source, 120) } : {}) }
+}
+

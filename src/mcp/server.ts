@@ -20,10 +20,11 @@ import {
   type Sketch,
   type SketchShape,
 } from '../shared/types.js'
+import { TABLE } from '../shared/marks.js'
 import { VibeprintError } from '../core/core.js'
 import { resolveBackend, type AddMarksResult, type Backend, type DescribedMark } from './backend.js'
 
-const VERSION = '0.6.0'
+const VERSION = '0.7.0'
 
 export interface McpServerOptions {
   root: string
@@ -44,7 +45,8 @@ Workflow:
 3. As work lands, call set_status on the node (planned → building → done, or blocked with a detail). Status updates are progress reports and land immediately.
 4. If the build needs a structural change (a new component or connection, removing or renaming one), propose it as marks: add, strike, rewrite, annotate (notes and questions), or several at once with propose. A batch holds at most ${LIMITS.marksPerBatch} marks, so keep it to what matters. Call finish_batch when a pass is done.
 5. Proposals are not part of the architecture until the user accepts them. Wait for the decision with wait_for_user (needs \`vibeprint serve\`) or check list_marks, then build on what was accepted. Rejected means don't do it.
-6. Never deviate silently. read_chat and post_chat talk to the user on the canvas.`
+6. Never deviate silently. read_chat and post_chat talk to the user on the canvas.
+7. When the user asks to see a schema or what the data looks like (in ink or in chat), or sketches a table, read the code (migrations, ORM models, schema files) and call show_table: one table per entity, its columns as the code defines them (type, primary/foreign keys), and 3-5 example rows that fit the types and keys. Put each table beside the database it lives in. Tables only show something; they don't need the user's approval.`
 
 const PROPOSAL_REMINDER =
   "Proposals wait for the user's approval on the iPad: nothing changes in the architecture until they accept. Don't build against them yet; check list_marks or wait_for_user for the decision."
@@ -76,7 +78,7 @@ const reason = z.string().min(1).describe('One line explaining why. Shown when t
 
 const markInput = z
   .looseObject({
-    type: z.enum(['add', 'strike', 'rewrite', 'note', 'status']),
+    type: z.enum(['add', 'strike', 'rewrite', 'note', 'status', 'table']),
     target: z.string().optional().describe('Node/edge id or node label. Required for strike, rewrite, status; anchor for add/note.'),
     at: point.optional(),
     label: z.string().optional().describe('add: new node label. rewrite: corrected label.'),
@@ -139,6 +141,7 @@ export function normalizeMarkInput(raw: Loose): MarkInput {
   if (str('status')) m.status = str('status') as MarkInput['status']
   if (str('detail')) m.detail = str('detail')
   if (str('reason')) m.reason = str('reason')
+  if (raw.table && typeof raw.table === 'object') m.table = raw.table as MarkInput['table']
   return m
 }
 
@@ -302,7 +305,11 @@ function formatMarkResult(res: AddMarksResult, author: string, mode: Backend['mo
     L.push(`\nBatch ${b.id} from ${author}: ${b.summary} — ${state}.`)
     L.push(PROPOSAL_REMINDER)
   }
-  if (res.progress) L.push(`${res.batch ? '' : '\n'}Status updates are progress reports: they landed immediately (auto-accepted).`)
+  if (res.progress) {
+    const tables = res.marks.some((m) => m.type === 'table')
+    const statuses = res.marks.some((m) => m.type === 'status')
+    L.push(`${res.batch ? '' : '\n'}${[statuses ? 'Status updates are progress reports' : '', tables ? 'Tables only show something' : ''].filter(Boolean).join('; ')}: they landed immediately (auto-accepted).`)
+  }
   if (mode === 'files') L.push(FILES_NOTE)
   return L.join('\n')
 }
@@ -627,6 +634,44 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
     (a) => markTool([normalizeMarkInput({ type: 'note', target: a.target, at: a.at, text: a.text, question: a.question, reason: a.reason })]),
   )
 
+  const column = z.looseObject({
+    name: z.string().min(1),
+    type: z.string().optional().describe('As the code defines it: "uuid", "text", "timestamptz", "Int"'),
+    key: z.enum(['primary', 'foreign']).optional(),
+    references: z.string().optional().describe('Foreign key target, "users.id"'),
+  })
+  const table = z.looseObject({
+    name: z.string().min(1).describe('Table or collection name'),
+    columns: z.array(column).min(1).describe(`Up to ${TABLE.maxColumns}`),
+    rows: z.array(z.array(z.union([z.string(), z.number(), z.boolean(), z.null()]))).describe(`Example rows (up to ${TABLE.maxRows}), one value per column. Made up, but consistent with the types and foreign keys across tables.`),
+    source: z.string().optional().describe('Where it is defined: "prisma/schema.prisma"'),
+  })
+  server.registerTool(
+    'show_table',
+    {
+      title: 'Show tables with example rows',
+      description:
+        'Draw database tables on the canvas: columns with types and keys, and a few example rows, beside the database node they belong to. Use it when the user asks what the schema or the data looks like, or sketches a table. Read the schema from the code first. Lands immediately; the user can remove a table.',
+      inputSchema: {
+        target: z.string().optional().describe('The database node (id or label) to put the tables beside'),
+        at: point.optional(),
+        tables: z.array(table).min(1).max(12),
+        message: z.string().optional().describe('One line for the chat, e.g. what the tables are'),
+      },
+      annotations: WRITE,
+    },
+    (a) =>
+      markTool(
+        a.tables.map((t) => ({
+          type: 'table' as const,
+          target: a.target,
+          at: a.at,
+          table: { ...t, rows: t.rows.map((r) => r.map((v) => (v === null ? 'NULL' : String(v)))) },
+        })),
+        a.message ? { message: a.message } : {},
+      ),
+  )
+
   server.registerTool(
     'set_status',
     {
@@ -656,7 +701,7 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
     ({ marks, message }) =>
       safe(async () => {
         const inputs = marks.map((m) => normalizeMarkInput(m as Loose))
-        const proposals = inputs.filter((m) => m.type !== 'status').length
+        const proposals = inputs.filter((m) => m.type !== 'status' && m.type !== 'table').length
         if (proposals > LIMITS.marksPerBatch) {
           throw new VibeprintError(
             `A batch holds at most ${LIMITS.marksPerBatch} marks; you sent ${proposals}. Keep only the marks that matter, propose them, and wait for review before sending the rest.`,

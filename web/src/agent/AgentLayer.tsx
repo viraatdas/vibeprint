@@ -1,12 +1,15 @@
-import { memo, useMemo, type CSSProperties, type ReactNode } from 'react'
+import { memo, useEffect, useMemo, useRef, type CSSProperties, type ReactNode } from 'react'
+import { expandRect, unionRects } from '@shared/geometry'
 import { useEditor, useEditorValue } from '../canvas/Board'
 import { nodeLabel } from '@shared/graph'
+import { columnTypeLine, TABLE } from '@shared/marks'
 import type { Rect } from '@shared/types'
 import { useUi } from '../store'
 import { computeLayout, type MarkGeom, type Part } from './layout'
 import { DRAW_MS } from './pacing'
 import { checkMark, crossAt, hashSeed, roughArrow, roughLine, roughRect, strikeThrough, underline } from './rough'
 import { MarkBadges } from '../ui/MarkPopover'
+import { SchemaChips } from '../ui/SchemaChips'
 
 const PAD = 10
 
@@ -23,6 +26,28 @@ export function AgentLayer() {
   // Marks follow the user's shapes, so the layout reruns whenever the document changes.
   const docVersion = useEditorValue((e) => e.docVersion)
   const layout = useMemo(() => (vp ? computeLayout(vp, (id) => editor.getShapePageBounds(id)) : null), [editor, vp, docVersion])
+
+  // Tables arrive because the user asked for them: bring new ones into view beside their
+  // database (never mid-stroke, and not when they are already on screen).
+  const seenTables = useRef<Set<string> | null>(null)
+  useEffect(() => {
+    if (!layout) return
+    const tables = layout.marks.filter((g) => g.mark.type === 'table')
+    if (!seenTables.current) {
+      seenTables.current = new Set(tables.map((g) => g.mark.id))
+      return
+    }
+    const fresh = tables.filter((g) => !seenTables.current!.has(g.mark.id))
+    if (!fresh.length) return
+    for (const g of fresh) seenTables.current.add(g.mark.id)
+    if (editor.liveId) return
+    const anchors = fresh.flatMap((g) => (g.mark.target.kind === 'node' ? [layout.nodes.find((n) => n.node.id === (g.mark.target as { id: string }).id)?.rect] : [])).filter((r) => !!r)
+    const b = unionRects([...fresh.map((g) => g.bounds), ...anchors])
+    if (!b) return
+    const view = editor.getViewportPageBounds()
+    const inside = b.x >= view.x && b.y >= view.y && b.x + b.w <= view.x + view.w && b.y + b.h <= view.y + view.h
+    if (!inside) editor.zoomToBounds(expandRect(b, 40), { animate: true })
+  }, [layout, editor])
 
   const dimCss = useMemo(() => {
     if (!layout || collapsed || !layout.dimmed.length) return ''
@@ -76,6 +101,7 @@ export function AgentLayer() {
         </g>
       </svg>
       <MarkBadges marks={marks} cam={cam} />
+      <SchemaChips nodes={layout.nodes} cam={cam} />
     </>
   )
 }
@@ -146,7 +172,76 @@ function PartView({ part: p, seed, delay, dur, animate, id }: { part: Part; seed
       return <Stroke d={roughLine(p.a, p.b, seed, 0.8)} thin dashed {...s} />
     case 'note':
       return <Note part={p} seed={seed} anim={s} />
+    case 'table':
+      return <TableView part={p} seed={seed} anim={s} />
   }
+}
+
+const fit = (text: string, width: number, char: number) => {
+  const max = Math.max(1, Math.floor(width / char + 0.05))
+  return text.length > max ? text.slice(0, Math.max(1, max - 1)) + '…' : text
+}
+
+/** A table the agent read out of the code: header with types and keys, then example rows. */
+function TableView({ part: p, seed, anim }: { part: Extract<Part, { t: 'table' }>; seed: number; anim: Anim }) {
+  const { rect, table: t, widths } = p
+  const top = rect.y + TABLE.title
+  const grid = { x: rect.x, y: top, w: rect.w, h: rect.h - TABLE.title }
+  const xs = widths.reduce<number[]>((acc, w) => [...acc, acc[acc.length - 1] + w], [rect.x])
+  const rowY = (i: number) => top + TABLE.head + i * TABLE.row
+  const name = fit(t.name, rect.w * 0.6, 11)
+  const body = (
+    <g className="vp-table">
+      <text x={rect.x + 2} y={rect.y + 22} className="vp-text vp-table-name">
+        {name}
+      </text>
+      {t.source && (
+        <text x={rect.x + 2 + name.length * 11 + 12} y={rect.y + 22} className="vp-table-source">
+          {fit(t.source, rect.w - name.length * 11 - 50, 6.6)}
+        </text>
+      )}
+      <rect x={grid.x} y={grid.y} width={grid.w} height={TABLE.head} className="vp-table-head" />
+      <path d={roughRect(grid, seed)} className="vp-stroke" />
+      <path d={`M${grid.x} ${top + TABLE.head}H${grid.x + grid.w}`} className="vp-table-rule" />
+      {t.rows.slice(0, -1).map((_, i) => (
+        <path key={`r${i}`} d={`M${grid.x} ${rowY(i + 1)}H${grid.x + grid.w}`} className="vp-table-line" />
+      ))}
+      {xs.slice(1, -1).map((x, i) => (
+        <path key={`c${i}`} d={`M${x} ${top}V${grid.y + grid.h}`} className="vp-table-line" />
+      ))}
+      {t.columns.map((c, i) => {
+        const inner = widths[i] - TABLE.pad * 2
+        const key = c.key === 'primary' ? 'PK' : c.key === 'foreign' ? 'FK' : ''
+        const type = columnTypeLine(c)
+        return (
+          <g key={`h${i}`}>
+            <text x={xs[i] + TABLE.pad} y={top + 19} className="vp-table-col">
+              {fit(c.name, inner - (key ? TABLE.keyW : 0), TABLE.nameChar)}
+              {key && <tspan className="vp-table-key" dx={5}>{key}</tspan>}
+            </text>
+            {type && (
+              <text x={xs[i] + TABLE.pad} y={top + 35} className="vp-table-type">
+                {fit(type, inner, TABLE.typeChar)}
+              </text>
+            )}
+          </g>
+        )
+      })}
+      {t.rows.map((r, ri) =>
+        r.map((v, ci) => (
+          <text key={`v${ri}-${ci}`} x={xs[ci] + TABLE.pad} y={rowY(ri) + 19} className={`vp-table-cell${v === '' || v === 'NULL' ? ' is-null' : ''}`}>
+            {fit(v === '' ? 'NULL' : v, widths[ci] - TABLE.pad * 2, TABLE.char)}
+          </text>
+        )),
+      )}
+    </g>
+  )
+  if (!anim.animate) return body
+  return (
+    <Wipe anim={anim} rect={{ x: rect.x - 8, y: rect.y - 8, w: rect.w + 16, h: rect.h + 16 }}>
+      {body}
+    </Wipe>
+  )
 }
 
 interface Anim {

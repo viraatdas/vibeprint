@@ -37,6 +37,7 @@ export const api = {
   chat: (text: string) => call('POST', '/api/chat', { text }),
   /** Scan the repo and draw what is already built. */
   mapRepo: () => call<MapResult>('POST', '/api/map', {}),
+  showSchema: (target?: string) => call<{ reading: string; target?: string }>('POST', '/api/schema', target ? { target } : {}),
 }
 
 export type Connection = 'connecting' | 'live' | 'offline'

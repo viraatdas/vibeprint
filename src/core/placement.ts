@@ -96,3 +96,29 @@ export function placeNear(anchor: Rect, size: Size, blockers: Rect[], prefer: 's
   }
   return { x: Math.round(anchor.w + GAP), y: 0 }
 }
+
+/**
+ * A free spot for a big box (a table): the nearest place around `anchor` that hits nothing,
+ * preferring the right and below, so a database's tables gather beside it. Returned as an
+ * offset from the anchor's top-left.
+ */
+export function placeAround(anchor: Rect, size: Size, blockers: Rect[]): Point {
+  const STEP = 24
+  const right = anchor.x + anchor.w
+  const bottom = anchor.y + anchor.h
+  let best: { x: number; y: number; cost: number } | null = null
+  for (let x = anchor.x - size.w - 1600; x <= right + 2400; x += STEP) {
+    for (let y = anchor.y - size.h - 600; y <= bottom + 2400; y += STEP) {
+      const dx = x >= right ? x - right : x + size.w <= anchor.x ? anchor.x - (x + size.w) : 0
+      const dy = y >= bottom ? y - bottom : y + size.h <= anchor.y ? anchor.y - (y + size.h) : 0
+      if (!dx && !dy) continue
+      let cost = Math.hypot(dx, dy) + Math.abs(y - anchor.y) * 0.15
+      if (x + size.w <= anchor.x) cost += 400
+      if (y + size.h <= anchor.y) cost += 250
+      if (best && cost >= best.cost) continue
+      if (blockers.some((b) => rectsOverlap({ x, y, w: size.w, h: size.h }, b, 24))) continue
+      best = { x, y, cost }
+    }
+  }
+  return best ? { x: Math.round(best.x - anchor.x), y: Math.round(best.y - anchor.y) } : { x: Math.round(anchor.w + GAP), y: 0 }
+}

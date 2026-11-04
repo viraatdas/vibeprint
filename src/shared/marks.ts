@@ -1,5 +1,5 @@
 import { nodeLabel, targetName } from './graph.js'
-import type { Batch, Graph, Mark, Size } from './types.js'
+import type { Batch, Graph, Mark, Size, TableSpec } from './types.js'
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 
@@ -11,12 +11,14 @@ export function summarizeMarks(marks: Pick<Mark, 'type' | 'data'>[]): string {
   let notes = 0
   let questions = 0
   let statuses = 0
+  let tables = 0
   for (const m of marks) {
     if (m.type === 'add') adds++
     else if (m.type === 'strike') strikes++
     else if (m.type === 'rewrite') rewrites++
     else if (m.type === 'note') (m.data.question ? questions++ : notes++)
     else if (m.type === 'status') statuses++
+    else if (m.type === 'table') tables++
   }
   const parts: string[] = []
   if (adds) parts.push(plural(adds, 'add'))
@@ -25,6 +27,7 @@ export function summarizeMarks(marks: Pick<Mark, 'type' | 'data'>[]): string {
   if (questions) parts.push(plural(questions, 'question'))
   if (notes) parts.push(plural(notes, 'note'))
   if (statuses) parts.push(plural(statuses, 'status update'))
+  if (tables) parts.push(plural(tables, 'table'))
   return parts.join(', ') || 'nothing'
 }
 
@@ -48,7 +51,49 @@ export function describeMark(mark: Mark, graph: Graph): string {
       return `${d.question ? 'question' : 'note'} on ${on}: ${d.text}`
     case 'status':
       return `${on} → ${d.nodeStatus}${d.detail ? ` (${d.detail})` : ''}`
+    case 'table': {
+      const t = d.table
+      if (!t) return `table on ${on}`
+      return `table ${t.name}${mark.target.kind === 'point' ? '' : ` on ${on}`}: ${plural(t.columns.length, 'column')}, ${plural(t.rows.length, 'example row')}${t.source ? ` (${t.source})` : ''}`
+    }
   }
+}
+
+/** How a table is drawn (page units); the canvas and the placement both use it. */
+export const TABLE = {
+  title: 34,
+  head: 44,
+  row: 28,
+  pad: 10,
+  /** Average character widths: cells (13px mono), column names (13.5px semibold), types (11px mono). */
+  char: 7.9,
+  nameChar: 8.2,
+  typeChar: 6.7,
+  /** Room for a PK/FK tag after a column name. */
+  keyW: 24,
+  minCol: 64,
+  maxCol: 240,
+  maxColumns: 12,
+  maxRows: 8,
+}
+
+/** The second header line: the type, and where a foreign key points. */
+export const columnTypeLine = (c: TableSpec['columns'][number]) => [c.type, c.references ? `→ ${c.references}` : ''].filter(Boolean).join(' ')
+
+export function tableColumnWidths(t: TableSpec): number[] {
+  return t.columns.map((c, i) => {
+    const px = Math.max(
+      c.name.length * TABLE.nameChar + (c.key ? TABLE.keyW : 0),
+      columnTypeLine(c).length * TABLE.typeChar,
+      ...t.rows.map((r) => (r[i] ?? '').length * TABLE.char),
+    )
+    return Math.ceil(Math.min(TABLE.maxCol, Math.max(TABLE.minCol, px + 2 * TABLE.pad)))
+  })
+}
+
+export function tableSize(t: TableSpec): Size {
+  const w = tableColumnWidths(t).reduce((a, b) => a + b, 0)
+  return { w: Math.max(w, 160), h: TABLE.title + TABLE.head + t.rows.length * TABLE.row }
 }
 
 function refName(graph: Graph, id: string, mark: Mark): string {

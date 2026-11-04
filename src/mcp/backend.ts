@@ -232,7 +232,8 @@ export class LocalBackend implements Backend {
           events.push({ type: 'map', at: c.sketch.createdAt, seq: c.sketch.seq, author: c.graph.interpretedBy ?? 'vibeprint', nodes: mapped.length, edges: c.graph.edges.length })
         }
         for (const m of c.chat) if (m.role === 'user' && after(m.createdAt)) events.push({ type: 'chat', at: m.createdAt, message: m })
-        const decided = c.marks.filter((m) => m.type !== 'status' && m.status !== 'pending' && after(m.decidedAt) && (!author || m.author === author))
+        // A table lands accepted on its own; only the user removing one is their decision.
+        const decided = c.marks.filter((m) => m.type !== 'status' && !(m.type === 'table' && m.status === 'accepted') && m.status !== 'pending' && after(m.decidedAt) && (!author || m.author === author))
         if (decided.length) {
           events.push({
             type: 'decision',

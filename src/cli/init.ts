@@ -45,6 +45,7 @@ The user draws this project's architecture on the Vibeprint canvas (\`vibeprint 
 2. **As work lands:** call \`set_status\` on the node (\`building\`, \`done\`, or \`blocked\` with a detail). Progress updates land immediately.
 3. **Structural changes** (a new component or connection, removing or renaming one): propose them as marks with \`add\`, \`strike\`, \`rewrite\` or \`annotate\`, or several at once with \`propose\`; then \`finish_batch\` and wait for the user's decision with \`list_marks\` or \`wait_for_user\`. Build only what is accepted.
 4. **Never deviate silently.** If the code and the drawing disagree, say so with a mark or \`post_chat\`. Don't edit \`.vibeprint/\` files by hand.
+5. **Schema questions:** when the user asks to see the schema or what the data looks like, or sketches a table, read the schema from the code and draw it with \`show_table\` beside the database (columns as the code defines them, a few example rows).
 ${SECTION_END}`
 }
 

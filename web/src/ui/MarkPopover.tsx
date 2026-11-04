@@ -17,7 +17,8 @@ export function MarkBadges({ marks, cam }: { marks: MarkGeom[]; cam: Cam }) {
   // The card renders above the toolbar and submit button, not inside the canvas layer.
   const container = useContainer()
   if (!vp) return null
-  const pending = marks.filter((m) => m.mark.status === 'pending')
+  // Pending marks wait for a decision; a table has landed but can still be taken off.
+  const pending = marks.filter((m) => m.mark.status === 'pending' || m.mark.type === 'table')
   const sel = marks.find((m) => m.mark.id === selected)
 
   return (
@@ -35,7 +36,7 @@ export function MarkBadges({ marks, cam }: { marks: MarkGeom[]; cam: Cam }) {
             onClick={() => ui.set({ selected: selected === g.mark.id ? null : g.mark.id })}
             aria-label={`Review mark ${n}: ${describeMark(g.mark, vp.graph)}`}
           >
-            {g.mark.type === 'note' && g.mark.data.question ? '?' : n || '•'}
+            {g.mark.type === 'table' ? '×' : g.mark.type === 'note' && g.mark.data.question ? '?' : n || '•'}
           </button>
         )
       })}
@@ -71,6 +72,7 @@ function MarkCard({ geom, cam }: { geom: MarkGeom; cam: Cam }) {
   const top = Math.max(60, Math.min(anchor.y - 12, vh - size.h - 16))
 
   const isNote = mark.type === 'note'
+  const isTable = mark.type === 'table'
   const batch = vp.batches.find((b) => b.id === mark.batchId)
   const inBatch = batch ? marksOfBatch(batch, vp.marks).filter((m) => m.status === 'pending') : []
   const reviewing = review && review.batchId === mark.batchId
@@ -94,6 +96,23 @@ function MarkCard({ geom, cam }: { geom: MarkGeom; cam: Cam }) {
       <p className="vp-card-what">{describeMark(mark, vp.graph)}</p>
       {mark.reason && <p className="vp-card-why">{mark.reason}</p>}
       {isNote && mark.data.question && <p className="vp-card-hint">Answer by writing next to the note, then submit.</p>}
+      {isTable && <p className="vp-card-hint">The columns come from the code; the rows are examples.</p>}
+      {isTable ? (
+        <div className="vp-card-actions">
+          <button className="vp-btn" onClick={() => ui.set({ selected: null })}>
+            Keep
+          </button>
+          <button
+            className="vp-btn vp-btn-agent"
+            onClick={async () => {
+              await decide(mark, 'reject')
+              ui.set({ selected: null })
+            }}
+          >
+            Remove table
+          </button>
+        </div>
+      ) : (
       <div className="vp-card-actions">
         <button
           className="vp-btn"
@@ -114,6 +133,7 @@ function MarkCard({ geom, cam }: { geom: MarkGeom; cam: Cam }) {
           {isNote ? 'Resolve' : 'Accept'}
         </button>
       </div>
+      )}
     </div>
   )
 }

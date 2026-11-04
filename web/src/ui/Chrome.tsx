@@ -214,6 +214,12 @@ export function TopBar() {
     if (reading) return setWasReading(true)
     if (!wasReading || !reader) return
     setWasReading(false)
+    if (reader.task === 'schema') {
+      if (reader.outcome === 'tables') toast(`${reader.label} drew ${reader.count === 1 ? 'a table' : `${reader.count} tables`} from the code. The rows are examples.`, 5000)
+      else if (reader.outcome === 'none') toast(`${reader.label} found no tables in the code. Its note is in the chat.`)
+      else if (reader.outcome === 'failed') toast(`Couldn't read the schema with ${reader.label}: ${reader.lastError ?? 'it failed'}.`)
+      return
+    }
     if (reader.outcome === 'redrawn') toast(`${reader.label} read the code and redrew the map.`)
     else if (reader.outcome === 'kept') toast(`${reader.label} finished reading the code. You'd edited the map, so it stays; tap Map this repo to redraw it.`)
     else if (reader.outcome === 'failed') toast(`Couldn't read the code with ${reader.label}: ${reader.lastError ?? 'it failed'}. The quick map stays.`)
@@ -245,7 +251,7 @@ export function TopBar() {
           className={`vp-pill${reading ? ' is-reading' : ''}`}
           onClick={mapRepo}
           disabled={mapping || reading}
-          title={reading ? `${reader?.label} is reading the code to redraw the map` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
+          title={reading ? `${reader?.label} is reading the code${reader?.task === 'schema' ? ' for the tables' : ' to redraw the map'}` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
         >
           <Icon name="map" />
           <span className="vp-pill-label">{mapping ? 'Mapping…' : reading ? 'Reading the code…' : 'Map this repo'}</span>

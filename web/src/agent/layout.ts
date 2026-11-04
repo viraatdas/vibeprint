@@ -2,8 +2,8 @@
 // user's shapes so every mark follows its target when it is dragged.
 import { expandRect, rectCenter, rectEdgePoint, unionRects } from '@shared/geometry'
 import { edgeLabel, nodeLabel, nodeRect, targetRect, type BoundsLookup } from '@shared/graph'
-import { wrapText } from '@shared/marks'
-import type { Graph, GraphNode, Mark, Point, Rect, VibeprintState } from '@shared/types'
+import { TABLE, tableColumnWidths, wrapText } from '@shared/marks'
+import type { Graph, GraphNode, Mark, Point, Rect, TableSpec, VibeprintState } from '@shared/types'
 
 export type Part =
   | { t: 'box'; rect: Rect; dashed: boolean; fill?: boolean }
@@ -14,6 +14,7 @@ export type Part =
   | { t: 'underline'; x: number; y: number; w: number }
   | { t: 'note'; rect: Rect; lines: string[]; question: boolean; answer?: string }
   | { t: 'leader'; a: Point; b: Point }
+  | { t: 'table'; rect: Rect; table: TableSpec; widths: number[] }
 
 export interface MarkGeom {
   mark: Mark
@@ -76,6 +77,12 @@ export function computeLayout(vp: VibeprintState, lookup: BoundsLookup): Layout 
     const geom = markGeometry(m, g, lookup, rectOf)
     if (geom) marks.push(geom)
   }
+  // A database's tables sit around it; a leader that would cut through another table is
+  // dropped (being next to the database already says where it belongs).
+  const tables = marks.filter((x) => x.mark.type === 'table')
+  for (const t of tables) {
+    t.parts = t.parts.filter((p) => p.t !== 'leader' || !tables.some((o) => o !== t && segmentCrosses(p.a, p.b, expandRect(o.bounds, 6))))
+  }
   return { nodes, agentEdges, marks, dimmed }
 }
 
@@ -136,8 +143,32 @@ function markGeometry(m: Mark, g: Graph, lookup: BoundsLookup, rectOf: Map<strin
       parts.push({ t: 'note', rect, lines: wrapText(d.text ?? ''), question: !!d.question, answer: d.answer })
       return { mark: m, parts, badge: { x: rect.x + rect.w, y: rect.y }, bounds: rect }
     }
+    case 'table': {
+      if (!d.offset || !d.size || !d.table) return null
+      const rect = { x: anchor.x + d.offset.x, y: anchor.y + d.offset.y, w: d.size.w, h: d.size.h }
+      if (m.target.kind !== 'point') {
+        const { a, b } = connect(rect, anchor)
+        parts.push({ t: 'leader', a, b })
+      }
+      // Columns share out any width the title needed beyond them.
+      const widths = tableColumnWidths(d.table)
+      const spare = rect.w - widths.reduce((x, y) => x + y, 0)
+      if (spare > 0) widths[widths.length - 1] += spare
+      parts.push({ t: 'table', rect, table: d.table, widths })
+      return { mark: m, parts, badge: { x: rect.x + rect.w, y: rect.y + TABLE.title }, bounds: rect }
+    }
   }
   return null
+}
+
+function segmentCrosses(a: Point, b: Point, r: Rect): boolean {
+  for (let i = 1; i < 24; i++) {
+    const t = i / 24
+    const x = a.x + (b.x - a.x) * t
+    const y = a.y + (b.y - a.y) * t
+    if (x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h) return true
+  }
+  return false
 }
 
 function partRect(p: Part): Rect[] {
@@ -145,6 +176,7 @@ function partRect(p: Part): Rect[] {
     case 'box':
     case 'strike':
     case 'note':
+    case 'table':
       return [p.rect]
     case 'arrow':
     case 'leader':

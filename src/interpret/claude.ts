@@ -190,6 +190,16 @@ export async function mapRepoWithClaude(
   schema: object,
   opts: { client?: AnthropicLike; model?: string; signal?: AbortSignal } = {},
 ): Promise<RepoMap> {
+  return (await askClaudeJson(prompt, schema, 'map', opts)) as RepoMap
+}
+
+/** One structured-output request: the reply is JSON matching `schema`. */
+export async function askClaudeJson(
+  prompt: string,
+  schema: object,
+  what: string,
+  opts: { client?: AnthropicLike; model?: string; signal?: AbortSignal } = {},
+): Promise<unknown> {
   const client = opts.client ?? defaultClient()
   const response = await client.beta.messages.create(
     {
@@ -200,7 +210,7 @@ export async function mapRepoWithClaude(
     },
     opts.signal ? { signal: opts.signal } : undefined,
   )
-  return readJson(response, 'map') as RepoMap
+  return readJson(response, what)
 }
 
 /** The user-turn text: shape listing, previous graph, open questions. */

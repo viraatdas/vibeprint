@@ -137,8 +137,28 @@ export interface Graph {
 // Marks: every agent action is a record in its own color.
 // ---------------------------------------------------------------------------
 
-export type MarkType = 'add' | 'strike' | 'rewrite' | 'note' | 'status'
-export const MARK_TYPES: MarkType[] = ['add', 'strike', 'rewrite', 'note', 'status']
+export type MarkType = 'add' | 'strike' | 'rewrite' | 'note' | 'status' | 'table'
+export const MARK_TYPES: MarkType[] = ['add', 'strike', 'rewrite', 'note', 'status', 'table']
+
+/** A table an agent shows on the canvas: its columns from the code, and example rows. */
+export interface TableSpec {
+  /** "users" */
+  name: string
+  columns: TableColumn[]
+  /** Example rows, one value per column, as text. Made up, but consistent with the types and keys. */
+  rows: string[][]
+  /** Where it is defined: "prisma/schema.prisma". */
+  source?: string
+}
+
+export interface TableColumn {
+  name: string
+  /** As the code says it: "uuid", "text", "timestamptz", "Int". */
+  type?: string
+  key?: 'primary' | 'foreign'
+  /** For a foreign key: "users.id". */
+  references?: string
+}
 export type MarkStatus = 'pending' | 'accepted' | 'rejected'
 export type Decision = 'accept' | 'reject'
 
@@ -171,6 +191,8 @@ export interface MarkData {
   // status
   nodeStatus?: NodeStatus
   detail?: string
+  // table
+  table?: TableSpec
 }
 
 export interface Mark {
@@ -226,6 +248,8 @@ export interface MarkInput {
   question?: boolean
   /** status: the node's new build status. */
   status?: NodeStatus
+  /** table: the table to show, next to the target (a database) or at `at`. */
+  table?: TableSpec
   detail?: string
   reason?: string
 }
@@ -331,10 +355,16 @@ export interface MapperInfo {
   /** "Claude", "Claude Code", "Codex". */
   label?: string
   active: boolean
+  /** What it is reading for: the map (the default) or a database's tables. */
+  task?: 'map' | 'schema'
   startedAt?: string
   finishedAt?: string
-  /** How the last reading ended: redrawn, kept (the user had edited the map), or failed. */
-  outcome?: 'redrawn' | 'kept' | 'failed'
+  /**
+   * How the last reading ended. Map: redrawn, kept (the user had edited the map) or failed.
+   * Schema: tables (drawn `count` of them), none (the code defines no tables) or failed.
+   */
+  outcome?: 'redrawn' | 'kept' | 'failed' | 'tables' | 'none'
+  count?: number
   lastError?: string
 }
 

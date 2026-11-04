@@ -111,6 +111,7 @@ test('lists the tools and gives instructions with the agent rule', async () => {
       'read_chat',
       'rewrite',
       'set_status',
+      'show_table',
       'strike',
       'wait_for_user',
     ].sort(),
@@ -315,6 +316,36 @@ test('get_sketch flags an uninterpreted sketch, and interpret folds it in', asyn
   assert.ok(g.nodes.some((n) => n.id === 'n_redis_cache'), 'accepted agent node survives')
   assert.ok(g.edges.some((e) => e.from === 'n_api' && e.to === 'n_jobs_queue'))
   assert.match(textOf(await call('get_sketch')), /Interpreted \(graph v\d+\)/)
+})
+
+test('show_table puts tables beside the database, landed at once', async () => {
+  const before = marksOnDisk().marks.filter((m) => m.status === 'pending').length
+  const res = await call('show_table', {
+    target: 'Postgres',
+    tables: [
+      {
+        name: 'users',
+        source: 'db/schema.sql',
+        columns: [{ name: 'id', type: 'uuid', key: 'primary' }, { name: 'email', type: 'text' }],
+        rows: [['7f3a', 'ada@example.com'], ['91bc', null]],
+      },
+      { name: 'orders', columns: [{ name: 'id', key: 'primary' }, { name: 'user_id', key: 'foreign', references: 'users.id' }, { name: 'total', type: 'numeric' }], rows: [[1, '7f3a', 42.5]] },
+    ],
+  })
+  assert.ok(!res.isError, textOf(res))
+  assert.match(textOf(res), /Landed .*table users on Postgres: 2 columns, 2 example rows \(db\/schema\.sql\)/)
+  assert.match(textOf(res), /Tables only show something/)
+  const { marks } = marksOnDisk()
+  const tables = marks.filter((m) => m.type === 'table')
+  assert.equal(tables.length, 2)
+  const pg = graphOnDisk().nodes.find((n) => n.label === 'Postgres')!.id
+  assert.ok(tables.every((m) => m.status === 'accepted' && m.target.kind === 'node' && m.target.id === pg), JSON.stringify(tables.map((m) => [m.status, m.target])))
+  assert.deepEqual(tables[0].data.table?.rows[1], ['91bc', 'NULL'])
+  assert.deepEqual(tables[1].data.table?.rows[0], ['1', '7f3a', '42.5'], 'numbers come in as text')
+  assert.equal(marks.filter((m) => m.status === 'pending').length, before, 'nothing waits for review')
+  // The two tables sit apart.
+  const [a, b] = tables.map((m) => ({ ...m.data.offset!, ...m.data.size! }))
+  assert.ok(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y, 'tables do not overlap')
 })
 
 test('map_architecture draws the code beside the sketch and marks it built', async () => {
