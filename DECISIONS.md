@@ -214,3 +214,13 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Ship when requested — No npm publish, public deployment, native installation or live-daemon upgrade performed.
 - **By:** main-branch-o9bcj · 2026-11-04T05:27:32.083Z
 
+## main-branch-o9bcj: Shipped Vibeprint 0.8.1. Pushed all mapper, AI cleanup, authorship-color,
+- **Did:** Shipped Vibeprint 0.8.1. Pushed all mapper, AI cleanup, authorship-color, typography/layout, evaluation, website and release changes to origin/main without force-pushing. GitHub Actions published npm and GitHub release; npm latest verified 0.8.1. Vercel production deployment dpl_CvAQ5Ndg4qGN5PdUVfrnuATb9aJ9 serves vibeprint.viraat.dev and the public 34-trial evaluation gallery. Fresh-install verification caught the old daemon/MCP version constants in 0.8.0; fixed in 0.8.1 and added a package-version consistency regression. Installed the actual 0.8.1 release into a clean temporary prefix and verified health version, live canvas, bundled font, cleanup/map controls and blue/red ink in Chromium. No other project daemon was restarted.
+- **Interfaces:** npm vibeprint@latest = 0.8.1; GitHub release v0.8.1. Website footer links /evaluations/2026-11-04/. Vercel site build copies archived evaluation artifacts using scripts/build-site.mjs. Website installation commands use @latest to avoid stale npx cache. App protocol changes are those documented in the preceding evaluation handoff.
+- **Delivery:** verified; release; target=npm:vibeprint@0.8.1; Vercel production vibeprint.viraat.dev; revision=f18d53fd12114ad060cda7a94155a67fa483b03d; verifiedAt=2026-11-04T05:46:05.432Z; checks=7
+- **Follow-ups:**
+  - Restart an existing local Vibeprint session to use the released app — Publishing a package does not replace already running project daemons; existing sessions were preserved. Use npx vibeprint@latest when restarting.
+  - Carry presentation metadata through AI cleanup and add linked overview/screen views — Cleanup still uses the simpler reconciliation layout; Excellent scores apply to the saved focused runtime diagrams.
+  - Verify on a real iPad and with independent human readers — Browser checks used Chromium at iPad landscape and phone widths; diagram scores are model-assisted source reviews.
+- **By:** main-branch-o9bcj · 2026-11-04T05:46:31.263Z
+
