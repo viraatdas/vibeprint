@@ -5,6 +5,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
+import { projectFactSchema, projectMetricSchema } from '../shared/project-insights.js'
 import type { ActivityEvent } from '../shared/api.js'
 import { targetOrigin } from '../shared/graph.js'
 import {
@@ -519,6 +520,7 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
         'Draw the components this repo already has, and how they connect, onto the canvas as editable boxes and arrows, and record them as the architecture with every component marked done. ' +
         'Read the code first and pass `nodes` and `edges`; with neither, Vibeprint scans the repo itself (folders, package manifests, imports), which is rougher. ' +
         'Explain the main workflows with runtime actors, meaningful roles, protocol/payload labels, failure behavior and real deployment/trust boundaries. Use presentation metadata and split larger maps into focused views (3-5 actors and at most 6 edges per view); collectively cover every node and edge. Shared actors remain one architecture node. ' +
+        'Include facts unique to this product (limits, overrides, login/session lifecycle, capacity and recovery) and meaningful metrics with precise counting definitions. Read-only observations may include aggregate counts with their time, window, environment and evidence source; never infer a current count from code, conflate active sessions with login events, or include user records or credentials. ' +
         'Redrawing replaces your previous map if the user has not edited it; otherwise the new map goes beside it.',
       inputSchema: {
         title: z.string().optional().describe('The product question this map answers'),
@@ -528,6 +530,8 @@ export function createMcpServer(opts: McpServerOptions): McpServer {
         omissions: z.array(z.string()).optional(),
         groups: z.array(z.object({ id: z.string(), label: z.string(), description: z.string() })).optional(),
         notes: z.array(z.object({ title: z.string(), text: z.string(), source: z.string() })).optional(),
+        facts: z.array(projectFactSchema).max(6).optional().describe('Source-linked product facts, including defaults versus deployed settings and override precedence'),
+        metrics: z.array(projectMetricSchema).max(24).optional().describe('Product-specific counting definitions; reading is optional and requires a real dated aggregate observation, its scope, window and source'),
         views: z.array(z.object({ kind: z.enum(['overview', 'workflow']).optional(), edgeLabels: z.array(z.string()).optional(), title: z.string(), scope: z.string(), nodeIds: z.array(z.string()), edgeIndices: z.array(z.number().int().min(0)), noteIndices: z.array(z.number().int().min(0)), notes: z.array(z.object({ title: z.string(), text: z.string(), source: z.string() })).optional() })).max(8).optional().describe('Focused views; edgeIndices and noteIndices are zero-based indices into edges and notes. Include both endpoints; cover every actor and flow.'),
         verification: z.object({ at: z.string(), revision: z.string(), dirty: z.boolean() }).optional().describe('Actual source-review date/revision; never claim live verification'),
         nodes: z

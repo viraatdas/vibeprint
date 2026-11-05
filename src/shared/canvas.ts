@@ -2,7 +2,7 @@
 // (which draws and edits them) and the daemon (which syncs and saves them to
 // .vibeprint/canvas.json). Page units match what agents see in sketch bounds.
 import { strokeIsClosed, unionRects } from './geometry.js'
-import type { Point, Rect, SketchShape } from './types.js'
+import type { Point, ProjectMetric, Rect, SketchShape } from './types.js'
 
 /** Bumped when the wire protocol between the canvas and the daemon changes. */
 export const CANVAS_PROTOCOL = 1
@@ -25,6 +25,8 @@ interface ShapeBase {
   /** All shapes in a focused map view share this navigation bookmark. */
   mapView?: { id: string; title: string; details?: {
     notes: Array<{ title: string; text: string; source: string }>
+    facts?: Array<{ title: string; text: string; source: string }>
+    metrics?: ProjectMetric[]
     owner: string
     verification?: { at: string; revision: string; dirty: boolean }
     modes: string[]

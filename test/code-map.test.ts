@@ -245,3 +245,19 @@ describe('Map this repo with a model on the machine', () => {
   assert.match(map.scope!, /Source audit incomplete/)
   assert.ok(map.verification?.at)
 })
+
+test('source mapping attaches explicit observations even when the model did not define metrics', async () => {
+  const root = repo()
+  fs.mkdirSync(path.join(root, '.vibeprint'))
+  const metric = { id: 'orders-completed', label: 'Completed orders', definition: 'Orders completed in the reporting window', unit: 'orders', source: 'server/index.ts',
+    reading: { value: 0, at: '2026-11-05T00:00:00Z', scope: 'fixture', window: 'last 24 hours', source: 'test aggregate export' } }
+  const file = path.join(root, '.vibeprint/observations.json')
+  fs.writeFileSync(file, JSON.stringify({ metrics: [metric] }))
+  const mapper: Mapper = { kind: 'claude-code', label: 'Claude Code', author: 'claude', bin: fakeClaude() }
+  const map = await mapWithModel(root, { nodes: [], edges: [] }, mapper)
+  assert.deepEqual(map.metrics, [metric])
+  fs.writeFileSync(file, 'invalid')
+  const unavailable = await mapWithModel(root, { nodes: [], edges: [] }, mapper)
+  assert.equal(unavailable.metrics, undefined)
+  assert.match(unavailable.omissions!.join(' '), /Activity snapshot unavailable/)
+})

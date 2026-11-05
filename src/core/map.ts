@@ -6,7 +6,9 @@ import crypto from 'node:crypto'
 import { arrowPoints, docBounds, extractSketch, shapeBounds, TEXT_LINE, TEXT_SIZE, type InkPoint, type Shape } from '../shared/canvas.js'
 import type { InterpretationResult, RepoMap, RepoMapEdge } from '../shared/types.js'
 import { FILES, VibeprintCore, VibeprintError } from './core.js'
-import { drawPresentedMap } from './map-presentation.js'
+import { drawPresentedMap, wrapMapText } from './map-presentation.js'
+import { appendInsightViews } from './map-insights.js'
+import { projectFactSchema, projectMetricSchema } from '../shared/project-insights.js'
 
 /** The last map drawn, so an untouched map can be replaced instead of piling up. */
 interface MapRecord {
@@ -179,7 +181,14 @@ export function cleanMap(map: RepoMap): RepoMap {
   const ids = new Set(nodes.map((n) => n.id))
   const presented = !!(map.title && map.groups?.length)
   const edges = (map.edges ?? []).filter((e) => e && ids.has(e.from) && ids.has(e.to) && (presented || e.from !== e.to)).slice(0, 60)
-  return { ...map, nodes, edges }
+  const facts = Array.isArray(map.facts) ? map.facts.slice(0, 6).flatMap(fact => { const parsed = projectFactSchema.safeParse(fact); return parsed.success ? [parsed.data] : [] }) : undefined
+  const metricIds = new Set<string>()
+  const metrics = Array.isArray(map.metrics) ? map.metrics.slice(0, 24).flatMap(metric => {
+    const parsed = projectMetricSchema.safeParse(metric)
+    if (!parsed.success || metricIds.has(parsed.data.id)) return []
+    metricIds.add(parsed.data.id); return [parsed.data]
+  }) : undefined
+  return { ...map, nodes, edges, ...(map.facts !== undefined ? { facts: facts || [] } : {}), ...(map.metrics !== undefined ? { metrics: metrics || [] } : {}) }
 }
 
 /** Lay the map out in rows (clients, then services, then data) and turn it into shapes. */
@@ -386,7 +395,7 @@ export function drawMap(map: RepoMap, origin: { x: number; y: number }): ReturnT
     if (boxes.some(hit) || placed.some(hit) || Math.hypot(b.x - a.x, b.y - a.y) < w + 30) delete s.text
     else placed.push(r)
   }
-  return { shapes, nodeShapes, edges }
+  return appendInsightViews(map, origin, { shapes, nodeShapes, edges }, wrapMapText)
 }
 
 /** Arrow label size on the canvas (web/src/canvas/ink.ts ARROW_LABEL_SIZE). */

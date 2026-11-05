@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { extractSketch, shapeBounds } from '@shared/canvas'
 import { unionRects } from '@shared/geometry'
 import { batchIsPending, marksOfBatch, summarizeMarks } from '@shared/marks'
+import { metricValue } from '@shared/project-metrics'
 import { api } from '../api'
 import { useEditor, useEditorValue } from '../canvas/Board'
 import type { ToolId } from '../canvas/editor'
@@ -79,11 +80,23 @@ export function MapViews() {
       <button aria-label="Next diagram" disabled={index >= views.length - 1} onClick={() => editor.zoomToMapView(views[Math.max(0, index + 1)].id)}>›</button>
     </nav>
     {details && <details className="vp-map-reading" open={window.innerWidth >= 700} onPointerDown={e => e.stopPropagation()}>
-      <summary><strong>AI source notes ▾</strong><span>View {index + 1} of {views.length}</span></summary>
+      <summary><strong>Source notes & activity ▾</strong><span>View {index + 1} of {views.length}</span></summary>
       {!!details.omissions?.length && <div className="vp-map-provenance">Not shown: {details.omissions.join('; ')}.</div>}
       <div className="vp-map-note-grid">
         {details.notes.map((note, i) => <article key={i}><strong>{note.title}</strong><p>{note.text}</p><div className="vp-map-source">{note.source}</div></article>)}
       </div>
+      {!!details.facts?.length && <>
+        <h3>Project facts</h3>
+        <div className="vp-map-note-grid">{details.facts.map((fact, i) => <article key={i}><strong>{fact.title}</strong><p>{fact.text}</p><div className="vp-map-source">{fact.source}</div></article>)}</div>
+      </>}
+      {!!details.metrics?.length && <>
+        <h3>Project activity</h3>
+        <div className="vp-map-note-grid">{details.metrics.map(metric => <article key={metric.id}>
+          <strong>{metric.label} · {metricValue(metric)}</strong><p>{metric.definition}</p>
+          {metric.reading ? <p>Recorded <time dateTime={metric.reading.at}>{metric.reading.at}</time> · {metric.reading.scope} · {metric.reading.window}. Snapshot, not a live counter.</p> : <p>No runtime observation supplied.</p>}
+          <div className="vp-map-source">Definition: {metric.source}{metric.reading && <><br />Observation: {metric.reading.source}</>}</div>
+        </article>)}</div>
+      </>}
       <div className="vp-map-key" aria-label="Diagram key">
         <span>Caller → recipient; response included.</span>
         <span>Headers = boundaries; faint guides = actors; cylinders = stores.</span>

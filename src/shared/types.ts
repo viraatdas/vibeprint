@@ -289,6 +289,18 @@ export interface RepoMapEdge {
   mode?: 'sync' | 'async' | 'local'
 }
 
+export interface ProjectMetric {
+  id: string
+  label: string
+  /** Exactly what is counted; a session count is not a count of sign-in events. */
+  definition: string
+  unit: string
+  /** Implementation that defines or collects this measure. */
+  source: string
+  /** An explicit observation, never a number inferred from source code. */
+  reading?: { value: number; at: string; window: string; scope: string; source: string }
+}
+
 export interface RepoMap {
   nodes: RepoMapNode[]
   edges: RepoMapEdge[]
@@ -299,6 +311,8 @@ export interface RepoMap {
   owner?: string
   groups?: Array<{ id: string; label: string; description: string }>
   notes?: Array<{ title: string; text: string; source: string }>
+  facts?: Array<{ title: string; text: string; source: string }>
+  metrics?: ProjectMetric[]
   /** Focused, navigable diagrams sharing the same architecture actors. */
   views?: Array<{ kind?: 'overview' | 'workflow'; edgeLabels?: string[]; title: string; scope: string; nodeIds: string[]; edgeIndices: number[]; noteIndices: number[]; notes?: Array<{ title: string; text: string; source: string }> }>
   verification?: { at: string; revision: string; dirty: boolean }

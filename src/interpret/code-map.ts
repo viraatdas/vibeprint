@@ -12,6 +12,8 @@ import path from 'node:path'
 import type { RepoMap, TableSpec } from '../shared/types.js'
 import { askClaudeJson, claudeConfig, type AnthropicLike } from './claude.js'
 import { repoDigest } from '../core/repo-scan.js'
+import { mergeProjectObservations, readProjectObservations } from '../core/project-observations.js'
+import { projectFactSchema } from '../shared/project-insights.js'
 
 export type MapperKind = 'api' | 'claude-code' | 'codex'
 
@@ -31,8 +33,10 @@ const MAP_KINDS = ['client', 'service', 'worker', 'module', 'database', 'cache',
 export const MAP_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['nodes', 'edges', 'title', 'audience', 'scope', 'omissions', 'owner', 'groups', 'notes', 'views'],
+  required: ['nodes', 'edges', 'title', 'audience', 'scope', 'omissions', 'owner', 'groups', 'notes', 'views', 'facts', 'metrics'],
   properties: {
+    facts: { type: 'array', maxItems: 6, items: { type: 'object', additionalProperties: false, required: ['title', 'text', 'source'], properties: { title: { type: 'string', maxLength: 80 }, text: { type: 'string', maxLength: 500 }, source: { type: 'string', maxLength: 300 } } } },
+    metrics: { type: 'array', maxItems: 6, items: { type: 'object', additionalProperties: false, required: ['id', 'label', 'definition', 'unit', 'source'], properties: { id: { type: 'string', pattern: '^[a-z][a-z0-9-]{0,63}$' }, label: { type: 'string', maxLength: 80 }, definition: { type: 'string', maxLength: 500 }, unit: { type: 'string', maxLength: 40 }, source: { type: 'string', maxLength: 300 } } } },
     title: { type: 'string', maxLength: 90 }, audience: { type: 'string' }, scope: { type: 'string' },
     omissions: { type: 'array', items: { type: 'string' } }, owner: { type: 'string' },
     groups: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['id', 'label', 'description'], properties: { id: { type: 'string' }, label: { type: 'string' }, description: { type: 'string', maxLength: 70 } } } },
@@ -83,6 +87,12 @@ READ AND TRACE before drawing:
 2. Trace at least two representative end-to-end workflows when the product has them: primary action → routing/authorization/validation → execution/worker → state → response/artifact. Include local versus cloud execution and alternate execution backends where those are defining product behavior. For a small single-purpose repo, trace its one complete workflow instead.
 3. Verify the core decision maker, queue, scheduler or dispatcher. It must appear either as a runtime unit or explicitly in its owning process's role. Never leave the central router disconnected while peripheral folders dominate the map. An import is evidence to investigate, not proof of a runtime request.
 4. Check failure paths: denied/unsupported requests, unavailable backends, timeouts/retries, acknowledgement versus durability, isolation/trust boundaries, and fallback behavior. Follow executable branches and catches; do not turn comments into guarantees.
+5. Find the operational details UNIQUE to this product. Read the actual counters, account/session lifecycle, capacity controls, quotas and recovery decisions, not just service entry points. Disambiguate terms such as login: customer authentication events, active sessions and OS slot logins may be different measures with different lifetimes. Trace the successful and failed sign-in paths and alternate providers when present. Explain why a count matters to a product decision (for example, consuming capacity or triggering a drain). Do not assume every project needs the same measures.
+
+PROJECT FACTS AND ACTIVITY:
+- facts: 2-6 source-linked findings that distinguish this product from a generic stack diagram. Include concrete defaults/limits and their override precedence, what is counted, reset/persistence semantics, and the action taken at a threshold where relevant. Constants in code are defaults, not confirmed deployed settings; historical incidents in comments are historical evidence, not current telemetry. Use the product's own terminology and exact implementation sources. Return fewer facts when evidence is sparse rather than filling a template.
+- metrics: 0-6 meaningful measures grounded in actual collectors or state. Each represents one scalar quantity: split structured counters into separate measures and name the exact field/query. Each needs a stable kebab-case id, product-specific label, precise definition (including increment trigger, deduplication, lifetime, and reset semantics), unit, and source naming the implementation AND the counter/event store or endpoint to read. Explain coverage gaps: active session records do not establish historical sign-in totals; a rate limiter is not a durable login audit. Do not suggest nonexistent telemetry or invent historical totals. For a measure that matters but is not instrumented, explicitly say what collection is missing. Return [] when no useful measure is supported. NEVER output a reading, current value, or a fabricated example number. Explicit runtime observations are attached separately by the application.
+- Include an authentication workflow view if authentication is consequential, covering actual local/hosted alternatives and failures. Include operational capacity/recovery behavior in the relevant source notes. Do not let fixed generic routing/state/failure paragraphs crowd out the product's defining constraints.
 
 DETAIL AND COVERAGE:
 - Default to an engineering overview of the actual product, not a tiny slice chosen just to fit a box budget. For a substantial product, typically use 7-18 meaningful runtime units and 10-28 important labeled relationships across focused views. For a genuinely small system use fewer. These are readability budgets, not quotas: never invent actors to reach them, and never silently omit the central execution path to satisfy them.
@@ -229,6 +239,7 @@ export async function askWithModel(root: string, mapper: Mapper, q: { prompt: (r
 
 /** Ask the model for the map. Throws with a short reason when it can't. */
 export async function mapWithModel(root: string, scan: RepoMap, mapper: Mapper, opts: AskOpts & { feedback?: string } = {}): Promise<RepoMap> {
+  const observations = readProjectObservations(root)
   const draft = (await askWithModel(root, mapper, { prompt: (reads) => mapPrompt(scan, reads) + (opts.feedback ? `\nPrior reviewer findings to verify against source (do not assume they are correct): ${opts.feedback}` : ''), digest: () => repoDigest(root), schema: MAP_SCHEMA, what: 'map' }, opts)) as RepoMap
   let reply: RepoMap
   try {
@@ -256,7 +267,14 @@ Draft: ${JSON.stringify(draft)}`,
     revision = execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
     dirty = !!execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
   } catch {}
-  return { ...reply, verification: { at: new Date().toISOString(), revision, dirty } }
+  const facts = Array.isArray(reply.facts) ? reply.facts.slice(0, 6).flatMap(fact => {
+    const parsed = projectFactSchema.safeParse(fact)
+    return parsed.success ? [parsed.data] : []
+  }) : undefined
+  const metrics = mergeProjectObservations(reply.metrics, observations.metrics)
+  return { ...reply, ...(reply.facts !== undefined ? { facts: facts || [] } : {}), ...(reply.metrics !== undefined || metrics.length ? { metrics } : {}),
+    ...(observations.warning ? { omissions: [...(reply.omissions || []), observations.warning] } : {}),
+    verification: { at: new Date().toISOString(), revision, dirty } }
 }
 
 // ---- schema: the tables a database holds, with example rows -----------------------------

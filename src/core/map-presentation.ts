@@ -4,6 +4,7 @@ import type { Rect, RepoMap, RepoMapEdge } from '../shared/types.js'
 import { avoidMapCaptions } from './map-routing.js'
 import { drawWorkflow } from './map-workflow.js'
 import { drawContext } from './map-context.js'
+import { appendInsightViews } from './map-insights.js'
 import dagre from '@dagrejs/dagre'
 import { mapTextWidth, MAP_FLOW_SIZE, MAP_FLOW_LINE } from '../shared/map-font.js'
 
@@ -34,7 +35,7 @@ export function drawPresentedMap(map: RepoMap, origin: { x: number; y: number })
   // Reject incomplete plans rather than silently hiding actors or relationships.
   const valid = views?.length && views.every(v => v.nodeIds.length && v.nodeIds.every(id => map.nodes.some(n => n.id === id)) && v.edgeIndices.every(i => Number.isInteger(i) && map.edges[i] && v.nodeIds.includes(map.edges[i].from) && v.nodeIds.includes(map.edges[i].to)))
     && map.nodes.every(n => views.some(v => v.nodeIds.includes(n.id))) && map.edges.every((_, i) => views.some(v => v.edgeIndices.includes(i)))
-  if (!valid) return drawSingleMap(map, origin)
+  if (!valid) return appendInsightViews(map, origin, drawSingleMap(map, origin), wrapMapText)
   const shapes: Shape[] = [], nodeShapes = new Map<string, string[]>(), edgeShapes = new Map<number, string[]>()
   let x = origin.x
   for (const [index, view] of views!.entries()) {
@@ -47,7 +48,7 @@ export function drawPresentedMap(map: RepoMap, origin: { x: number; y: number })
     }
     const result = view.kind === 'overview' ? drawContext(presented, { x, y: origin.y }, wrapMapText) : drawWorkflow(presented, { x, y: origin.y }, wrapMapText)
     const bookmark = { id: result.shapes[0].id, title: view.title }
-    const details = { notes: presented.notes || [], owner: map.owner || 'Unassigned', verification: map.verification, modes: [...new Set(presented.edges.map(e => e.mode || 'sync'))], omissions: map.omissions || [] }
+    const details = { notes: presented.notes || [], facts: map.facts, metrics: map.metrics, owner: map.owner || 'Unassigned', verification: map.verification, modes: [...new Set(presented.edges.map(e => e.mode || 'sync'))], omissions: map.omissions || [] }
     for (const [i, shape] of result.shapes.entries()) { shape.mapView = i === 0 ? { ...bookmark, details } : bookmark; shape.z = shapes.length + 1; shapes.push(shape) }
     for (const [node, ids] of result.nodeShapes) nodeShapes.set(node, [...(nodeShapes.get(node) || []), ...ids])
     result.edges.forEach((edge, i) => edgeShapes.set(indices[i], [...(edgeShapes.get(indices[i]) || []), edge.shapeId]))
@@ -55,7 +56,7 @@ export function drawPresentedMap(map: RepoMap, origin: { x: number; y: number })
     x = bounds.x + bounds.w + Math.max(1800, bounds.h)
   }
   const edges = map.edges.map((edge, i) => ({ ...edge, shapeId: edgeShapes.get(i)![0], shapeIds: edgeShapes.get(i)! }))
-  return { shapes, nodeShapes, edges }
+  return appendInsightViews(map, origin, { shapes, nodeShapes, edges }, wrapMapText)
 }
 
 function drawSingleMap(map: RepoMap, origin: { x: number; y: number }, focused = false): { shapes: Shape[]; nodeShapes: Map<string, string[]>; edges: Array<RepoMapEdge & { shapeId: string }> } {
