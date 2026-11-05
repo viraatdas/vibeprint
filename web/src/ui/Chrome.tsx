@@ -78,6 +78,7 @@ export function MapViews() {
     </nav>
     {details && <details className="vp-map-reading" open={window.innerWidth >= 700} onPointerDown={e => e.stopPropagation()}>
       <summary><strong>AI source notes ▾</strong><span>View {index + 1} of {views.length}</span></summary>
+      {!!details.omissions?.length && <div className="vp-map-provenance">Not shown: {details.omissions.join('; ')}.</div>}
       <div className="vp-map-note-grid">
         {details.notes.map((note, i) => <article key={i}><strong>{note.title}</strong><p>{note.text}</p><div className="vp-map-source">{note.source}</div></article>)}
       </div>

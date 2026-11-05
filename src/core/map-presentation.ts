@@ -47,7 +47,7 @@ export function drawPresentedMap(map: RepoMap, origin: { x: number; y: number })
     }
     const result = view.kind === 'overview' ? drawContext(presented, { x, y: origin.y }, wrapMapText) : drawWorkflow(presented, { x, y: origin.y }, wrapMapText)
     const bookmark = { id: result.shapes[0].id, title: view.title }
-    const details = { notes: presented.notes || [], owner: map.owner || 'Unassigned', verification: map.verification, modes: [...new Set(presented.edges.map(e => e.mode || 'sync'))] }
+    const details = { notes: presented.notes || [], owner: map.owner || 'Unassigned', verification: map.verification, modes: [...new Set(presented.edges.map(e => e.mode || 'sync'))], omissions: map.omissions || [] }
     for (const [i, shape] of result.shapes.entries()) { shape.mapView = i === 0 ? { ...bookmark, details } : bookmark; shape.z = shapes.length + 1; shapes.push(shape) }
     for (const [node, ids] of result.nodeShapes) nodeShapes.set(node, [...(nodeShapes.get(node) || []), ...ids])
     result.edges.forEach((edge, i) => edgeShapes.set(indices[i], [...(edgeShapes.get(indices[i]) || []), edge.shapeId]))

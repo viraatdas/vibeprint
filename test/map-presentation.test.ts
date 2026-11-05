@@ -16,6 +16,7 @@ import { shapeSchema } from '../src/server/canvas.js'
 test('focused views retain shared actor and edge bindings through canvas validation', () => {
   const map: RepoMap = {
     title: 'How do jobs reach a worker?', owner: 'Jobs team',
+    omissions: ['Dashboard styling and billing'],
     verification: { at: '2026-11-05T00:00:00.000Z', revision: 'abc123', dirty: false },
     groups: [{ id: 'local', label: 'Local processes', description: 'User-operated machine' }],
     nodes: ['client', 'queue', 'worker'].map(id => ({ id, label: id, group: 'local', description: `Runtime ${id}` })),
@@ -39,6 +40,7 @@ test('focused views retain shared actor and edge bindings through canvas validat
     assert.deepEqual(details[1].notes, map.views![1].notes)
     assert.deepEqual(details[1].verification, map.verification)
     assert.equal(details[1].owner, 'Jobs team')
+    assert.deepEqual(details[1].omissions, map.omissions, 'scope exclusions survive canvas validation for the reading panel')
     assert.ok(saved.some(s => s.mapAnnotation), 'full-canvas source notes remain available for export')
     assert.ok(saved.some(s => s.type === 'arrow' && s.text?.includes('Submit')))
     assert.equal(core.graph.edges[0].label, 'enqueue job', 'short context labels must not rewrite graph semantics')

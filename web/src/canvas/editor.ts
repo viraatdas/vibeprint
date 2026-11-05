@@ -350,8 +350,15 @@ export class Editor {
 
   activeMapView(views = this.mapViews()) {
     const { camera, viewport } = this
-    const cx = viewport.w / (2 * camera.z) - camera.x, cy = viewport.h / (2 * camera.z) - camera.y
-    return views.find(v => cx >= v.bounds.x && cx <= v.bounds.x + v.bounds.w && cy >= v.bounds.y && cy <= v.bounds.y + v.bounds.h && (viewport.w / camera.z <= v.bounds.w * 1.6 || viewport.h / camera.z <= v.bounds.h * 1.6))
+    return views.find(v => {
+      // Match the usable area that zoomToBounds fits. The full-screen centre
+      // and scale can fall outside a tall view when its notes reserve space.
+      const top = 72, bottom = v.details ? (viewport.w >= 700 ? 280 : 160) : 100, left = 88, right = 24
+      const cx = (viewport.w + left - right) / (2 * camera.z) - camera.x
+      const cy = (viewport.h + top - bottom) / (2 * camera.z) - camera.y
+      return cx >= v.bounds.x && cx <= v.bounds.x + v.bounds.w && cy >= v.bounds.y && cy <= v.bounds.y + v.bounds.h
+        && ((viewport.w - left - right) / camera.z <= v.bounds.w * 1.6 || (viewport.h - top - bottom) / camera.z <= v.bounds.h * 1.6)
+    })
   }
 
   zoomToMapView(id?: string) {

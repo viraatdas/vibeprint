@@ -28,6 +28,7 @@ interface ShapeBase {
     owner: string
     verification?: { at: string; revision: string; dirty: boolean }
     modes: string[]
+    omissions?: string[]
   } }
   /** Source notes remain in full-canvas exports; focused views show a reading panel. */
   mapAnnotation?: boolean
