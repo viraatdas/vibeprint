@@ -1,0 +1,75 @@
+{
+  "project": "libra",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:46:04.241Z",
+  "revision": "9f2c0394c",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view has a one-line question title (e.g. 'A: How does a PR become an advisory Libra check?', 'L: How does the separate Libra Logs product ingest logs?'), plus a visible audience line ('Engineers onboarding to the Libra product…') and a scope subtitle. The level of detail suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "All boxes are deployable or runtime components (libra-api, scheduler, SQLite, ClickHouse, microVM, conversation agent, Logs server) or external systems. Detail is spread across linked views (overview, A, B, B cont., P, C, L) rather than mixing code-level and infrastructure boxes."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view answers its question, and the omissions are stated ('Not shown: Libra Issues, PR-maker, Libra Self, billing…'). Gap: view P jumps from the HogQL poll to 'P2 SQL: triage job, finding, candidate' without the model triage step (OpenAI draft plus review) that sits between enqueue and finding (posthog-watch/triage-queue.ts). A reader could think findings are written directly from the query."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Arrows are directed caller→recipient (the legend says 'response included') and labelled with protocol and payload. They are numbered in order (A1–A6, B1–B9, C1–C4) and styled sync/async/local, with alternatives marked (C3 vs C3b, legend: 'Equal stages = alternatives'). Separately initiated events, the webhooks and the Slack event, are dashed async."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "The container headers separate customer-owned infra, Vercel (managed), the Exla-run Fly apps (libra-api with its /data volume, workers with 'no DB', libra-clickhouse), the separate Libra Logs stack and Vendor SaaS (managed). Trust notes cover credential-free VMs and the worker having no Slack or DB creds."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence-style lifelines give a consistent top-down order with no crossings, and views 5 and 7 are large and clear. In views 1, 3, 4 and 6, though, the box descriptions, container subtitles and the audience/scope line render at roughly 10–11px at 1194x834, and some long arrow labels wrap tightly. Readable, but small for iPad viewing."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a visible legend: solid = sync request, dashed = async delivery, dotted = local I/O, cylinders = stores, headers = boundaries, faint guides = actors. Shapes and line styles carry the meaning without relying on colour, and real names are used (otel_spans, incident_candidates, general_question, sendSlack)."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The failure and state behaviour is explicit: 'no ack → 503 Retry-After', one shared process and volume as a failure domain, no model budget → deterministic P1 or watch, failed Slack send rolls back the page claim, the cursor advances only after durable enqueue, poison jobs dead-letter after five leases, and delivery_unknown is never resent. Card-gated Logs ingest and the skipped-PR gates are also shown."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The visible footer gives 'Source review 2026-11-05 · 9f2c0394c · Owner: Viraat… · Live runtime NOT verified'. The names I spot-checked match the code (index.ts mounts /v1, /internal, /slack and /mcp and calls startScheduler(); Logs routes mount under API_BASE with OTLP /otlp/v1/logs). The cap applies because production was not verified."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "Working through the seven views, a newcomer can explain the four entry paths, PR replay, span ingest to Scout pages, the PostHog feed, Slack replies with two alternate responders, and the isolated Logs product, along with the main failure guards. The notes resolve most likely misreadings, for example 'Prod runs the in-process stateless responder'."
+    }
+  ],
+  "coldRead": "Libra is mostly one Node/Hono process, libra-api on a Fly machine, with an in-process priority scheduler and a SQLite source of truth on the same volume. Four clients reach it: the Vercel dashboard (HTTPS JSON), the Claude plugin/CLI (MCP and session events), GitHub (HMAC pull_request webhooks) and Slack (signed thread events). Path A: a PR webhook is gate-audited in SQLite, and libra-api starts a run-once Fly microVM. The VM fetches base and head from GitHub, builds them, runs tests, replays traffic without an LLM, then posts HMAC-signed evidence back; libra-api writes a Check Run and line comments. Customer credentials stay out of the VM, skipped PRs get no check, and verdicts never block merge. Path B: customer OTLP spans are inserted into ClickHouse, and ingest returns 503 Retry-After if ClickHouse does not acknowledge. The scheduler reduces spans into incident_candidates. It then claims each candidate, pulls AWS evidence, asks OpenAI for a verdict, records a signal_incident page claim and posts to Slack through the gated sendSlack (a failed send rolls the claim back). Path P: the scheduler polls PostHog with HogQL and stores triage jobs, findings and candidates. Path C: a Slack thread reply becomes a durable general_question job, answered either by the in-process stateless responder or by the alternate Codex worker, which leases the job and has no Slack or DB credentials. Exactly one terminal reply is posted. Path L: Libra Logs is a separate server and ClickHouse with its own keys that takes card-gated OTLP log ingest and does not feed core PR review.",
+  "inaccuracies": [
+    "View C draws C3 (Responses API turn) and C4 (chat.postMessage) from the 'libra-api (Hono)' lifeline. The stateless responder is a registered scheduler job ('conversation-responder' in api/src/scheduler.ts:2846, calling runConversationResponderTick). Same process, but the actor should be the Priority scheduler, not the HTTP app.",
+    "View P's 'P2 SQL: triage job, finding, candidate' folds in the model triage step: the finding and Scout candidate are written only after OpenAI draft and review inference (api/src/services/posthog-watch/triage-queue.ts). As drawn, findings appear to come straight from the HogQL poll."
+  ],
+  "improvements": [
+    "Raise the minimum font size of box descriptions, container subtitles and the audience/scope line in views 1, 3, 4 and 6 so they stay readable at 1194x834 iPad landscape.",
+    "In view C, start C3 and C4 from the Priority scheduler, or add a lifeline for the responder tick, and show the responder claiming the general_question job from SQLite so both alternatives visibly start from the same durable job.",
+    "In view P, add the triage-to-OpenAI call (draft plus adversarial review) between the enqueue and the finding/candidate write so the PostHog path matches the code."
+  ],
+  "total": 37,
+  "verdict": "Excellent"
+}

@@ -1,0 +1,76 @@
+{
+  "project": "threadline",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:32:32.846Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view has a one-line question as its title (e.g. 'What happens when the owner clicks Send on an email draft?'). Each also has an audience line ('Engineers onboarding to Outbound (repo threadline)') and a scope line. The level of detail (function names, routes, secrets) suits engineers who are onboarding."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes stay at one level throughout: deployable services, a code module (engine), stores and external services. The overview is zoomed out, and views 2–7 zoom in on single workflows (email send, LinkedIn send, refresh trigger, refresh externals, scout import, sign-ins). Nothing mixes in team boxes or infrastructure that doesn't belong."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each workflow view holds only what its question needs, and views 4 and 5 split refresh sensibly. However, the visible image never lists deliberate omissions (ranking, schema, per-page UI). The overview also leaves out Google, the crons and scout without saying so on the canvas; only the scope subtitle hints at it. A reader can't tell what was left out on purpose and what is missing."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "The sequence views have numbered, labelled, directed arrows (A1–A8, B1–B7). Sync and local calls are drawn differently, and the legend explains that two B1 arrows are alternative triggers. In the overview, though, the A5 'POST /runs' arrow runs through the Postgres cylinder and its label is cut down to 's (sync)'. It reads as Postgres → LinkedIn worker, which makes the most important arrow on the entry view ambiguous."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "In views 2–7, labelled containers show Owner's laptop, Vercel, AWS RDS, Fly threadline-browser ('Self-hosted'), Owner's home network ('owner-operated') and Third-party services ('Managed'). That shows managed vs self-hosted and internal vs external clearly. The overview has no containers, only subtitles inside the nodes, so on the entry view the boundaries are implicit. 'Vercel Cron (external)' sitting inside the Vercel project container is also slightly contradictory."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence views run cleanly left to right with time going down, have no crossings, keep lifelines aligned and are readable at 1194x834. The overview has a collision: the A3 and A5 arrows overlap the Postgres cylinder and one label is hidden. The container description text in views 2–7 is very small, about 9–10px, and hard to read on an iPad."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "The legend on every view states the conventions: caller → recipient with the response included, headers = boundaries, faint guides = actors, cylinders = stores, solid = sync request, dotted = local I/O, equal stages = alternatives, unnumbered = independent. Text suffixes like '(external)' carry meaning without relying on colour. Real names (threadline-browser, threadline-db, lib/engine.ts) are used throughout, and the single authorship colour is acceptable."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The visible notes cover the main failure points and state. Guards before Gmail send (failed or skipped outcomes). The worker waits on the home exit node with a 24h TTL. The 75s poll, after which runs stay 'sending' until refresh resolves them. The 300s/230s bounds on refresh, with failed checks recorded as health problems and refresh carrying on. The worker running one LinkedIn run at a time. Untrusted scraped text and the SSRF guard. Refresh never sending. External dependencies are explicit. The owner is listed as Unassigned, which is not deducted again here."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Every view has a footer: 'Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified'. I checked the claims against source: cron daily at 0 15 (vercel.json:7), maxDuration 300 and inboxWaitMs 120_000 (app/api/cron/route.ts:6,16), 75_000 poll (lib/engine.ts:1461), QUEUE_TTL_S 24h and the restart → failed rule (browser/worker.py:68,840), and IMPORT_TOKEN or CRON_SECRET with 400s (app/api/import/route.ts). Most claims match, but nothing was verified against production, which caps this at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "With views 2–7 and their notes, a newcomer could explain the click-to-send model, the LinkedIn path through the home exit node, cron refresh and scout import in about two minutes. The entry overview needs a verbal correction, though, because the hidden A5 arrow suggests Postgres talks to the worker. A few edges are also attributed to the wrong app node (see inaccuracies)."
+    }
+  ],
+  "coldRead": "Outbound (repo threadline) is a private tool for one owner that sells Offstage by outbound outreach. The owner uses a Next.js web UI hosted on Vercel. Pages and server actions check the owner with requireOwner/assertOwner and hand the real work to lib/engine.ts, which decides research, enrollment, drafting and sending, and keeps all state in a Postgres CRM on AWS RDS. Nothing is sent until the owner clicks Send. The engine claims the draft row, checks the stage, the rolling 24h limits, replies and in-touch status, and then sends in one of three ways. Email goes through the Gmail API as a threaded message. LinkedIn sends are queued as a run on a self-hosted Fly browser worker (browser-use + Chromium). The worker reaches LinkedIn only through a Tailscale exit node on the owner's home network, and the app polls the run for up to 75s; if it hasn't finished, refresh confirms it later. X DMs are opened prefilled in the owner's browser and only recorded. Refresh is triggered by a daily Vercel Cron and an hourly Fly scheduled machine, both calling GET /api/cron with CRON_SECRET. It reads Gmail for replies and bounces, asks the worker for LinkedIn inbox and post reads, calls OpenRouter LLMs to score, draft and label, sources new companies from Apollo/Exa/YC/sites, and upserts the CRM and a runtime.health record. It never sends. Separately, the scout CLI on the owner's laptop uses the owner's gh/yc/bird logins to find companies and POSTs them to /api/import, which ingests them. Sign-in is Google OAuth, which also grants Gmail access. LinkedIn sign-in happens inside the worker's browser, with its screen streamed to Settings.",
+  "inaccuracies": [
+    "View 1 (overview): the A5 'POST /runs' edge is drawn through the Postgres CRM cylinder and its label is cut down to 's (sync)', so it reads as Postgres → LinkedIn browser worker. In code, the engine calls the worker directly (lib/engine.ts:1461 → lib/linkedin.ts:297 `this.call(\"/runs\", \"POST\", …)`); Postgres never contacts the worker.",
+    "View 7: 'HTTPS: OAuth code → sealed tokens, refresh' and '/login screen frames + input relay' both start from 'Pages + server actions' (app/(app)/). The handlers are actually API routes: app/api/auth/[...nextauth]/route.ts, app/api/integrations/gmail/callback/route.ts and app/api/linkedin/login/screen/route.ts. Meanwhile the 'Machine API routes' node says it covers only /api/cron and /api/import, so these calls are attributed to the wrong node.",
+    "View 6: /api/import is drawn as handing straight to the engine ('ingest(FindResult[])'), but the route also queries Postgres itself to resolve the project and persona before ingesting (app/api/import/route.ts:24-44), and ingest lives in lib/ingest.ts, not lib/engine.ts. This is a minor attribution error."
+  ],
+  "improvements": [
+    "Fix the overview routing: send A5 from the Outbound engine to the LinkedIn browser worker around the Postgres cylinder, not through it, and keep its label fully visible. Also add the deployment containers (Owner's laptop, Vercel, AWS RDS, Fly) to the overview so boundaries are visible on the entry view.",
+    "Add a small visible 'Not shown' line, at least on the overview, listing the deliberate omissions (ranking math, schema columns, per-page UI). In view 7, attribute the OAuth callback and the LinkedIn login screen relay to an 'Auth & integration API routes' node, or widen the API-routes node's description to include them.",
+    "Make the container description text larger or shorter (it is about 9–10px now), and make the LinkedIn async boundary visible on the canvas: mark A5/A8 as 'queued run, may stay sending until refresh' rather than relying only on the note below the diagram."
+  ],
+  "total": 34,
+  "verdict": "Good"
+}

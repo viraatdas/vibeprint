@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-11-05T03:47:27.202570+00:00",
+  "passThreshold": 36,
+  "projects": [
+    {
+      "project": "threadline",
+      "score": 38,
+      "verdict": "Excellent",
+      "passes": true,
+      "actors": 16,
+      "flows": 32,
+      "views": 8,
+      "curatedAfterReview": true,
+      "verification": {
+        "at": "2026-11-05T03:38:12.566Z",
+        "revision": "f467a33",
+        "dirty": true
+      },
+      "judgeModels": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "project": "offstage",
+      "score": 37,
+      "verdict": "Excellent",
+      "passes": true,
+      "actors": 14,
+      "flows": 24,
+      "views": 8,
+      "curatedAfterReview": true,
+      "verification": {
+        "at": "2026-11-05T03:37:08.390Z",
+        "revision": "57eeabc",
+        "dirty": true
+      },
+      "judgeModels": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "project": "libra",
+      "score": 38,
+      "verdict": "Excellent",
+      "passes": true,
+      "actors": 16,
+      "flows": 27,
+      "views": 7,
+      "curatedAfterReview": true,
+      "verification": {
+        "at": "2026-11-05T03:37:39.702Z",
+        "revision": "9f2c0394c",
+        "dirty": false
+      },
+      "judgeModels": [
+        "claude-opus-5-5"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "project": "libra",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:47:22.644Z",
+  "revision": "9f2c0394c",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each of the 7 views has a visible question title (e.g. 'A: How does a PR become an advisory Libra check?', 'C: How is a Slack thread reply answered?') and a subtitle naming the audience (engineers onboarding) and the view's scope. The detail is sequence-level, which suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes are consistently deployable or runtime units (libra-api, scheduler, SQLite, ClickHouse, microVM, conversation agent) and external services. The views are scoped zoom-ins by flow (entry, A, B, B cont., P, C, L), and shared actors keep the same names and descriptions in every view."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "Each view shows only the actors its question needs (P has 3, L has 3). Every view lists its omissions in a visible line: 'Not shown: Libra Issues, PR-maker, Libra Self, billing and dashboard page internals'. The view 1 note points to where OTLP and Logs ingest are covered."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Edges are directed, numbered in order (A1–A6, B1–B9, C1–C4) and labelled with protocol plus payload, for example 'A5 HTTPS callback: evidence (HMAC)'. Solid, dashed and dotted lines distinguish sync, async and local, and the legend states 'Caller → recipient; response included'. Alternatives are marked: C3 and C3b are equal stages, and the legend explains this."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Header containers separate Customer-owned infra, Vendor SaaS (managed), Vercel (managed), Fly app libra-api (Exla-run, single Node process + /data volume), Fly worker apps (no DB), Fly app libra-clickhouse and the separate Libra Logs stack. Internal versus external and managed versus self-hosted are explicit in every view."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence layout has a clear top-down order with almost no crossings, and views 5 and 7 are large and easy to read. In views 1, 3, 4 and 6, though, the container sub-descriptions and some edge labels are about 9–10px at 1194x834, which is hard to read on an iPad. The legend and footer also crowd into a scroll-clipped notes panel."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "There is a visible legend in every view: sync request (solid), async delivery (dashed), local I/O (dotted), cylinders = stores, headers = boundaries, faint guides = actors. Line style carries the meaning, not colour. Names are real and match the code (otel_spans, incident_candidates, general_question, sendSlack)."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Failure and non-functional behaviour is visible on the canvas: 'no ack → 503 Retry-After'; cursor advances only after durable enqueue, with dead-letter after five leases; no model budget → deterministic P1 or watch; failed Slack send rolls back the page claim; delivery_unknown is never resent; credential-free VM; shared single process and volume as a failure domain; card-gated Logs ingest."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows 'Source review 2026-11-05 · 9f2c0394c · Owner: Viraat · Live runtime NOT verified'. Spot checks match the code: otel.ts returns 503, the entrypoint runs git fetch, and the /logs/api/otlp/v1/logs path appears in the libra-logs tests. The score is capped at 3 because production was not verified. The date/owner footer is also scrolled out of view in views 4 and 5."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "Read in order, the numbered steps, view titles and side notes are enough for a newcomer to explain the PR replay, span-to-page, PostHog, Slack reply and Logs paths without the author. The cross-view pointers (B continued, C3b alternate responder) prevent the likely misreadings."
+    }
+  ],
+  "coldRead": "Libra is mostly one Node/Hono process, libra-api on Fly, with an in-process priority scheduler and a SQLite source-of-truth database on its volume. Four kinds of client reach it: the Vercel dashboard, the customer's Claude plugin and CLI (MCP), GitHub webhooks and Slack events. (A) When a PR webhook arrives, the API records a gate audit and a run row in SQLite and starts a run-once Fly microVM. The VM fetches the base and head revisions from GitHub, replays traffic with no LLM and no customer credentials, and calls back with HMAC-signed evidence. The API then posts an advisory Check Run and line comments. (B) Customer OTLP spans are written synchronously to the libra-clickhouse app; if ClickHouse doesn't acknowledge the insert, the exporter gets a 503 and retries. Scheduler jobs reduce spans into incident_candidates in SQLite. Scout then claims a candidate, pulls customer AWS evidence, asks OpenAI for a verdict, records a signal_incident page claim and posts to Slack through the gated sendSlack path. If the Slack post fails, the claim is rolled back so it can retry. (P) The scheduler also polls PostHog with HogQL and stores triage jobs, findings and candidates. (C) A signed Slack thread reply becomes a durable general_question job. In production the in-process stateless responder answers it through the OpenAI Responses API; an alternate Codex worker can instead lease the job, using only scoped tools. Either way exactly one terminal reply is posted. (L) Libra Logs is a separate card-gated server with its own keys and ClickHouse, and it does not feed core PR review.",
+  "inaccuracies": [],
+  "improvements": [
+    "Raise the minimum font size for container sub-descriptions and edge labels in views 1, 3, 4 and 6, for example by wrapping the description text or giving each view more vertical space, so all text is readable at 1194x834.",
+    "Keep the date/revision/owner/'live runtime not verified' footer visible in every view; views 4 and 5 currently clip it below the notes panel.",
+    "In view 4, mark the branch after B7 (real page vs. watch or dismiss) and the rollback-on-failed-send path as an explicit conditional step, rather than only in the side note."
+  ],
+  "total": 38,
+  "verdict": "Excellent"
+}

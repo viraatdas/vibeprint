@@ -1,0 +1,727 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": -18681.072088724584,
+    "y": 173.5140480591498,
+    "z": 0.4918181818181818
+  },
+  "text": [
+    {
+      "text": "Who calls the plane, and where does cloud work run?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Customer clients and agents call the plane; the fleet box pulls work and\nruns it in slot accounts",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Control plane API",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fly.io offstage-api",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "offstage CLI /\nMCP",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Developer console\naccount",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Customer SDK",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Customer browser /\ncode",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "fleetd runner",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fleet Mac operator",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Slot sessiond /\nagent",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fleet slot accounts",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Context: boxes = runtime actors; subtitles = deployment locations. Arrows = caller → recipient, response included; protocol is\nlabeled. Detailed roles, boundaries and failures are in the workflow views.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Pull model, no inbound ports",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Boxes only make outbound calls. A client's request is held\nopen on the plane until a box claims the work, runs it and\nanswers.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: src/fleet/runner.ts, cloud/src/core/sandboxes.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How does a local command get routed away from the real screen?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Workflow A: offstage run/route through the classifier to the headless, container or session lane, or a refusal",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Developer console account",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Developer's own Mac/Linux user running the CLI or MCP; self-hosted",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "macOS helper account",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Second logged-in user\n(computeruse) on the same Mac,\nown window server",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "offstage CLI / MCP",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "doctor/route/run/probe,\nsession verbs and cloud\nsandbox tools",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Route classifier",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Picks a lane from\nargv/configs, or refuses\ninstallers/.dmg/.pkg",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Headless lane",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs a command that opens\nno window in place",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Container lane (Xvfb)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs headed browser work\nin a Linux container on Xvfb",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Helper sessiond",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Launches, captures and\ninjects input in the helper's\nsession",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A1 classify argv → lane, or refuse\n(local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A2 spawn in place → exit code, output (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A2 docker run under Xvfb → exit, files (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A2 Unix socket: run/screenshot/input (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Refuse beats route",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "A refusing signal returns refuse and nothing runs. The session lane checks the daemon's socket and uid; when a check fails it never falls back to the console.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: src/router/index.ts, src/lanes/session/index.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Billing (Stripe), mail (Resend/SES), metering and admin routes are left out; site/, launch/, bench/ and tests/chaos are left out: not on the runtime path;\nContainer lane internals and slot seeding/login (RFB) were not traced in detail.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How does a submitted task reach a slot and return its result?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Workflow B: submit, queue, claim long-poll, execute in the slot, report events and artifacts",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Customer browser / code",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Customer's browser (console SPA)\nand SDK code; not run by exla",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly.io offstage-api",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "exla-operated plane: one Fly machine with a /data volume; managed",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet Mac operator",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Studio Mac LaunchDaemon run as\noperator exla; outbound calls only",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet slot accounts",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "offstage0–7 users on the same\nfleet Mac, reset between\ncustomers",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Customer SDK",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Submits tasks, drives\nsandboxes, starts agent runs",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Control plane API",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Auth, quotas, GUI policy;\nholds client requests open\nfor boxes",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Task queue + sandbox\nops",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fair claims across teams,\nack/lost/timeout reaping, op\nhand-off",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "fleetd runner",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "One claim loop per slot,\nheartbeats, reports, resets\ndirty slots",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Slot sessiond / agent",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs builds, ops, gui agent\nand GH runner as the slot\nuser",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B1 POST /v1/tasks → id; GET\n?wait= result (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B2 submit: quota check →\nqueued or 429 (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B3 POST claim long-poll ≤25s → task|204 (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B3 claim: fair pick, bind box+slot\n(local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B4 sessiond socket (gui) / sudo\n-u (headless) (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B5 HTTPS: started/log/exit events, artifacts (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fair, acked claims",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "A claim binds the task to box+slot. The box must report started within CLAIM_ACK_MS (20 s) or the task is requeued, up to 3 attempts.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: cloud/src/core/queue.ts, cloud/src/core/store.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Billing (Stripe), mail (Resend/SES), metering and admin routes are left out; site/, launch/, bench/ and tests/chaos are left out: not on the runtime path;\nContainer lane internals and slot seeding/login (RFB) were not traced in detail.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "What persists, and how is a slot cleaned between customers?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Plane snapshot/archive and the per-slot reset after work",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Fly.io offstage-api",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "exla-operated plane: one Fly machine with a /data volume; managed",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet Mac operator",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Studio Mac LaunchDaemon run as\noperator exla; outbound calls only",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet slot accounts",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "offstage0–7 users on the same\nfleet Mac, reset between\ncustomers",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Task queue + sandbox\nops",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fair claims across teams,\nack/lost/timeout reaping, op\nhand-off",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Plane snapshot +\nartifacts",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Accounts, keys, ledger,\ntasks, boxes; artifacts and\nlog archive",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "fleetd runner",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "One claim loop per slot,\nheartbeats, reports, resets\ndirty slots",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Slot sessiond / agent",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs builds, ops, gui agent\nand GH runner as the slot\nuser",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B6 fleet reset: recreate slot\naccount (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "File: JSON snapshot every 2s;\nlogs, artifacts (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient,\nresponse included. Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives;\nunnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Reset before the next claim",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "A slot that ran work is marked dirty and reset before it claims again. A failed reset keeps the mark and is retried with backoff.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: src/fleet/runner.ts, src/fleet/reset-marks.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Billing (Stripe), mail (Resend/SES), metering and admin routes are left out; site/, launch/, bench/ and\ntests/chaos are left out: not on the runtime path; Container lane internals and slot seeding/login (RFB) were not traced in detail.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How do sandbox ops and computer-use agent runs execute?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Workflows C/D: sandbox ops held open on the plane; a gui agent in the slot calls the model through the plane's proxy",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Customer browser / code",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Customer's browser (console SPA)\nand SDK code; not run by exla",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly.io offstage-api",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "exla-operated plane: one Fly\nmachine with a /data volume;\nmanaged",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet Mac operator",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Studio Mac LaunchDaemon run as\noperator exla; outbound calls only",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet slot accounts",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "offstage0–7 users on the same\nfleet Mac, reset between\ncustomers",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Clerk, Anthropic and GitHub over\nthe public internet",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Customer SDK",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Submits tasks, drives\nsandboxes, starts agent runs",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Control plane API",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Auth, quotas, GUI policy;\nholds client requests open\nfor boxes",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "fleetd runner",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "One claim loop per slot,\nheartbeats, reports, resets\ndirty slots",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Slot sessiond / agent",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs builds, ops, gui agent\nand GH runner as the slot\nuser",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Anthropic API (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "The model behind\ncomputer-use agent runs",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "D1 POST /sandboxes/:id/agent\ngoal → run id (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "D2 POST /v1/model/messages with run token (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "D3 HTTPS Messages API, customer's key (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "C1 HTTPS exec/files/screenshot\n(held open) (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "C2 ops long-poll ≤25s → op;\nPOST answer (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "The agent loop stays in the slot",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "The customer's Anthropic key arrives in a header on D1 and stays on the plane; the slot's agent calls the proxy with a run token only.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: cloud/src/api/agent-routes.ts, src/fleet/gui-agent.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Billing (Stripe), mail (Resend/SES), metering and admin routes are left out; site/, launch/, bench/ and tests/chaos are left out: not on the runtime path;\nContainer lane internals and slot seeding/login (RFB) were not traced in detail.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How do console sign-in and GitHub Actions jobs reach the fleet?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to offstage and offstage cloud · Console auth through Clerk; workflow E: webhook → JIT runner config → job in a slot",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Customer browser / code",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Customer's browser (console SPA)\nand SDK code; not run by exla",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Clerk, Anthropic and GitHub over the public internet",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly.io offstage-api",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "exla-operated plane: one Fly\nmachine with a /data volume;\nmanaged",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fleet slot accounts",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "offstage0–7 users on the same\nfleet Mac, reset between\ncustomers",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Web console SPA",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Sign-in, teams, API keys,\ntask and recording views",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Clerk (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "GitHub/Google social sign-in;\nverifies session tokens",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "GitHub App / Actions\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Sends workflow_job events\nand issues JIT runner configs",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Control plane API",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Auth, quotas, GUI policy;\nholds client requests open\nfor boxes",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Slot sessiond / agent",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Runs builds, ops, gui agent\nand GH runner as the slot\nuser",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "E1 webhook: workflow_job\nqueued (async)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "E2 REST: generate-jitconfig for\nrunner (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "E3 Actions runner: run job, report results (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Clerk JS: GitHub/Google sign-in →\ntoken (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS cookie: keys, tasks, recordings (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS: verify session token, fetch user (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Clerk is checked server-side",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "The plane verifies each Clerk session token against api.clerk.com; an unreachable Clerk gives 502, a bad token 401. Runners use per-job JIT configs.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: cloud/src/core/clerk.ts, cloud/src/core/github.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Billing (Stripe), mail (Resend/SES), metering and admin routes are left out; site/, launch/, bench/ and tests/chaos are left out: not on the runtime path;\nContainer lane internals and slot seeding/login (RFB) were not traced in detail.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    }
+  ],
+  "overflows": [],
+  "captures": [
+    {
+      "title": "Who calls the plane, and where does cloud work run?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 239.1742738589212,
+        "y": 113.22821576763488,
+        "z": 0.6358839050131926
+      }
+    },
+    {
+      "title": "How does a local command get routed away from the real screen?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -3121.0720887245843,
+        "y": 269.0140480591498,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How does a submitted task reach a slot and return its result?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -7107.28755186722,
+        "y": 147.97344398340255,
+        "z": 0.4865737936604078
+      }
+    },
+    {
+      "title": "What persists, and how is a slot cleaned between customers?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -11156.857670979667,
+        "y": 167.03123844731977,
+        "z": 0.6147727272727272
+      }
+    },
+    {
+      "title": "How do sandbox ops and computer-use agent runs execute?",
+      "filename": "view-5.png",
+      "camera": {
+        "x": -14681.072088724584,
+        "y": 206.41404805914976,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How do console sign-in and GitHub Actions jobs reach the fleet?",
+      "filename": "view-6.png",
+      "camera": {
+        "x": -18681.072088724584,
+        "y": 173.5140480591498,
+        "z": 0.4918181818181818
+      }
+    }
+  ],
+  "errors": []
+}

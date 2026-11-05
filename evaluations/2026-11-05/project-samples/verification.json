@@ -1,0 +1,42 @@
+{
+  "verifiedAt": "2026-11-05T03:47:29.029Z",
+  "checks": [
+    {
+      "galleryWidth": 1194,
+      "images": 23,
+      "links": 24
+    },
+    {
+      "galleryWidth": 390,
+      "images": 23,
+      "links": 24
+    },
+    {
+      "project": "threadline",
+      "packageVersion": "0.9.1",
+      "packagedCli": true,
+      "packagedCanvasOpened": true,
+      "views": 8,
+      "browserErrors": [],
+      "mobileOverflow": false
+    },
+    {
+      "project": "offstage",
+      "packageVersion": "0.9.1",
+      "packagedCli": true,
+      "packagedCanvasOpened": true,
+      "views": 8,
+      "browserErrors": [],
+      "mobileOverflow": false
+    },
+    {
+      "project": "libra",
+      "packageVersion": "0.9.1",
+      "packagedCli": true,
+      "packagedCanvasOpened": true,
+      "views": 7,
+      "browserErrors": [],
+      "mobileOverflow": false
+    }
+  ]
+}

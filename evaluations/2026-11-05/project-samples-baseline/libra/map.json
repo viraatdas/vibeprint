@@ -1,0 +1,586 @@
+{
+  "title": "How does Libra turn customer PRs, telemetry and Slack threads into verdicts and alerts?",
+  "audience": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs)",
+  "scope": "PR sandbox replay (A), telemetry ingest to Scout Slack alerts (B), Slack thread conversation (C), plus the separate Libra Logs stack.",
+  "omissions": [
+    "Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path)",
+    "Billing (Stripe), Logs Ask/LLM, fix-archaeology and other /internal callbacks",
+    "Per-route dashboard pages; only the API boundary is shown"
+  ],
+  "owner": "Viraat (owner approvals per AGENTS.md)",
+  "groups": [
+    {
+      "id": "clients",
+      "label": "Customer infra and dev machines",
+      "description": "Customer-run browsers, Claude Code/CLI, and app OTEL exporters"
+    },
+    {
+      "id": "vercel",
+      "label": "Vercel dashboard",
+      "description": "Managed Vercel: Next.js dashboard at libra.exla.ai"
+    },
+    {
+      "id": "fly-core",
+      "label": "Fly app libra-api",
+      "description": "Exla-run single Node process plus /data SQLite volume"
+    },
+    {
+      "id": "fly-workers",
+      "label": "Fly worker apps",
+      "description": "Exla-run ephemeral sandbox VMs and conversation worker, no DB access"
+    },
+    {
+      "id": "fly-ch",
+      "label": "Fly app libra-clickhouse",
+      "description": "Exla-run persistent ClickHouse for OTEL spans"
+    },
+    {
+      "id": "logs",
+      "label": "Libra Logs stack",
+      "description": "Separate product: own Hono server, web at /logs, own ClickHouse"
+    },
+    {
+      "id": "saas",
+      "label": "Third-party SaaS",
+      "description": "GitHub, Slack, customer AWS, PostHog, OpenAI (managed)"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "dashboard",
+      "label": "Libra dashboard",
+      "kind": "client",
+      "tags": [
+        "Next.js",
+        "React"
+      ],
+      "path": "src/app/",
+      "description": "Monitor, PR mirror, Scout, settings and onboarding screens",
+      "group": "vercel"
+    },
+    {
+      "id": "plugin",
+      "label": "Claude plugin and CLI",
+      "kind": "client",
+      "tags": [
+        "MCP",
+        "hooks"
+      ],
+      "path": "libra-claude-code/",
+      "description": "Sends session events, reads prod risks and PR reviews via MCP",
+      "group": "clients"
+    },
+    {
+      "id": "customer-otel",
+      "label": "Customer OTEL exporters",
+      "kind": "external",
+      "tags": [
+        "OTLP"
+      ],
+      "path": "",
+      "description": "Customer apps exporting spans and logs with ingest keys",
+      "group": "clients"
+    },
+    {
+      "id": "libra-api",
+      "label": "libra-api (Hono)",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Node"
+      ],
+      "path": "api/src/index.ts",
+      "description": "Auth, webhooks, OTLP ingest, MCP, PR sandbox plan/dispatch",
+      "group": "fly-core"
+    },
+    {
+      "id": "scheduler",
+      "label": "Priority scheduler",
+      "kind": "worker",
+      "tags": [
+        "in-process"
+      ],
+      "path": "api/src/scheduler.ts",
+      "description": "Gated, timed jobs: Scout, PostHog watch, PR intents, hunters",
+      "group": "fly-core"
+    },
+    {
+      "id": "sqlite",
+      "label": "SQLite libra.db",
+      "kind": "database",
+      "tags": [
+        "better-sqlite3"
+      ],
+      "path": "api/src/db.ts",
+      "description": "Source of truth: runs, jobs, incidents, settings, ledgers",
+      "group": "fly-core"
+    },
+    {
+      "id": "clickhouse",
+      "label": "ClickHouse otel_spans",
+      "kind": "database",
+      "tags": [
+        "ClickHouse"
+      ],
+      "path": "api/src/clickhouse.ts",
+      "description": "Sole prod span store for analytics and trace replay",
+      "group": "fly-ch"
+    },
+    {
+      "id": "pr-sandbox",
+      "label": "PR replay microVM",
+      "kind": "worker",
+      "tags": [
+        "Fly Machines"
+      ],
+      "path": "agent-sandbox/pr-replay-entrypoint.mjs",
+      "description": "Builds base/head, runs tests, replays traffic, no LLM",
+      "group": "fly-workers"
+    },
+    {
+      "id": "conversation-agent",
+      "label": "Conversation agent",
+      "kind": "worker",
+      "tags": [
+        "Codex",
+        "MCP"
+      ],
+      "path": "conversation-agent/src/worker.ts",
+      "description": "Credentialless Codex Slack turns via one leased job capability",
+      "group": "fly-workers"
+    },
+    {
+      "id": "github",
+      "label": "GitHub App",
+      "kind": "external",
+      "tags": [
+        "REST",
+        "webhooks"
+      ],
+      "path": "",
+      "description": "PR events, source, Check Runs and review comments",
+      "group": "saas"
+    },
+    {
+      "id": "slack",
+      "label": "Slack",
+      "kind": "external",
+      "tags": [
+        "Events API"
+      ],
+      "path": "",
+      "description": "Customer channels: alert parents, threads, buttons",
+      "group": "saas"
+    },
+    {
+      "id": "aws",
+      "label": "Customer AWS",
+      "kind": "external",
+      "tags": [
+        "AWS SDK"
+      ],
+      "path": "",
+      "description": "CloudWatch Logs, ECS events, ALB logs in S3, Cost Explorer",
+      "group": "saas"
+    },
+    {
+      "id": "posthog",
+      "label": "PostHog",
+      "kind": "external",
+      "tags": [
+        "HogQL",
+        "OAuth"
+      ],
+      "path": "",
+      "description": "Customer product analytics read with 3 read scopes",
+      "group": "saas"
+    },
+    {
+      "id": "openai",
+      "label": "OpenAI",
+      "kind": "external",
+      "tags": [
+        "Responses API"
+      ],
+      "path": "",
+      "description": "All inference via services/llm.ts, Platform or Codex transport",
+      "group": "saas"
+    },
+    {
+      "id": "libra-logs",
+      "label": "Libra Logs server",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Next.js"
+      ],
+      "path": "libra-logs/apps/server",
+      "description": "Card-gated log ingest, patterns, query, MCP; web at /logs",
+      "group": "logs"
+    },
+    {
+      "id": "logs-ch",
+      "label": "Logs ClickHouse",
+      "kind": "database",
+      "tags": [
+        "ClickHouse"
+      ],
+      "path": "libra-logs/packages/storage",
+      "description": "Tenant log events and spans written by Logs storage writers",
+      "group": "logs"
+    }
+  ],
+  "edges": [
+    {
+      "from": "github",
+      "to": "libra-api",
+      "label": "A1 HTTPS webhook: pull_request (HMAC-checked)",
+      "mode": "async"
+    },
+    {
+      "from": "libra-api",
+      "to": "sqlite",
+      "label": "A2/C2 SQL: gate audit, run rows, reply jobs",
+      "mode": "local"
+    },
+    {
+      "from": "libra-api",
+      "to": "pr-sandbox",
+      "label": "A3 Fly Machines API: create run-once VM",
+      "mode": "sync"
+    },
+    {
+      "from": "pr-sandbox",
+      "to": "github",
+      "label": "A4 HTTPS: fetch base/head source",
+      "mode": "sync"
+    },
+    {
+      "from": "pr-sandbox",
+      "to": "libra-api",
+      "label": "A5 HTTPS /internal callback: evidence (HMAC)",
+      "mode": "sync"
+    },
+    {
+      "from": "libra-api",
+      "to": "github",
+      "label": "A6 Checks API: Check Run + line comments",
+      "mode": "sync"
+    },
+    {
+      "from": "customer-otel",
+      "to": "libra-api",
+      "label": "B1 OTLP/HTTP /v1/traces: spans, per-key auth",
+      "mode": "sync"
+    },
+    {
+      "from": "libra-api",
+      "to": "clickhouse",
+      "label": "B2 HTTP insert spans, await ack else 503",
+      "mode": "sync"
+    },
+    {
+      "from": "scheduler",
+      "to": "clickhouse",
+      "label": "B3 SQL: span reducer and error families",
+      "mode": "sync"
+    },
+    {
+      "from": "scheduler",
+      "to": "aws",
+      "label": "AWS SDK: Logs Insights, ECS, ALB S3 reads",
+      "mode": "sync"
+    },
+    {
+      "from": "scheduler",
+      "to": "posthog",
+      "label": "HogQL: rage clicks, exceptions, stuck pages",
+      "mode": "sync"
+    },
+    {
+      "from": "scheduler",
+      "to": "sqlite",
+      "label": "B4 SQL: incident_candidates, signal_incidents",
+      "mode": "local"
+    },
+    {
+      "from": "scheduler",
+      "to": "openai",
+      "label": "B5 Responses API: Scout verdict JSON",
+      "mode": "sync"
+    },
+    {
+      "from": "scheduler",
+      "to": "slack",
+      "label": "B6 chat.postMessage via sendSlack gates",
+      "mode": "sync"
+    },
+    {
+      "from": "slack",
+      "to": "libra-api",
+      "label": "C1 Events API: thread reply (signed)",
+      "mode": "async"
+    },
+    {
+      "from": "libra-api",
+      "to": "openai",
+      "label": "C3 Responses API: stateless reply turn + tools",
+      "mode": "sync"
+    },
+    {
+      "from": "libra-api",
+      "to": "slack",
+      "label": "C4 chat.postMessage: terminal thread reply",
+      "mode": "sync"
+    },
+    {
+      "from": "dashboard",
+      "to": "libra-api",
+      "label": "HTTPS JSON (Better Auth): deploys, incidents",
+      "mode": "sync"
+    },
+    {
+      "from": "plugin",
+      "to": "libra-api",
+      "label": "HTTPS /mcp tools + /developer-sessions events",
+      "mode": "sync"
+    },
+    {
+      "from": "conversation-agent",
+      "to": "libra-api",
+      "label": "HTTPS /internal: lease job, MCP reads, terminal",
+      "mode": "sync"
+    },
+    {
+      "from": "conversation-agent",
+      "to": "openai",
+      "label": "codex exec: resume persistent thread turn",
+      "mode": "sync"
+    },
+    {
+      "from": "customer-otel",
+      "to": "libra-logs",
+      "label": "HTTPS POST /v1/ingest: logs, Bearer API key",
+      "mode": "sync"
+    },
+    {
+      "from": "libra-logs",
+      "to": "logs-ch",
+      "label": "HTTP: insert events, query patterns",
+      "mode": "sync"
+    },
+    {
+      "from": "libra-api",
+      "to": "scheduler",
+      "label": "In-process: boot starts gated job loops",
+      "mode": "local"
+    }
+  ],
+  "notes": [
+    {
+      "title": "One process routes everything",
+      "text": "libra-api mounts /webhooks, /v1 OTLP, /internal HMAC callbacks, /slack and /mcp, and starts the priority scheduler in-process. PR replay runs in a Fly microVM; Slack turns run in-process (stateless responder) or on the Codex worker.",
+      "source": "api/src/index.ts, api/src/scheduler.ts, api/src/fly-client.ts, api/src/services/conversation-responder-tick.ts"
+    },
+    {
+      "title": "State: SQLite truth, ClickHouse spans",
+      "text": "SQLite on the Fly volume holds runs, jobs, incidents and ledgers. Spans go only to ClickHouse when LIBRA_USE_CLICKHOUSE=true. Scout candidates become signal_incidents before any Slack page. The Check Run is the PR artifact.",
+      "source": "api/src/db.ts, api/src/clickhouse.ts, api/src/services/incident-scout/"
+    },
+    {
+      "title": "Failure and trust boundaries",
+      "text": "Webhooks and callbacks are HMAC-verified; Slack signatures fail closed. OTLP returns 503 when ClickHouse misses the ack. Sandboxes get no customer secrets and stay read-only. LLM failures return unavailable, no provider switch. sendSlack blocks unproven claims.",
+      "source": "api/src/routes/webhooks.ts, api/src/routes/otel.ts, api/src/services/llm.ts, api/src/services/claim-grounding.ts"
+    }
+  ],
+  "views": [
+    {
+      "kind": "overview",
+      "title": "Who talks to libra-api, and what comes back?",
+      "scope": "Dashboard, coding-agent plugin, GitHub and Slack around the central API process",
+      "nodeIds": [
+        "dashboard",
+        "plugin",
+        "libra-api",
+        "github",
+        "slack"
+      ],
+      "edgeIndices": [
+        17,
+        18,
+        0,
+        5,
+        14,
+        16
+      ],
+      "edgeLabels": [
+        "HTTPS JSON: dashboard reads",
+        "HTTPS: MCP tools + session events",
+        "webhook: pull_request",
+        "Checks API: verdict",
+        "Events API: thread reply",
+        "postMessage: reply"
+      ],
+      "noteIndices": [
+        0
+      ],
+      "notes": [
+        {
+          "title": "Central coordinator",
+          "text": "Every surface hits one Hono process; see workflow views A (PR sandbox), B (detection) and C (Slack conversation).",
+          "source": "api/src/index.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "A: How does a PR become an advisory Libra check?",
+      "scope": "Webhook, gate audit, microVM replay, HMAC callback, Check Run",
+      "nodeIds": [
+        "github",
+        "libra-api",
+        "sqlite",
+        "pr-sandbox"
+      ],
+      "edgeIndices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Gates then dispatch",
+          "text": "Repo allowlist, draft, base branch and risk gates are audited; skipped PRs get no check. The VM runs build, tests, base/head replay and posts evidence back.",
+          "source": "api/src/routes/webhooks.ts, api/src/services/pr-sandbox.ts"
+        },
+        {
+          "title": "Advisory and isolated",
+          "text": "Verdicts never block merge. Callback is HMAC-checked; writes are skipped unless the DB is provably local.",
+          "source": "api/src/routes/pr-sandbox-callback.ts, api/src/services/db-isolation.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "B: How do customer spans reach the incident store?",
+      "scope": "OTLP ingest, ClickHouse ack, in-process scheduler reducer, candidate persistence",
+      "nodeIds": [
+        "customer-otel",
+        "libra-api",
+        "clickhouse",
+        "scheduler",
+        "sqlite"
+      ],
+      "edgeIndices": [
+        6,
+        7,
+        23,
+        8,
+        11
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Truthful ack",
+          "text": "Ingest authenticates the key, awaits the ClickHouse insert, and returns 429/503 with Retry-After rather than dropping spans. Readers filter producer_origin='customer'.",
+          "source": "api/src/routes/otel.ts, api/src/clickhouse.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "B (cont.): How does Scout decide to page Slack?",
+      "scope": "Evidence reads from AWS and PostHog, LLM verdict, gated Slack post",
+      "nodeIds": [
+        "scheduler",
+        "aws",
+        "posthog",
+        "openai",
+        "slack"
+      ],
+      "edgeIndices": [
+        9,
+        10,
+        12,
+        13
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Page gates",
+          "text": "Pages need verified, fresh, active-entity impact; budget exhaustion falls back to deterministic copy. sendSlack enforces evidence and claim-grounding gates.",
+          "source": "api/src/services/incident-scout/page-gate.ts, api/src/services/claim-grounding.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "C: How is a Slack thread reply answered?",
+      "scope": "Signed event, durable job, stateless responder or Codex worker, terminal reply",
+      "nodeIds": [
+        "slack",
+        "libra-api",
+        "sqlite",
+        "openai",
+        "conversation-agent"
+      ],
+      "edgeIndices": [
+        14,
+        1,
+        15,
+        16,
+        19,
+        20
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Two responders, one job",
+          "text": "Each turn is a general_question job. Prod uses the in-process stateless responder; the Codex worker is the alternate and leases jobs without Slack or DB credentials.",
+          "source": "api/src/services/conversation-responder-tick.ts, conversation-agent/src/worker.ts"
+        },
+        {
+          "title": "Terminal is final",
+          "text": "A send accepted by the host is final; ambiguous delivery settles as delivery_unknown and is never resent.",
+          "source": "api/src/services/slack-reply-executor.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does the separate Libra Logs product ingest logs?",
+      "scope": "Customer log ingest into the isolated Libra Logs server and ClickHouse",
+      "nodeIds": [
+        "customer-otel",
+        "libra-logs",
+        "logs-ch"
+      ],
+      "edgeIndices": [
+        21,
+        22
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Isolated, card-gated product",
+          "text": "Logs has its own server, keys and ClickHouse; ingest is refused until card verification, and Logs ingest does not populate core PR-review traces.",
+          "source": "libra-logs/apps/server/test/e2e.test.ts, libra-logs/packages/storage/src/writer.ts"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "at": "2026-11-05T03:30:57.207Z",
+    "revision": "9f2c0394c",
+    "dirty": false
+  }
+}

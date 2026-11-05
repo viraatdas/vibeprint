@@ -1,0 +1,76 @@
+{
+  "project": "offstage",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:38:16.158Z",
+  "revision": "57eeabc",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view has a visible question title ('Who calls the control plane?', 'How does a local command get routed away from the real screen?', 'How does a console user sign in?' and so on), an audience line ('Engineers onboarding to offstage and offstage cloud') and a scope line. The detail (routes, timeouts, process boundaries) suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 3,
+      "evidence": "Most boxes are at the level of a deployable or process. There are a few strays. 'Task queue + sandbox ops' is an in-process module of the plane, drawn as a peer lifeline. 'Slot sessiond / agent' folds the Swift daemon, the agent and the GH runner into one box. A2c draws the CLI talking straight to the helper sessiond and skips the session lane's host side (src/lanes/session/index.ts), while the headless and container lanes appear as their own boxes. The separate workflow views do work well as zoom-ins."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each workflow view is tight, and the omissions are stated ('Not shown: billing/mail/admin routes, container internals, slot RFB seeding…'). But the overview's own question, 'Who calls the control plane?', is answered incompletely. GitHub's workflow_job webhook (view 7, E1) and the slot agent's POST /v1/model/messages (view 6, D4) also call the plane, and neither appears in view 1. A reader of the entry view gets a partial caller list."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are numbered per workflow (A1–F3), labelled with what flows, and styled by mode (solid = sync, dashed = async for the E1 webhook, dotted = local). The legend states 'Caller → recipient; response included'. Deductions: B1 merges two separately initiated requests ('POST /v1/tasks → id; GET ?wait= result') into one arrow. The view-4 snapshot arrow comes from the queue, but server.ts writes the whole plane snapshot. The view-1 edges carry no sequence numbers, which is acceptable for an overview."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Views 2–8 use clear labelled containers with ownership and trust notes: 'Customer-owned clients … not run by exla', 'Fly.io offstage-api exla-operated; one machine', 'Vendor SaaS … public internet', 'Fleet Mac operator … outbound calls only', 'Fleet slot accounts offstage0–7 … reset per customer'. The overview (view 1), however, has no containers; group names appear only as subtitles inside the boxes. The fact that the operator and slot accounts (and the developer and helper accounts) share one physical Mac appears only in text, not as an enclosing host boundary."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence-style layout reads left to right and top to bottom, with aligned lifelines and almost no crossings. However, the container subtitles and edge labels in views 1, 2, 3 and 6 are rendered at roughly 9–11 px at 1194x834. The view-1 edge labels in particular ('HTTPS+key: sandbox tools (sync)') are hard to read. The fixed notes panel takes about a quarter of the viewport."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a visible legend: caller → recipient with the response included, headers = boundaries, faint guides = actors, cylinders = stores, and line samples for Sync request / Async delivery / Local I/O shown per view. The '(sync)/(async)/(local)' suffixes on labels give a non-colour cue, and names match the code (fleetd, sessiond, generate-jitconfig, /v1/model/messages). Single-colour authorship is acceptable because line style carries the meaning. A minor glitch: 'Not shown: Not shown:' is duplicated."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Visible notes cover the relevant failure and state behaviour. An unacked claim is requeued after 20 s, up to 3 attempts (checked against store.ts:32,60). Up to 2 s of state is at risk on one machine, and a failed write is only logged (server.ts:106-112). A failed reset keeps the dirty mark and retries with backoff. A held request gets an idempotent answer. The customer key stays in plane memory with an expiring omt_ token. A memory-only jitConfig is lost on restart. Clerk unreachable → 502, bad token → 401. The local note says lanes never fall back to the real screen. The view-1 note explains the pull model with no inbound ports."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Each view carries 'Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified'. The names and constants I spot-checked match the code (CLAIM_ACK_MS=20_000, MAX_ATTEMPTS=3, the 2_000 ms snapshot, /v1/sandboxes/:id/agent, /v1/model/messages, generate-jitconfig). The score is capped at 3 because nothing was verified against production, and one edge attribution is wrong (the snapshot writer)."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Stepping through the 8 views, a new engineer could explain both halves: local lane routing and refusal, and the cloud pull model with its task, op, agent, Actions and sign-in flows. Two things would still need a walkthrough. The entry view understates who calls the plane. And it is not obvious that the operator and slot containers, and the developer and helper containers, are the same physical Mac, or that the queue is part of the plane process."
+    }
+  ],
+  "coldRead": "offstage has two halves. Locally (view 2), the offstage CLI/MCP asks an in-process route classifier to pick a lane for a command, or to refuse it if it involves installers, .dmg/.pkg or hdiutil. It then runs the command in place (headless lane), in a Docker container on Xvfb (container lane), or through a Unix socket to a Swift sessiond running in a second macOS 'computeruse' account with its own window server. Nothing falls back to the real screen.\n\nIn the cloud, a Hono control plane runs on a single Fly.io machine (offstage-api), keeps its state in memory and snapshots it to a /data volume every 2 s. Customers reach it with the SDK (tasks, sandboxes, agent runs), and the web console signs them in through Clerk; the plane checks each token server-side. The plane never calls the Macs. On each fleet Mac, a fleetd LaunchDaemon long-polls the plane (≤25 s) for tasks and sandbox ops, runs them as slot users offstage0–7 (through sessiond for GUI work, sudo -u otherwise), and posts started/log/exit events and artifacts back. Client requests for ops are held open until fleetd answers. Unstarted claims are requeued after 20 s, up to 3 attempts, and dirty slots are recreated before their next claim.\n\nAgent runs: the plane keeps the customer's Anthropic key and gives the slot a short-lived run token, and the slot's model calls go through the plane's /v1/model/messages proxy. GitHub Actions: a workflow_job webhook makes the plane mint a JIT runner config, fleetd claims it, and the runner in a slot talks to GitHub directly. That config is memory-only, so it is lost on restart.",
+  "inaccuracies": [
+    "View 4 draws 'File: JSON snapshot ≤2s' from 'Task queue + sandbox ops' to the store, and the store holds 'Accounts, keys, ledger…'. The writer is actually cloud/src/server.ts:99-112, which serialises the whole plane.snapshot() on a 2 s interval and on SIGINT/SIGTERM, not the queue module.",
+    "View 1, 'Who calls the control plane?', lists only the CLI, SDK, console and fleetd. GitHub also calls the plane with workflow_job webhooks (cloud/src/core/runners.ts:626), and the slot's agent calls POST /v1/model/messages (cloud/src/api/agent-routes.ts:191). Both appear in later views (E1, D4), so the overview's answer is incomplete.",
+    "View 2's A2c arrow goes from the CLI straight to Helper sessiond. On the host side the call goes through the session lane runner (src/lanes/session/index.ts), which implements LaneRunner like the other lanes. Showing the headless and container lanes as boxes but not the session lane is an inconsistent elision."
+  ],
+  "improvements": [
+    "Make the overview fully answer its question: add GitHub (webhook) and the slot agent (model proxy) as callers, and draw the same ownership containers (Customer-owned, Fly.io, Fleet Mac, Vendor SaaS) as the other views instead of subtitles inside the boxes.",
+    "Fix the persistence edge in view 4 so the plane process (server.ts snapshot of the whole plane state) writes the store, and split B1 into separate submit (POST /v1/tasks) and wait (GET ?wait=) calls so separately initiated requests aren't merged.",
+    "Make the small text larger: container subtitles and edge labels in views 1, 2, 3 and 6 are about 9–11 px at 1194x834. Also add a visible shared 'one physical Mac' outer boundary around operator+slot and developer+helper accounts, so the same-host relationship doesn't live only in the subtitles."
+  ],
+  "total": 33,
+  "verdict": "Good"
+}

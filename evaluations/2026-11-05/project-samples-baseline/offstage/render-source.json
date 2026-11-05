@@ -1,0 +1,14 @@
+{
+  "src/core/map-presentation.ts": "ec26d3a9bd5bed2022d003f1c54bbd64368d0f461d1e67a61899e218c832d76b",
+  "src/shared/map-font.ts": "184b2443e0c1953cfead571a7c7986b2b1612a72ac23b187e5c938e402d47aca",
+  "src/shared/canvas.ts": "fe4c5d18b1d4eceba2ae8aecd080a671328123f2a39e8fca7f025b1e46896a4b",
+  "web/src/ui/Chrome.tsx": "3e2a3cd331285dbea2da2d6bc0a11260666296cc3e85d1d42cc729d6b6c15109",
+  "web/src/App.tsx": "c6f258bf6a0eceef382567ac046b7dceca5b93f0c824bffd98201e42fd475f0e",
+  "web/src/canvas/Board.tsx": "dd00e6d90355d2c53758f031ce11db3205ed2c37ddb13e0a262308b8a43cdcde",
+  "web/src/canvas/png.ts": "0424e9ddf003fe7f811db1a8105198fd70ac65a6b585f2a541f4c1f941511ccf",
+  "web/src/canvas/editor.ts": "4c6ed0c298d3b3d888d4c701ab360645c6a4786133491820d4556a272c1da12d",
+  "web/src/styles.css": "89e7fbb536261ed8528adb29aeb5056af53a92db47cffe6998abe220e4ba7051",
+  "web/src/main.tsx": "829304441ef65bccd0873d5f2564599bc8435b6f8d6135ae00941d88a3f655e4",
+  "web/src/fonts/DejaVuSans.ttf": "abdc775b21b1bc470d50c97e790d276f2054b7504e56e5bd3e64f48d68582322",
+  "package-lock.json": "be07951e89b115d392bc25ad0f46f0ce1887a437912730be88ba7813beae55f7"
+}

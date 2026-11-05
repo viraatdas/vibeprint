@@ -1,0 +1,75 @@
+{
+  "project": "threadline",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:43:15.541Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each of the 8 views has a visible one-line question title (e.g. 'What happens when the owner clicks Send on an email draft?', 'How is an X DM sent when X has no API?') plus a subtitle naming the audience ('Engineers onboarding to Outbound (repo threadline)') and the scope. The detail (route names, bearer secrets, 75s poll) suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes are consistently deployable components or external services: Pages + server actions, API route handlers, app logic, Postgres, worker, volume, exit node, SaaS. Code detail stays in edge labels and notes. Separate linked views zoom into each workflow (email, LinkedIn, cron/import, refresh externals, scout, sign-in, X). Grouping Apollo/Exa/YC/GitHub/HN as 'Prospect data sources' is a deliberate, labelled aggregation."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view is tightly scoped, and the omissions are noted on screen ('Not shown: Hourly Fly machine config isn't in repo; ranking math…'). Unmet condition: some needed hops are missing. The overview (view 1) leaves out the actors that start actions (web UI, Vercel Cron, Fly hourly), so its title question 'how do actions and cron reach…' is only half answered. View 7's L2 '/login/screen' poll has no browser→route trigger. The Gmail-consent path skips the /api/integrations/gmail/connect route. No single view shows every component together, so the reader has to assemble the whole picture."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Every arrow is directed and labelled with what flows. Labels use stage numbers (A0–A7, B1–B7, C1–C4, S1–S3, L0–L2, X1–X3), and the legend states 'Caller → recipient; response included' and 'Equal stages = alternatives', so the two B1 triggers read correctly as alternatives. Sync vs local is shown both by line style and by a '(sync)'/'(local)' suffix. The asynchronous LinkedIn confirmation is shown as a separate A7 poll with a ≤75s bound, and B4b correctly starts at the worker."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Workflow views 2–8 have headed containers: Owner's laptop, Vercel app ('Managed Next.js'), AWS RDS (vendor-managed), Fly threadline-browser (self-run), Owner home network, Vendor SaaS. Together these show internal/external and managed/self-run clearly. Unmet condition: the overview (view 1), the entry point of the set, has no containers. Deployment shows only as a grey subtitle inside each box ('Vercel app', 'AWS RDS (vendor-managed)'), and the bearer/owner-gate trust boundaries appear only in text."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence-style views have a clear left-to-right, top-to-bottom direction, no crossings, aligned lifelines, and readable node titles and edge labels at 1194x834. Unmet condition: container description text and node descriptions in views 2–5 and 7 are very small (~9–10px, e.g. 'Owner's browser tab and local scout CLI'). The notes panel takes the bottom third and clips its footer in view 2, which drops the source-review/owner line. View 1 leaves a lot of empty space while still omitting actors."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "A visible legend in every view explains the conventions: 'Headers = boundaries; faint guides = actors; cylinders = stores', solid = sync request, dotted = local I/O. Stores (Postgres, browser_data volume) are cylinders. Non-colour signals (line style plus a text suffix) carry the meaning. Real names are used throughout (CRON_SECRET, IMPORT_TOKEN, /runs/{id}, threadline-hourly-sync). The single authorship colour is acceptable because shape, line style and text carry the meaning."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The visible notes cover the relevant failure and state behaviour, and each one checks out against the source. In-touch check errors block the send while reply-check errors don't (lib/engine.ts:1383, 1392-1395). The claim UPDATE…WHERE status in (draft, failed) prevents double sends (engine.ts:1346-1358). An unfinished LinkedIn run stays 'sending' after the 75s poll (engine.ts:1461). The worker runs one job at a time, gates on the home route, and expires runs queued over 24h (worker.py:68, 74, 488-489). Cron returns 401 without CRON_SECRET and has maxDuration 300s. Import returns 400 on a bad payload. Login returns 503 or 409. Scraped text is fenced as untrusted and site fetches have an SSRF guard. The external dependencies and the self-run Jetson exit node are explicit."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows 'Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified'. The names match the code: vercel.json cron '0 15 * * *', worker routes /runs, /runs/{run_id}, /login, /login/screen, /login/input, /login/finish (worker.py:857-866), and IMPORT_TOKEN or CRON_SECRET (import/route.ts:17). The score is capped at 3 because nothing was verified against production, and the Fly hourly machine is taken from a code comment only."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "Read in order, the views let a newcomer correctly explain the owner-click-only send path, the three channels, cron refresh/fill, scout import and sign-in. But there are eight views, the overview leaves out the triggering actors and the external services, and the view 7 L0–L2 sign-in sequence (who polls /login/screen?) needs a walkthrough. A full system picture in two minutes is therefore tight without one."
+    }
+  ],
+  "coldRead": "Outbound (repo threadline) is a private tool on Vercel that finds prospects, drafts outreach with OpenRouter LLMs, and sends a message only when the owner clicks Send. In the web UI, Send calls a server action. That action runs sendMessage in lib/engine.ts behind an assertOwner check. sendMessage first claims the draft row in Postgres (AWS RDS) so a double click is a no-op, then checks the stage, the 24h limits, earlier replies and whether the owner is already in touch. It then takes one of three paths. Email goes through the Gmail API as a threaded send. LinkedIn becomes a POST /runs job to a self-run Chromium worker on Fly; the worker loads its stored profile, sends its traffic through Tailscale SOCKS5 and the owner's home exit node, and the app polls the run for up to 75s, leaving unfinished runs for the next refresh. X has no API: the UI opens a prefilled compose window, the owner sends it by hand, and Send just records it. Separately, Vercel Cron (daily) or a Fly scheduled machine (hourly) calls /api/cron with CRON_SECRET. That runs refresh, which checks Gmail for replies and bounces, reads the LinkedIn inbox and posts through the worker, scores and drafts with the LLMs, sources from Apollo, Exa, YC and company sites, and upserts the CRM and health status. Cron never sends. On the owner's laptop, the scout CLI uses their own gh, yc and bird logins and POSTs results to /api/import with a bearer token, which resolves the persona and ingests the results. Google sign-in and Gmail consent use OAuth with a callback that seals the tokens in Postgres. LinkedIn sign-in happens inside the worker's browser, streamed to the Settings page as JPEG frames.",
+  "inaccuracies": [
+    "View 4 'C4 ingest(FindResult)' and the node description 'Outbound app logic … import ingestion' point at the node whose path is lib/engine.ts, but the import route calls ingest from lib/ingest.ts directly (app/api/import/route.ts:7,51). This is clarified only in the overview note, not in view 4.",
+    "View 7 'S1 browser redirect: Google consent' runs straight from the web UI to Google. Gmail consent actually starts at the app route app/api/integrations/gmail/connect/route.ts, and owner sign-in goes through Auth.js at app/api/auth/[...nextauth]/route.ts. This is a simplification that hides the app-side start of the OAuth state cookie checked in callback/route.ts:15."
+  ],
+  "improvements": [
+    "Make the overview a real top-level map: add the web UI, Vercel Cron and Fly hourly as triggers, the Google, OpenRouter and data sources as external services, and the deployment containers (Vercel / AWS RDS / Fly self-run / home network / Vendor SaaS) already used in the workflow views. A newcomer could then place every component from one screen.",
+    "In the sign-in view, add the missing hops: browser → /api/integrations/gmail/connect (sets the state cookie) → Google, and browser polling → /api/linkedin/login/screen → worker. That way the S and L sequences start from a visible caller.",
+    "Raise the font size of the container and node description text (currently ~9–10px) or trim it. Shrink or collapse the notes panel so its footer (date / revision / owner) is never clipped, as it is in view 2."
+  ],
+  "total": 35,
+  "verdict": "Good"
+}

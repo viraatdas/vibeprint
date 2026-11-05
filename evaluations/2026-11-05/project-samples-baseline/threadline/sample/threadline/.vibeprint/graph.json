@@ -1,0 +1,724 @@
+{
+  "version": 2,
+  "sketchSeq": 1,
+  "interpretedBy": "claude",
+  "updatedAt": "2026-11-05T03:31:23.371Z",
+  "nodes": [
+    {
+      "id": "n_outbound_web_ui",
+      "label": "Outbound web UI",
+      "kind": "client",
+      "tags": [
+        "React 19",
+        "Next.js",
+        "components/"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map4a3e8244c5f480de",
+        "shape:map962593739541362e",
+        "shape:map7036ccc0df5b83f8",
+        "shape:mapbbc52a78de314c6c",
+        "shape:map1bf2cbbf2e4e6ffd",
+        "shape:mapd67674bde09e5b5b",
+        "shape:map765ea6cc105a9b10",
+        "shape:mapa8a1428331a9ca41",
+        "shape:map55cdec1a4e1c8ed1",
+        "shape:map1eee7dba0b524364",
+        "shape:map143f026cb43694c3"
+      ],
+      "bounds": {
+        "x": 0,
+        "y": 148,
+        "w": 23714,
+        "h": 689.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Today, Find, People, Pipeline, Campaigns, Settings screens",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_scout_cli",
+      "label": "scout CLI",
+      "kind": "client",
+      "tags": [
+        "tsx",
+        "CLI",
+        "scripts/scout.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map372e2ab96372b5a9",
+        "shape:map8c2c8f16b679d126",
+        "shape:mapfd572a59ab2dc295",
+        "shape:map1ca99ee824279786"
+      ],
+      "bounds": {
+        "x": 19326,
+        "y": 236.1,
+        "w": 388,
+        "h": 539.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Finds companies via yc/gh/bird, pushes them to /api/import",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_pages_server_actions",
+      "label": "Pages + server actions",
+      "kind": "service",
+      "tags": [
+        "Next.js 16",
+        "Auth.js",
+        "app/(app)/"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map5700d40fc7e8190f",
+        "shape:map1d5ba640a55aeca9",
+        "shape:map2cb78232d33b9a50",
+        "shape:mapaa2f24fc591c634c",
+        "shape:mapf9f6706eaae02292",
+        "shape:map63a9e673e18745b8",
+        "shape:map9467e66df99530da",
+        "shape:mapb5fa1f94f47c5eb9",
+        "shape:mapb53ab7d922c338c4",
+        "shape:mapc676319e8b3aa8ef",
+        "shape:mapc39b0712b09f2b1d"
+      ],
+      "bounds": {
+        "x": 610,
+        "y": 265.8,
+        "w": 24424,
+        "h": 571.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "requireOwner pages; assertOwner-gated mutations in actions.ts",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_machine_api_routes",
+      "label": "Machine API routes",
+      "kind": "service",
+      "tags": [
+        "Next.js route",
+        "bearer",
+        "app/api/"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map351e108c48a65efc",
+        "shape:map838c7b2959f71630",
+        "shape:mapec1bdae0e348c3f6",
+        "shape:map154ebd001957283e",
+        "shape:mapb340ee9fd0483ae9",
+        "shape:map326a39029c15dbee",
+        "shape:map0d306bdb913c7de5",
+        "shape:mapc9e6fbf2774a8663"
+      ],
+      "bounds": {
+        "x": 11766,
+        "y": 236.1,
+        "w": 9268,
+        "h": 539.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "/api/cron and /api/import; bearer secret check, 401 otherwise",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_outbound_engine",
+      "label": "Outbound engine",
+      "kind": "module",
+      "tags": [
+        "TypeScript",
+        "AI SDK",
+        "lib/engine.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map95f3f19da837b2a5",
+        "shape:map6c895c86aa82f68d",
+        "shape:mapddc2255c601d3715",
+        "shape:map195c217c7b3e9656",
+        "shape:mapaeb3715e38e634b6",
+        "shape:mape511ec69f4b6e9cb",
+        "shape:mape5c209c072bbd9f8",
+        "shape:map5ac1756587e12ed1",
+        "shape:map8d67d641fabde817",
+        "shape:map253c868326b8ef0a",
+        "shape:mapc2a4fed658c81b7e",
+        "shape:map16ee40fbd5023e53",
+        "shape:mapab80fe38ea3e87ff",
+        "shape:map6e3e4b34c3298431",
+        "shape:mapd63a2f2bebf887b3",
+        "shape:mape6a58b1c6af51756",
+        "shape:map43c9ec886e11730e",
+        "shape:mapc68e430a4bbde806",
+        "shape:map3861b92d9666febd",
+        "shape:mape5a1207a0617ab4c",
+        "shape:mapbab3b0086aa58752",
+        "shape:map5e3316ec4df824d3",
+        "shape:map883a76d360078341"
+      ],
+      "bounds": {
+        "x": 1220,
+        "y": 148,
+        "w": 20254,
+        "h": 752.5
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Decides research, enroll, draftDue, sendMessage, refresh, fill",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_vercel_cron",
+      "label": "Vercel Cron",
+      "kind": "external",
+      "tags": [
+        "cron",
+        "vercel.json"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map859da7f79777922c",
+        "shape:map9a2252ccd9ff6165",
+        "shape:map5030664d088666ce",
+        "shape:mape97f10f75260f16b"
+      ],
+      "bounds": {
+        "x": 11326,
+        "y": 269.9,
+        "w": 388,
+        "h": 501.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Daily 15:00 UTC trigger of /api/cron",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_threadline_hourly_sync",
+      "label": "threadline-hourly-sync",
+      "kind": "worker",
+      "tags": [
+        "Fly machine"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapb6ce53d5487dc830",
+        "shape:mapf893e0c99154fe3d",
+        "shape:map21ebc67c17fa2a98",
+        "shape:map4a56ecd770e85239"
+      ],
+      "bounds": {
+        "x": 12646,
+        "y": 269.9,
+        "w": 388,
+        "h": 501.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Hourly scheduler; triggers refresh + fill (config not in repo)",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_postgres_crm",
+      "label": "Postgres CRM",
+      "kind": "database",
+      "tags": [
+        "Drizzle",
+        "RDS",
+        "lib/db/schema.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map72e9cec080cf4cda",
+        "shape:map6fe9920b0cfc8860",
+        "shape:map6bfbaf5c3f2c66ad",
+        "shape:map87cace30e54353eb",
+        "shape:map27ca6cd3d8723e92",
+        "shape:mapff41d6c119fa80b0",
+        "shape:mapcd7923f4b5c74142",
+        "shape:map1fa1e51ec58746c6",
+        "shape:mapabd13f4216520bf6",
+        "shape:mapae7746abf517a8ea",
+        "shape:mapa0ffa7d972ab4f52"
+      ],
+      "bounds": {
+        "x": 1220,
+        "y": 265.8,
+        "w": 12254,
+        "h": 571.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Companies, fits, people, messages, sealed connections, runtime",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_linkedin_browser_worker",
+      "label": "LinkedIn browser worker",
+      "kind": "worker",
+      "tags": [
+        "Starlette",
+        "browser-use",
+        "browser/worker.py"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapc87ec830502c83ef",
+        "shape:mapa9c8090ef4917e3b",
+        "shape:mapb2792376905b0580",
+        "shape:map6065c9c62d900fd5",
+        "shape:map76d5f25ad7f50461",
+        "shape:map7e27c709cff4bcd0",
+        "shape:map94b8e0f2afbb8d93",
+        "shape:mapb9106814ab1a86b7",
+        "shape:map68fc2ad031c2eda8",
+        "shape:mapbdbb2505892b1c8f",
+        "shape:map60b5978498a0fb58",
+        "shape:mapeed1c6102625a8bb",
+        "shape:map3bf7575b21c1f4f1",
+        "shape:map6534e730ff2a5130",
+        "shape:map3d456f39816aebd4"
+      ],
+      "bounds": {
+        "x": 1220,
+        "y": 236.1,
+        "w": 24254,
+        "h": 664.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Queues one LinkedIn run at a time; gates on home route",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_browser_data_volume",
+      "label": "browser_data volume",
+      "kind": "storage",
+      "tags": [
+        "Fly volume",
+        "browser/fly.toml"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map65c935185670aee5",
+        "shape:map3f7a15224edb2c06",
+        "shape:map5e085824bd78154e",
+        "shape:map0fc552285a1cd965"
+      ],
+      "bounds": {
+        "x": 8206,
+        "y": 236.1,
+        "w": 388,
+        "h": 664.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Chromium profile (LinkedIn session) and run records at /data",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_tailscale_exit_node",
+      "label": "Tailscale exit node",
+      "kind": "external",
+      "tags": [
+        "Tailscale",
+        "SOCKS5"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map6eac73c20cb7ee10",
+        "shape:map7b47830a1bb2aeb8",
+        "shape:map2020b71282e2d43a",
+        "shape:mapf42ab824344c7484"
+      ],
+      "bounds": {
+        "x": 8646,
+        "y": 236.1,
+        "w": 388,
+        "h": 664.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Gives browser a home IP; LinkedIn revokes datacenter IPs",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_linkedin",
+      "label": "LinkedIn",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mape8a4d8835d48b9f1",
+        "shape:map9dd9d771a8a54090",
+        "shape:map6128114b36071d78",
+        "shape:map4f42b82105638eb8"
+      ],
+      "bounds": {
+        "x": 9086,
+        "y": 236.1,
+        "w": 388,
+        "h": 664.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Invites, messages, people search, inbox list, recent posts",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_google_oauth_gmail",
+      "label": "Google OAuth + Gmail",
+      "kind": "external",
+      "tags": [
+        "OAuth",
+        "REST"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map220d1d7be308ae8a",
+        "shape:mapa74b91a60e47c545",
+        "shape:mapdb9069ed0ec47a2e",
+        "shape:map9089917f85f6bcd7",
+        "shape:mapc48efa929ae87688",
+        "shape:map265b0276ad59641c",
+        "shape:map58deb770cfd999fd",
+        "shape:mapbacbd1559a6d4fa5",
+        "shape:map1defb18922aae0ce",
+        "shape:map5a6e7346c86e732b",
+        "shape:map4e9934936e3d7b3f",
+        "shape:mapc6239c9119007253"
+      ],
+      "bounds": {
+        "x": 5086,
+        "y": 265.8,
+        "w": 19068,
+        "h": 571.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Owner sign-in; gmail.send + readonly for sends and replies",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_openrouter_llms",
+      "label": "OpenRouter LLMs",
+      "kind": "external",
+      "tags": [
+        "HTTPS",
+        "LLM"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map03fc664c710dd1a8",
+        "shape:map07c8c666c323aefa",
+        "shape:map8b0319bf9d0bc4f3",
+        "shape:map48964992b5a629f8"
+      ],
+      "bounds": {
+        "x": 16206,
+        "y": 265.8,
+        "w": 388,
+        "h": 567.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Research/labels, drafts, web search, browser agent steps",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_prospect_data_sources",
+      "label": "Prospect data sources",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map81077962feb64e34",
+        "shape:mapd7d4e02fc3c3637b",
+        "shape:mapcd413db98ee8d334",
+        "shape:map441b30682e8df89e",
+        "shape:mapebc27e6b1dfee878",
+        "shape:mapd0313ea2b1b1426e",
+        "shape:map5c6c9595b083375b",
+        "shape:mapc3e89bfa989266e8"
+      ],
+      "bounds": {
+        "x": 16646,
+        "y": 236.1,
+        "w": 3508,
+        "h": 596.9
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Apollo, Exa, YC, GitHub, HN, company websites (SSRF-guarded)",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_x_x_com",
+      "label": "X (x.com)",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapd474f0fcb6421424",
+        "shape:map7cfd8c2debacd620",
+        "shape:map6cdbef13525915b1",
+        "shape:map9e35c67645285c48",
+        "shape:map632776b2b079ce03",
+        "shape:map25690e6f2d0ed51f",
+        "shape:map3e851c4b0e5161a7",
+        "shape:mapc4c1c983eeabd6b7"
+      ],
+      "bounds": {
+        "x": 20206,
+        "y": 236.1,
+        "w": 4388,
+        "h": 568.9
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Search source via bird; DM compose opened by owner",
+      "statusDetail": "in the code"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_outbound_web_ui__pages_server_actions",
+      "from": "n_outbound_web_ui",
+      "to": "n_pages_server_actions",
+      "label": "A1 HTTPS server action: Send one draft",
+      "shapeIds": [
+        "shape:mapa71c5ba2b5051f9e",
+        "shape:map05b319cac22179b5"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pages_server_actions__outbound_engine",
+      "from": "n_pages_server_actions",
+      "to": "n_outbound_engine",
+      "label": "A2 sendMessage(id) after assertOwner()",
+      "shapeIds": [
+        "shape:map89cb0de5bb1fd19e",
+        "shape:mapd232bc0dda243c2b"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_engine__postgres_crm",
+      "from": "n_outbound_engine",
+      "to": "n_postgres_crm",
+      "label": "A3 SQL: claim draft→sending, 24h limit count",
+      "shapeIds": [
+        "shape:map3304c528066095a3",
+        "shape:mapa6834503c53d9ae8"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_engine__google_oauth_gmail",
+      "from": "n_outbound_engine",
+      "to": "n_google_oauth_gmail",
+      "label": "A4 Gmail API: in-touch check, threaded send",
+      "shapeIds": [
+        "shape:mapaa3427d82cb420ea"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_engine__linkedin_browser_worker",
+      "from": "n_outbound_engine",
+      "to": "n_linkedin_browser_worker",
+      "label": "A5 HTTPS POST /runs: invite/message → run id",
+      "shapeIds": [
+        "shape:map97270b5b96092de5",
+        "shape:map29f1457658fd45e6"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_linkedin_browser_worker__tailscale_exit_node",
+      "from": "n_linkedin_browser_worker",
+      "to": "n_tailscale_exit_node",
+      "label": "A6 SOCKS5 over Tailscale: all browser traffic",
+      "shapeIds": [
+        "shape:map871cd043cf9bf468"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_tailscale_exit_node__linkedin",
+      "from": "n_tailscale_exit_node",
+      "to": "n_linkedin",
+      "label": "A7 HTTPS: linkedin.com pages from home IP",
+      "shapeIds": [
+        "shape:map0083ce2d695a9d19"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_linkedin_browser_worker__browser_data_volume",
+      "from": "n_linkedin_browser_worker",
+      "to": "n_browser_data_volume",
+      "label": "file: Chromium profile + run records",
+      "shapeIds": [
+        "shape:mapef391fe3ef4fece8"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_linkedin_browser_worker__openrouter_llms",
+      "from": "n_linkedin_browser_worker",
+      "to": "n_openrouter_llms",
+      "label": "HTTPS: browser-use agent steps (Haiku)",
+      "shapeIds": [
+        "shape:mapee51dae0a72ec232"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_web_ui__x_x_com",
+      "from": "n_outbound_web_ui",
+      "to": "n_x_x_com",
+      "label": "HTTPS: open prefilled DM; owner presses send",
+      "shapeIds": [
+        "shape:map723186ee63db3d0b"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pages_server_actions__postgres_crm",
+      "from": "n_pages_server_actions",
+      "to": "n_postgres_crm",
+      "label": "SQL: page loaders read CRM (queries.ts)",
+      "shapeIds": [
+        "shape:map98c71f0618819a92"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_vercel_cron__machine_api_routes",
+      "from": "n_vercel_cron",
+      "to": "n_machine_api_routes",
+      "label": "B1 HTTPS GET /api/cron daily, CRON_SECRET",
+      "shapeIds": [
+        "shape:map39bd3558973caddc"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_threadline_hourly_sync__machine_api_routes",
+      "from": "n_threadline_hourly_sync",
+      "to": "n_machine_api_routes",
+      "label": "B1 HTTPS GET /api/cron hourly, CRON_SECRET",
+      "shapeIds": [
+        "shape:mapaa27f40416fcab4b"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_machine_api_routes__outbound_engine",
+      "from": "n_machine_api_routes",
+      "to": "n_outbound_engine",
+      "label": "B2 refresh({fill, inboxWaitMs:120s})",
+      "shapeIds": [
+        "shape:map3abd05f682403cd0"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_engine__openrouter_llms",
+      "from": "n_outbound_engine",
+      "to": "n_openrouter_llms",
+      "label": "B5 HTTPS: score fit, draft step, label reply",
+      "shapeIds": [
+        "shape:mapb78dd4fb37a082cb"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_engine__prospect_data_sources",
+      "from": "n_outbound_engine",
+      "to": "n_prospect_data_sources",
+      "label": "B6 HTTPS: Apollo/Exa/YC/site sourcing",
+      "shapeIds": [
+        "shape:map2605ffbd89e1f922"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_scout_cli__prospect_data_sources",
+      "from": "n_scout_cli",
+      "to": "n_prospect_data_sources",
+      "label": "gh/yc CLIs: fetch YC and GitHub CI data",
+      "shapeIds": [
+        "shape:mapd606e684d88f6447"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_scout_cli__x_x_com",
+      "from": "n_scout_cli",
+      "to": "n_x_x_com",
+      "label": "bird CLI: search posts with owner cookies",
+      "shapeIds": [
+        "shape:map7384332387f6330f"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_scout_cli__machine_api_routes",
+      "from": "n_scout_cli",
+      "to": "n_machine_api_routes",
+      "label": "HTTPS POST /api/import, IMPORT_TOKEN",
+      "shapeIds": [
+        "shape:mapc452e8f9596adbfa"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_outbound_web_ui__google_oauth_gmail",
+      "from": "n_outbound_web_ui",
+      "to": "n_google_oauth_gmail",
+      "label": "HTTPS redirect: Google sign-in, Gmail consent",
+      "shapeIds": [
+        "shape:map89f7c6078d942776"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pages_server_actions__google_oauth_gmail",
+      "from": "n_pages_server_actions",
+      "to": "n_google_oauth_gmail",
+      "label": "HTTPS: OAuth code → sealed tokens, refresh",
+      "shapeIds": [
+        "shape:mapd08dd77790197742"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pages_server_actions__linkedin_browser_worker",
+      "from": "n_pages_server_actions",
+      "to": "n_linkedin_browser_worker",
+      "label": "HTTPS: /login screen frames + input relay",
+      "shapeIds": [
+        "shape:mapf93996be36583eb9"
+      ],
+      "origin": "ink"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "curatedAt": "2026-11-05T03:41:51.098786+00:00",
+  "base": "../project-samples-revision1/offstage",
+  "kind": "source-checked human-directed corrections after Opus screenshot review",
+  "changes": [
+    "Bound customer overview to the three shown clients",
+    "Collapse in-process queue into API actor",
+    "Attribute whole-plane snapshots to API process",
+    "Separate task submit and wait requests",
+    "Show local session adapter before helper RPC",
+    "Clarify co-located accounts and shorten boundary descriptions"
+  ],
+  "sources": [
+    "cloud/src/server.ts:99-112",
+    "sdk/src/task.ts:89-166",
+    "src/lanes/session/index.ts:1-29",
+    "cloud/src/core/queue.ts"
+  ],
+  "productionVerified": false
+}

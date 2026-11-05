@@ -1,0 +1,695 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": -18738.00369685767,
+    "y": 107.34366913123836,
+    "z": 0.7213333333333334
+  },
+  "text": [
+    {
+      "text": "Who talks to libra-api, and what comes back?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · Dashboard, coding-agent plugin, GitHub and Slack\naround the central API process",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "libra-api (Hono)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Fly app libra-api",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Libra dashboard",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Vercel dashboard",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Claude plugin\nand CLI",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer infra and\ndev machines",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "GitHub App\n(external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Slack (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Context: boxes = runtime actors; subtitles = deployment locations. Arrows = caller → recipient, response included; protocol is\nlabeled. Detailed roles, boundaries and failures are in the workflow views.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Central coordinator",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Every surface hits one Hono process; see workflow views A\n(PR sandbox), B (detection) and C (Slack conversation).",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/index.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "A: How does a PR become an advisory Libra check?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · Webhook, gate audit, microVM replay, HMAC callback, Check Run",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "GitHub, Slack, customer AWS,\nPostHog, OpenAI (managed)",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly app libra-api",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run single Node process plus /data SQLite volume",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly worker apps",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run ephemeral sandbox VMs\nand conversation worker, no DB\naccess",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "GitHub App (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "PR events, source, Check\nRuns and review comments",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "libra-api (Hono)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Auth, webhooks, OTLP\ningest, MCP, PR sandbox\nplan/dispatch",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "SQLite libra.db",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Source of truth: runs, jobs,\nincidents, settings, ledgers",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "PR replay microVM",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Builds base/head, runs tests,\nreplays traffic, no LLM",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A1 HTTPS webhook: pull_request\n(HMAC-checked) (async)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A2/C2 SQL: gate audit, run rows,\nreply jobs (local)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A3 Fly Machines API: create run-once VM (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A4 HTTPS: fetch base/head source (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A5 HTTPS /internal callback: evidence (HMAC) (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A6 Checks API: Check Run + line\ncomments (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient,\nresponse included. Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives;\nunnumbered calls are independent.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Gates then dispatch",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Repo allowlist, draft, base branch and risk gates are audited; skipped\nPRs get no check. The VM runs build, tests, base/head replay and posts\nevidence back.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/routes/webhooks.ts, api/src/services/pr-sandbox.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Advisory and isolated",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Verdicts never block merge. Callback is HMAC-checked; writes are\nskipped unless the DB is provably local.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/routes/pr-sandbox-callback.ts, api/src/services/db-isolation.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path); Billing (Stripe), Logs Ask/LLM,\nfix-archaeology and other /internal callbacks; Per-route dashboard pages; only the API boundary is shown.",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "B: How do customer spans reach the incident store?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · OTLP ingest, ClickHouse ack, in-process scheduler reducer, candidate persistence",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Customer infra and dev\nmachines",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Customer-run browsers, Claude\nCode/CLI, and app OTEL exporters",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly app libra-api",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run single Node process plus /data SQLite volume",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly app libra-clickhouse",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run persistent ClickHouse for\nOTEL spans",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Customer OTEL\nexporters (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer apps exporting\nspans and logs with ingest\nkeys",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "libra-api (Hono)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Auth, webhooks, OTLP\ningest, MCP, PR sandbox\nplan/dispatch",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Priority scheduler",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Gated, timed jobs: Scout,\nPostHog watch, PR intents,\nhunters",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "SQLite libra.db",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Source of truth: runs, jobs,\nincidents, settings, ledgers",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "ClickHouse otel_spans",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Sole prod span store for\nanalytics and trace replay",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B1 OTLP/HTTP /v1/traces: spans,\nper-key auth (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B2 HTTP insert spans, await ack else 503 (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B3 SQL: span reducer and error families (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B4 SQL: incident_candidates,\nsignal_incidents (local)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "In-process: boot starts gated job\nloops (local)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Truthful ack",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Ingest authenticates the key, awaits the ClickHouse insert, and returns 429/503 with Retry-After rather than dropping spans. Readers filter producer_origin='customer'.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/routes/otel.ts, api/src/clickhouse.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path); Billing (Stripe), Logs Ask/LLM, fix-archaeology and other /internal callbacks;\nPer-route dashboard pages; only the API boundary is shown.",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "B (cont.): How does Scout decide to page Slack?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · Evidence reads from AWS and PostHog, LLM verdict, gated Slack post",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Fly app libra-api",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run single Node process plus\n/data SQLite volume",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "GitHub, Slack, customer AWS, PostHog, OpenAI (managed)",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Priority scheduler",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Gated, timed jobs: Scout,\nPostHog watch, PR intents,\nhunters",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Customer AWS\n(external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "CloudWatch Logs, ECS\nevents, ALB logs in S3, Cost\nExplorer",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "PostHog (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer product analytics\nread with 3 read scopes",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "OpenAI (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "All inference via\nservices/llm.ts, Platform or\nCodex transport",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Slack (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer channels: alert\nparents, threads, buttons",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B5 Responses API: Scout verdict JSON (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "B6 chat.postMessage via sendSlack gates (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "AWS SDK: Logs Insights, ECS,\nALB S3 reads (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "HogQL: rage clicks, exceptions, stuck pages (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Page gates",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Pages need verified, fresh, active-entity impact; budget exhaustion falls back to deterministic copy. sendSlack enforces evidence and claim-grounding gates.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/services/incident-scout/page-gate.ts, api/src/services/claim-grounding.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path); Billing (Stripe), Logs Ask/LLM, fix-archaeology and other /internal callbacks;\nPer-route dashboard pages; only the API boundary is shown.",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "C: How is a Slack thread reply answered?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · Signed event, durable job, stateless responder or Codex worker, terminal reply",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Third-party SaaS",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "GitHub, Slack, customer AWS, PostHog, OpenAI (managed)",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly app libra-api",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run single Node process plus /data SQLite volume",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Fly worker apps",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Exla-run ephemeral sandbox VMs\nand conversation worker, no DB\naccess",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Slack (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer channels: alert\nparents, threads, buttons",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "OpenAI (external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "All inference via\nservices/llm.ts, Platform or\nCodex transport",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "libra-api (Hono)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Auth, webhooks, OTLP\ningest, MCP, PR sandbox\nplan/dispatch",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "SQLite libra.db",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Source of truth: runs, jobs,\nincidents, settings, ledgers",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Conversation agent",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Credentialless Codex Slack\nturns via one leased job\ncapability",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "C1 Events API: thread reply (signed) (async)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "A2/C2 SQL: gate audit, run rows,\nreply jobs (local)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "C3 Responses API: stateless\nreply turn + tools (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "C4 chat.postMessage: terminal thread reply (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "HTTPS /internal: lease job, MCP reads, terminal (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "codex exec: resume persistent thread turn (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Two responders, one job",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Each turn is a general_question job. Prod uses the in-process stateless responder; the\nCodex worker is the alternate and leases jobs without Slack or DB credentials.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/services/conversation-responder-tick.ts, conversation-agent/src/worker.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Terminal is final",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "A send accepted by the host is final; ambiguous delivery settles as delivery_unknown and is\nnever resent.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: api/src/services/slack-reply-executor.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path); Billing (Stripe), Logs Ask/LLM, fix-archaeology and other /internal callbacks;\nPer-route dashboard pages; only the API boundary is shown.",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "How does the separate Libra Logs product ingest logs?",
+      "renderedSize": 24.525333333333336
+    },
+    {
+      "text": "Engineers onboarding to the Libra product (core API, sandbox, Slack, Logs) · Customer log ingest into the isolated Libra Logs\nserver and ClickHouse",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Customer infra and dev machines",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Customer-run browsers, Claude\nCode/CLI, and app OTEL exporters",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Libra Logs stack",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Separate product: own Hono server, web at /logs, own ClickHouse",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Customer OTEL exporters\n(external)",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Customer apps exporting spans\nand logs with ingest keys",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Libra Logs server",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Card-gated log ingest, patterns,\nquery, MCP; web at /logs",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Logs ClickHouse",
+      "renderedSize": 20.197333333333333
+    },
+    {
+      "text": "Tenant log events and spans\nwritten by Logs storage writers",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "HTTPS POST /v1/ingest: logs, Bearer\nAPI key (sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "HTTP: insert events, query patterns\n(sync)",
+      "renderedSize": 17.312
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled\narrows caller → recipient, response included. Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages\ndefine order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 15.869333333333334
+    },
+    {
+      "text": "Isolated, card-gated product",
+      "renderedSize": 18.033333333333335
+    },
+    {
+      "text": "Logs has its own server, keys and ClickHouse; ingest is refused until card verification, and Logs ingest does not populate\ncore PR-review traces.",
+      "renderedSize": 16.590666666666667
+    },
+    {
+      "text": "Source: libra-logs/apps/server/test/e2e.test.ts, libra-logs/packages/storage/src/writer.ts",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Libra Issues, PR-maker and Libra Self flows (reuse the sandbox VM path); Billing\n(Stripe), Logs Ask/LLM, fix-archaeology and other /internal callbacks; Per-route dashboard pages; only the API boundary is shown.",
+      "renderedSize": 15.148000000000001
+    },
+    {
+      "text": "Source review 2026-11-05 · 9f2c0394c · Owner: Viraat (owner approvals per AGENTS.md) · Live runtime NOT verified",
+      "renderedSize": 15.148000000000001
+    }
+  ],
+  "overflows": [],
+  "captures": [
+    {
+      "title": "Who talks to libra-api, and what comes back?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 526.2697095435685,
+        "y": 146.0912863070539,
+        "z": 0.49284253578732107
+      }
+    },
+    {
+      "title": "A: How does a PR become an advisory Libra check?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -2978.8970954356846,
+        "y": 137.4871369294607,
+        "z": 0.5236853541938287
+      }
+    },
+    {
+      "title": "B: How do customer spans reach the incident store?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -6681.072088724584,
+        "y": 185.4890480591498,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "B (cont.): How does Scout decide to page Slack?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -10681.072088724584,
+        "y": 264.9640480591498,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "C: How is a Slack thread reply answered?",
+      "filename": "view-5.png",
+      "camera": {
+        "x": -14681.072088724584,
+        "y": 192.41404805914982,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How does the separate Libra Logs product ingest logs?",
+      "filename": "view-6.png",
+      "camera": {
+        "x": -18738.00369685767,
+        "y": 107.34366913123836,
+        "z": 0.7213333333333334
+      }
+    }
+  ],
+  "errors": []
+}

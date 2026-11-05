@@ -1,0 +1,936 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": -23121.072088724584,
+    "y": 233.9140480591497,
+    "z": 0.4918181818181818
+  },
+  "text": [
+    {
+      "text": "Which parts make up Outbound and who coordinates them?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Owner UI, the Vercel app and engine, the Postgres CRM and the\nLinkedIn worker",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Pages + server\nactions",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Vercel project\nthreadline",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Vercel project\nthreadline",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "AWS RDS\nthreadline-db",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "LinkedIn browser\nworker",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Fly app\nthreadline-browser",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Context: boxes = runtime actors; subtitles = deployment locations. Arrows = caller → recipient, response included; protocol is\nlabeled. Detailed roles, boundaries and failures are in the workflow views.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Engine is the decision maker",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Pages and actions are thin. lib/engine.ts decides research,\nenrollment, drafting, sending and when to stop on a reply.\nThe email, LinkedIn and refresh views have the details.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Owner-only gate",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Pages call requireOwner(); every server action runs through\nrun() → assertOwner(), allowlisted to OWNER_EMAIL.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: app/(app)/actions.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "What happens when the owner clicks Send on an email draft?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow A, email channel: claim, guards, Gmail threaded send",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI using owner's own logins",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1 plus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "AWS RDS threadline-db",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Postgres holding the\nCRM; accessed only by the Vercel\napp",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party services",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed external APIs and sites:\nGoogle, OpenRouter, Apollo, Exa, X",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Today, Find, People, Pipeline,\nCampaigns, Settings screens",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Pages + server actions",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "requireOwner pages;\nassertOwner-gated\nmutations in actions.ts",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Decides research, enroll,\ndraftDue, sendMessage,\nrefresh, fill",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Companies, fits, people,\nmessages, sealed\nconnections, runtime",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends and\nreplies",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A1 HTTPS server action: Send\none draft (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A2 sendMessage(id) after\nassertOwner() (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A3 SQL: claim draft→sending,\n24h limit count (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A4 Gmail API: in-touch check, threaded send (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Guards before Gmail",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Closed stage → skipped; over daily limit → failed; already replied → skipped; in touch\noutside sequence → failed unless Include anyway.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Follow-ups thread",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Follow-ups reuse the last threadId, 'Re: <first subject>' and In-Reply-To = stored RFC\nMessage-ID.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts, lib/gmail.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How does a LinkedIn send run in the browser worker?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow A, LinkedIn channel: queued run, home-IP egress, poll for outcome",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1\nplus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly app threadline-browser",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Self-hosted browser-use + Chromium worker in sjc, /data volume",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Owner's home network",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Always-on Tailscale exit node,\nowner-operated; LinkedIn egress",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party services",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed external APIs and sites:\nGoogle, OpenRouter, Apollo, Exa, X",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Decides research, enroll,\ndraftDue, sendMessage,\nrefresh, fill",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Queues one LinkedIn run at\na time; gates on home route",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "browser_data volume",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Chromium profile (LinkedIn\nsession) and run records at\n/data",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Tailscale exit node\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Gives browser a home IP;\nLinkedIn revokes datacenter\nIPs",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "LinkedIn (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Invites, messages, people\nsearch, inbox list, recent\nposts",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A5 HTTPS POST /runs:\ninvite/message → run id (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A6 SOCKS5 over Tailscale: all browser traffic (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A7 HTTPS: linkedin.com pages\nfrom home IP (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "A8 HTTPS GET /runs/{id}: poll\noutcome ≤75s (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "file: Chromium profile + run\nrecords (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Home route required",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Before each run the worker checks that Tailscale reports the exit node online and that the\nproxy IP differs from Fly's. Otherwise the run waits, up to a 24h TTL.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Async confirm",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "The app polls up to 75s; unfinished runs stay 'sending' and refresh() resolves them later.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts, lib/linkedin.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "What triggers refresh and what does it update?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow B: daily Vercel cron and hourly Fly trigger into refresh + fillPipeline",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1 plus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly app\nthreadline-codex-worker",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Fly scheduled machine (managed)\nthat GETs /api/cron hourly",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "AWS RDS threadline-db",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Postgres holding the\nCRM; accessed only by the Vercel\napp",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Vercel Cron (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Daily 15:00 UTC trigger of\n/api/cron",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Machine API routes",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "/api/cron and /api/import;\nbearer secret check, 401\notherwise",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Decides research, enroll,\ndraftDue, sendMessage,\nrefresh, fill",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "threadline-hourly-sync",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Hourly scheduler; triggers\nrefresh + fill (config not in\nrepo)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Companies, fits, people,\nmessages, sealed\nconnections, runtime",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B1 HTTPS GET /api/cron daily,\nCRON_SECRET (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B1 HTTPS GET /api/cron hourly, CRON_SECRET (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B2 refresh({fill,\ninboxWaitMs:120s}) (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B7 SQL: upsert CRM, drafts, runtime.health (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Bounded under 300s",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "The cron route has maxDuration 300 and gives fillPipeline a 230s deadline. A failed check is\nrecorded as a health problem and refresh keeps going.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: app/api/cron/route.ts, lib/engine.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Never sends",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "refresh confirms LinkedIn runs, detects replies, drafts due steps and fills the CRM; it does\nnot enroll or send.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Which external systems does refresh reach?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow B steps B3–B6: Gmail reply checks, LinkedIn reads, LLM, sourcing",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1\nplus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party services",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed external APIs and sites: Google, OpenRouter, Apollo, Exa, X",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly app threadline-browser",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Self-hosted browser-use +\nChromium worker in sjc, /data\nvolume",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Decides research, enroll,\ndraftDue, sendMessage,\nrefresh, fill",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends and\nreplies",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "OpenRouter LLMs\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Research/labels, drafts, web\nsearch, browser agent steps",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Prospect data sources\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Apollo, Exa, YC, GitHub, HN,\ncompany websites\n(SSRF-guarded)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Queues one LinkedIn run at\na time; gates on home route",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B3 Gmail readonly: replies,\nbounces, threads (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B4 HTTPS POST/GET /runs: inbox + posts reads (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B5 HTTPS: score fit, draft step, label reply (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "B6 HTTPS: Apollo/Exa/YC/site sourcing (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS: browser-use agent steps (Haiku) (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Scraped text is untrusted",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Website/HN/YC/LinkedIn text is fenced in <untrusted> tags for the model; website fetches\npass an SSRF guard.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/ai.ts, lib/sources/website.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Worker uses OpenRouter too",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "browser-use agent steps call OpenRouter (BROWSER_MODEL) directly from the Fly worker,\nnot via the Vercel app.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: browser/worker.py, browser/fly.toml",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How do locally scouted companies enter the CRM?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · scout CLI using owner's yc/gh/bird logins → /api/import → ingest",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI using owner's own logins",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party services",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed external APIs and sites: Google, OpenRouter, Apollo, Exa, X",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1 plus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "scout CLI",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Finds companies via\nyc/gh/bird, pushes them to\n/api/import",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Prospect data sources\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Apollo, Exa, YC, GitHub, HN,\ncompany websites\n(SSRF-guarded)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "X (x.com) (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Search source via bird; DM\ncompose opened by owner",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Machine API routes",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "/api/cron and /api/import;\nbearer secret check, 401\notherwise",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Decides research, enroll,\ndraftDue, sendMessage,\nrefresh, fill",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "gh/yc CLIs: fetch YC and GitHub\nCI data (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "bird CLI: search posts with owner cookies (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS POST /api/import, IMPORT_TOKEN (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "local: ingest(FindResult[]) into\npersona (local)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Local-only X search",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "bird needs the owner's browser cookies, so X sourcing runs only from the laptop via pnpm\nscout x.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: scripts/scout.ts, lib/sources/x.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Import auth and validation",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "/api/import accepts an IMPORT_TOKEN or CRON_SECRET bearer. An unknown project or\npersona, or a payload that fails the zod check, returns 400.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: app/api/import/route.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "How do the owner's sign-ins and X DMs work?",
+      "renderedSize": 16.721818181818183
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Google sign-in and Gmail grant, LinkedIn sign-in inside the worker, manual X DM",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI using owner's own logins",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Third-party services",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed external APIs and sites: Google, OpenRouter, Apollo, Exa, X",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Vercel project threadline",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Managed Next.js functions in sfo1\nplus Vercel Cron; owner-only app",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Fly app threadline-browser",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Self-hosted browser-use +\nChromium worker in sjc, /data\nvolume",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Today, Find, People, Pipeline,\nCampaigns, Settings screens",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends and\nreplies",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "X (x.com) (external)",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Search source via bird; DM\ncompose opened by owner",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Pages + server actions",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "requireOwner pages;\nassertOwner-gated\nmutations in actions.ts",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 13.770909090909091
+    },
+    {
+      "text": "Queues one LinkedIn run at\na time; gates on home route",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS redirect: Google sign-in,\nGmail consent (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS: OAuth code → sealed tokens, refresh (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS: /login screen frames +\ninput relay (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "HTTPS: open prefilled DM; owner presses send (sync)",
+      "renderedSize": 11.803636363636365
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 10.82
+    },
+    {
+      "text": "LinkedIn sign-in in worker",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "Settings streams the worker's screen and relays clicks/keys; no cookie import, because\nLinkedIn revoked copied sessions.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: app/api/linkedin/login/screen/route.ts, lib/linkedin.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "X DM is manual",
+      "renderedSize": 12.295454545454545
+    },
+    {
+      "text": "The browser opens X compose with the text prefilled. sendMessage only records the DM as\nsent, and replies on X aren't detected.",
+      "renderedSize": 11.311818181818182
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine threadline-hourly-sync: config not in repo; known only from docs/comments; Per-page UI detail (Find, People, Pipeline, Campaigns)\ncollapsed into the web UI node; Ranking math (lib/rank.ts) and Drizzle schema columns not drawn.",
+      "renderedSize": 10.328181818181818
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 10.328181818181818
+    }
+  ],
+  "overflows": [],
+  "captures": [
+    {
+      "title": "Which parts make up Outbound and who coordinates them?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 239.1742738589212,
+        "y": 113.22821576763488,
+        "z": 0.6358839050131926
+      }
+    },
+    {
+      "title": "What happens when the owner clicks Send on an email draft?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -3121.0720887245843,
+        "y": 217.71404805914977,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How does a LinkedIn send run in the browser worker?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -7121.072088724584,
+        "y": 186.16404805914976,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "What triggers refresh and what does it update?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -11121.072088724584,
+        "y": 250.7890480591497,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "Which external systems does refresh reach?",
+      "filename": "view-5.png",
+      "camera": {
+        "x": -15121.072088724584,
+        "y": 219.91404805914976,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How do locally scouted companies enter the CRM?",
+      "filename": "view-6.png",
+      "camera": {
+        "x": -19121.072088724584,
+        "y": 248.7640480591498,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How do the owner's sign-ins and X DMs work?",
+      "filename": "view-7.png",
+      "camera": {
+        "x": -23121.072088724584,
+        "y": 233.9140480591497,
+        "z": 0.4918181818181818
+      }
+    }
+  ],
+  "errors": []
+}

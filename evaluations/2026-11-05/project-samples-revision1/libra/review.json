@@ -1,0 +1,75 @@
+{
+  "project": "libra",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:38:31.527Z",
+  "revision": "9f2c0394c",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a one-line question title (e.g. 'A: How does a PR become an advisory Libra check?') plus an audience line ('Engineers onboarding to the Libra product…') and a scope line. Detail suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes are all deployable components, stores or external services at one level (libra-api, scheduler, SQLite, ClickHouse, microVM, Slack, OpenAI). Lettered workflow views zoom into each flow. No code or team boxes are mixed in."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Workflow views are tight and the omissions are stated ('Not shown: Libra Issues, PR-maker…'). But the overview, titled 'Which inbound surfaces converge on libra-api?', leaves out the OTLP /v1/traces exporter ingress (B2), the sandbox HMAC callback (A5) and the conversation-agent lease calls (C3b), all of which are inbound to libra-api. So the entry view answers its own question only in part."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Sequence views carry numbered, labelled arrows that say what flows ('B3 insert spans; no ack → 503 Retry-After'), with sync, async and local I/O marked by line style and text. The legend states that caller→recipient includes the response and that equal stages are alternatives (C3 vs C3b)."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Views 2–7 put actors inside labelled containers (Customer-owned infra, Fly app libra-api 'Exla-run single Node process', Fly worker apps 'no DB', Fly app libra-clickhouse, Vendor SaaS '(managed)', Libra Logs stack 'Separate server, keys and ClickHouse'), so internal/external and managed/self-run are clear. The overview only repeats the boundary as node subtitle text."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Sequence views have a clear left-to-right, top-to-bottom order with no crossings. However, the overview's edge labels and several header subtitles (views 1–4 and 6) render at about 8–10px, which is hard to read at 1194x834. The bottom notes panel also clips the footer on view 5."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a visible legend: solid = sync request, dashed = async delivery, dotted = local I/O, cylinders = stores, headers = boundaries, faint guides = actors, response included. Real names (otel_spans, general_question, sendSlack) are used, and line styles give a signal that does not rely on colour."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Failure and state behaviour is explicit per view: 503/429 Retry-After truthful ack; page claim rollback via markIncidentPageDeliveryFailed; budget exhaustion falls back to deterministic copy; PostHog cursor advances only after durable enqueue, with a dead-letter after five leases; terminal action final, delivery_unknown never resent; sandbox read-only unless DB provably local; Logs card gate."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows 'Source review 2026-11-05 · 9f2c0394c · Owner: Viraat · Live runtime NOT verified'. Spot checks match source: /v1/traces in api/src/index.ts, retry-after in api/src/routes/otel.ts, API_BASE='/logs/api' in libra-logs/packages/contracts/src/api.ts, markIncidentPageDeliveryFailed in incident-scout/promotion.ts. The score is capped at 3 because production was not verified."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "The lettered flows let a newcomer explain PR replay, span→candidate→page, PostHog watch, Slack replies and the separate Logs stack. But the overview's 'Every surface hits one Hono process' and its missing OTLP ingress could mislead someone about where telemetry enters until they reach views B and L."
+    }
+  ],
+  "coldRead": "Libra is one Hono/Node process, libra-api, on Fly. It uses SQLite on a volume as its source of truth and a separate Fly ClickHouse app for OTEL spans. The dashboard (Vercel), the Claude plugin/CLI, GitHub webhooks and Slack events all call into it.\n\nA: a pull_request webhook is gate-audited in SQLite. Libra then starts a run-once Fly microVM that fetches base and head, tests and replays traffic, and calls back with HMAC-signed evidence. libra-api writes an advisory Check Run and line comments. Skipped PRs get no check, and writes stay read-only unless the DB is provably local.\n\nB: customer exporters post OTLP spans. libra-api only acknowledges after ClickHouse confirms the insert, otherwise it returns 503 with Retry-After. The in-process scheduler reduces spans into incident_candidates. It then gathers AWS evidence, gets an OpenAI verdict, claims a signal_incident page and posts to Slack through the sendSlack gates. A failed send rolls the page claim back.\n\nP: the scheduler polls PostHog with HogQL into triage jobs, findings and candidates. Cursors advance only after a durable enqueue.\n\nC: a signed Slack thread event becomes a durable general_question job. Either the in-process stateless responder or an alternate Codex worker (no Slack or DB credentials) produces exactly one terminal reply.\n\nL: Libra Logs is a separate, card-gated server with its own keys and its own ClickHouse, reached at /logs/api/otlp/v1/logs.",
+  "inaccuracies": [
+    "View 1 note 'Every surface hits one Hono process' conflicts with view L: customer OTLP log ingest goes to the separate Libra Logs server (libra-logs/apps/server/src/app.ts mounts routers under API_BASE '/logs/api'), not to libra-api.",
+    "View 1 is framed as the full set of inbound surfaces converging on libra-api, but it leaves out the OTLP span ingress (/v1/traces, handled in api/src/index.ts and api/src/routes/otel.ts), the sandbox HMAC callback and the conversation-agent HTTPS lease. So it understates what enters libra-api."
+  ],
+  "improvements": [
+    "Add Customer OTEL exporters → libra-api (OTLP /v1/traces) to the overview, and either drop 'Every surface' or state that Libra Logs is a separate ingress (link to view L). Optionally add the A5 callback and C3b lease as inbound internal edges.",
+    "Raise the font size of the overview's edge labels and of all header subtitles to at least 12px. Wrap the long audience/scope subtitle lines so they stay readable at 1194x834.",
+    "Give the overview the same boundary containers the workflow views use (Vercel, Customer-owned, Vendor SaaS, Fly libra-api) instead of subtitle text inside nodes, so the entry view shows trust boundaries visually."
+  ],
+  "total": 36,
+  "verdict": "Excellent"
+}

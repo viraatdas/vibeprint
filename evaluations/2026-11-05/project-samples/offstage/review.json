@@ -1,0 +1,72 @@
+{
+  "project": "offstage",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:42:56.062Z",
+  "revision": "57eeabc",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each of the 8 views has a one-line question as its title (e.g. 'How does a submitted task reach a slot and return its result?', 'How does a console user sign in?'), and the subtitle names the audience ('Engineers onboarding to offstage and offstage cloud') and the scope. The level of detail (routes, timeouts, token names) suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Every box is a runtime component at the same level: CLI, lane adapters, sessiond, plane API, snapshot store, fleetd, slot, SaaS. Each workflow view zooms into one path (A–F) and reuses the same actors. No team, concept or code-symbol boxes are mixed in."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Each view shows only the actors its question needs, and a 'Not shown' line lists the omissions (billing, container internals, RFB seeding, benchmarks). The gap: view 2's question is local routing, but the refusal outcome (installer/.dmg/.pkg/hdiutil refused on every lane, which AGENTS.md treats as central) appears only in the subtitle's word 'refuses', with no branch or note. View 1 is a deliberately narrow overview, so no single visible view shows how CLI, plane and fleet fit together end to end."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Every arrow is labelled with what flows and has a stage number (B1–B5, D1–D5, E1–E5). The legend states 'Caller → recipient; response included', 'Equal stages = alternatives' and 'unnumbered calls are independent'. Solid (sync), dashed (async, E1 webhook) and dotted (local I/O) lines are used consistently. The B2 wait being a separate GET, and long-poll ≤25s, are stated."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Group headers mark the trust and deployment boundaries: Customer-owned, Fly control plane (one machine, /data volume), Fleet Mac · operator, Same Fleet Mac · slot accounts (separate uid, shared kernel/disk), External SaaS (managed), Developer host versus Same Mac · helper account. These make internal/external and managed/self-hosted clear. View 1 shows its boundaries only as subtitle text under each box, which is adequate for a three-client overview."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence layout has a clear left-to-right order of actors, top-down time, no crossings and aligned lifelines. Views 3, 4, 5, 7 and 8 are easy to read. In views 2 and 6, the group descriptions and several edge labels render at roughly 8–9 px at 1194x834 ('Separate uid and logged-in GUI session', 'D1 POST /v1/sandboxes/:id/agent'), which is hard to read on the target iPad. The fixed notes panel also takes about a third of every view."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a legend explaining what it uses: solid = sync request, dashed = async delivery, dotted = local I/O, headers = boundaries, faint guides = actors, cylinders = stores (the snapshot store is drawn as a cylinder in view 4). Line style, not colour, carries the meaning, so the single authorship colour is acceptable. Names are real (fleetd, sessiond, Clerk, /v1/model/messages)."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The visible notes make the failure behaviour and state explicit. Claims not acked within 20 s are requeued up to 3 attempts, then fail as never-started. Up to 2 s of state is at risk on a single machine, and a failed write is only logged. A dirty slot is reset before its next claim, with backoff. Held ops and idempotent answers return 200, not 409. jitConfig is memory-only, so a runner task without it is not claimable after a restart. An unreachable Clerk gives 502 and a bad token 401. The key stays on the plane, and the slot gets an omt_ token. No lane falls back to the real screen."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer gives 'Source review 2026-11-05 · 57eeabc + local edits · Owner: Unassigned · Live runtime NOT verified'. Spot checks match the code: CLAIM_ACK_MS=20_000 and MAX_ATTEMPTS=3 (cloud/src/core/store.ts), MAX_POLL_MS and MAX_OPS_POLL_MS = 25_000, the 2_000 ms snapshot interval and SIGTERM save in cloud/src/server.ts, Clerk 401/502 in cloud/src/core/clerk.ts, headless-sandbox conflict in agent-routes.ts:134, jitConfig in an in-memory secrets map in runners.ts, and the CLI's sandbox calls in src/cloud/client.ts. Without production verification the score is capped at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "Reading the eight views in order, a newcomer could correctly explain both halves of the system. Locally, the CLI picks a headless, container or helper-session lane. In the cloud, clients call a single Fly plane, fleet Macs pull work by long-poll and run it as per-slot uids, agent model calls are proxied with the customer key held on the plane, GitHub jobs use JIT runners, and Clerk verifies console sign-in. The legend wording explains the arrow conventions without the author."
+    }
+  ],
+  "coldRead": "offstage has two parts. (1) A local tool: the offstage CLI/MCP looks at a command and either runs it in place (headless lane), in a Docker container with an Xvfb display (container lane), or, through a session adapter over a Unix socket, in a Swift sessiond running in a second logged-in macOS account on the same Mac (session lane). No lane ever falls back to the real screen. (2) offstage cloud: the CLI, a customer SDK and a React console all call one Hono control-plane API on a single Fly machine. Its state lives in memory and is snapshotted to a /data JSON file every 2 s, so a crash can lose up to 2 s. Fleet Macs have no inbound ports. A fleetd process in the operator account long-polls the plane (≤25 s) for tasks and sandbox ops, then runs them inside per-slot user accounts (separate uids on the same kernel and disk) via sessiond or sudo -u, and reports logs, exit status and artifacts back. Claims that aren't acked within 20 s are requeued, up to 3 attempts, and dirty slots are recreated before their next claim. Computer-use agent runs launch a GUI agent in a slot. The agent sends its model calls to the plane with a short-lived run token, and the plane forwards them to Anthropic using the customer's key, which never reaches the slot. For GitHub Actions, a workflow_job webhook makes the plane mint a JIT runner config. fleetd claims it, and the runner reports directly to GitHub. Console users sign in with Clerk (GitHub/Google), and the plane verifies each token server-side (502 if Clerk is unreachable, 401 if the token is bad).",
+  "inaccuracies": [],
+  "improvements": [
+    "View 2: add a visible refusal branch or note. A command naming an installer, a .dmg/.pkg or hdiutil is refused on every lane, with no override (src/router/index.ts). Right now the view shows only the three lanes, so readers may think every command is routed.",
+    "Views 2 and 6: give each view a canvas width that keeps group descriptions and edge labels at ≥11 px at 1194x834, or shorten the subtitles. Several labels are currently about 8 px.",
+    "Add one landscape overview or context strip linking the local half and the cloud half: CLI → plane → fleetd → slot, with SaaS on the edge. Each workflow view would then have a visible 'you are here' anchor. Also note the 2-minute BOX_LOST_MS box-loss rule beside fleetd."
+  ],
+  "total": 37,
+  "verdict": "Excellent"
+}

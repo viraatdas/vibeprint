@@ -1,0 +1,1045 @@
+{
+  "viewport": {
+    "width": 1194,
+    "height": 834
+  },
+  "camera": {
+    "x": -26716.85767097967,
+    "y": 170.58123844731972,
+    "z": 0.6147727272727272
+  },
+  "text": [
+    {
+      "text": "Who hands work to the Outbound engine, and what does it drive?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Entry view: owner actions and cron into lib/engine.ts, which owns the\nCRM and worker runs",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Pages + server\nactions",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "API route\nhandlers",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "AWS RDS\n(vendor-managed)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "LinkedIn browser\nworker",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Fly\nthreadline-browser\n(self-run)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Context: boxes = runtime actors; subtitles = deployment locations. Arrows = caller → recipient, response included; protocol is\nlabeled. Detailed roles, boundaries and failures are in the workflow views.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Engine is the decision maker",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Pages and routes stay thin; lib/engine.ts decides enroll, draft,\nsend and stop-on-reply. Workflow views hold the details.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Owner-only gate",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Pages call requireOwner(); every action goes run() →\nassertOwner() against OWNER_EMAIL.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/(app)/actions.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "What happens when the owner clicks Send on an email draft?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow A, email channel: Today loads, claim, guards, Gmail threaded send",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vercel project (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus Vercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "AWS RDS (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Postgres CRM reached only by the\napp",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa,\nLinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Today, Find, People, Pipeline,\nCampaigns, Settings screens",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Pages + server actions",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "requireOwner pages;\nassertOwner-gated\nmutations",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Decides research, enroll,\ndraft, send, refresh; with\ningest.ts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Companies, people,\nmessages, sealed\nconnections, runtime",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends/replies",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A0 SQL: Today loads due drafts (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A1 server action: Send draft\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A2 sendMessage(id) (local)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A3 SQL: claim row, 24h limits\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A4 Gmail: in-touch check, send (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Guards before Gmail",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Closed → skipped; over limit → failed; replied → skipped; in touch → failed unless Include\nanyway. In-touch errors block; reply-check errors don't.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/engine.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Claim prevents double send",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "The UPDATE…WHERE status in (draft, failed) claim makes a second click return skipped.\nFollow-ups reuse threadId and In-Reply-To.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/engine.ts, lib/gmail.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "How does a LinkedIn send run in the browser worker?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow A, LinkedIn channel (after A3): queued run, home-IP egress, poll",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus\nVercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Fly threadline-browser (self-run)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner-run Chromium worker in sjc, /data",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Owner home network",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner-run Tailscale exit node\n(Jetson)",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa,\nLinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Decides research, enroll,\ndraft, send, refresh; with\ningest.ts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Runs queued LinkedIn jobs\none at a time; gates on\nhome route",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "browser_data volume",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Chromium profile (LinkedIn\nsession) and run records",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Tailscale exit node\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Gives the browser a home\nIP; LinkedIn revokes\ndatacenter IPs",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "LinkedIn (external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Invites, messages, people\nsearch, inbox, recent posts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A4 POST /runs (bearer) → run id\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A4b file: load Chromium profile\n(local)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A5 SOCKS5 via Tailscale (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A6 HTTPS linkedin.com, home IP\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "A7 GET /runs/{id}: poll ≤75s\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Home route required",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Runs wait until Tailscale shows the exit node online and the proxy IP differs from Fly's.\nQueued >24h → expired.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: browser/worker.py",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Async confirm",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "After the 75s poll an unfinished run stays 'sending'; the next refresh() resolves it.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/engine.ts, lib/linkedin.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "What do the machine routes /api/cron and /api/import run?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · B: daily/hourly cron into refresh + fill; C3–C4: import resolves persona, then ingests",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Vercel project (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus Vercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Fly scheduled machine",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "threadline-hourly-sync on Fly",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "AWS RDS (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Postgres CRM reached only by the\napp",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vercel Cron",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Daily 15:00 UTC GET\n/api/cron",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "API route handlers",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "cron, import (bearer); auth,\nGmail OAuth, login screen",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Decides research, enroll,\ndraft, send, refresh; with\ningest.ts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "threadline-hourly-sync",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Hourly GET /api/cron (config\nnot in repo)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Postgres CRM",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Companies, people,\nmessages, sealed\nconnections, runtime",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B1 GET /api/cron daily (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B1 GET /api/cron hourly (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B2 refresh({fill:true}) (local)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B7 SQL: upsert CRM, health (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "C3 SQL: resolve project/persona (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "C4 ingest(FindResult) (local)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Bounded and bearer-gated",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Cron needs CRON_SECRET (else 401), maxDuration 300s; fillPipeline gets a 230s deadline.\nA failed check becomes a health problem.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/api/cron/route.ts, lib/engine.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Import rejects bad input",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Unknown project or persona, or a payload failing zod, returns 400 before ingest runs.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/api/import/route.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Which external systems does refresh reach?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow B steps B3–B6: Gmail reply checks, LinkedIn reads, LLMs, sourcing",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus\nVercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa, LinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Fly threadline-browser\n(self-run)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner-run Chromium worker in sjc,\n/data",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Decides research, enroll,\ndraft, send, refresh; with\ningest.ts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends/replies",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "OpenRouter LLMs\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Fit scoring, drafts, reply\nlabels, browser agent steps",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Prospect data sources\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Apollo, Exa, YC, GitHub, HN,\ncompany sites\n(SSRF-guarded)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Runs queued LinkedIn jobs\none at a time; gates on\nhome route",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B3 Gmail readonly: replies\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B4 /runs: inbox + posts (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B4b worker → agent steps (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B5 LLM: score, draft, label (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "B6 Apollo/Exa/YC/sites (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Scraped text is untrusted",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Site, HN, YC and LinkedIn text is fenced in <untrusted> tags for the model; site fetches\npass an SSRF guard.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/ai.ts, lib/sources/website.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Worker calls OpenRouter directly",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "browser-use agent steps go from the Fly worker to OpenRouter (BROWSER_MODEL), not\nthrough Vercel.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: browser/worker.py, browser/fly.toml",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "How does the scout CLI find companies on the laptop?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow C1–C2: scout uses owner's yc/gh/bird logins, then POSTs to /api/import",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa, LinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vercel project\n(vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus\nVercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "scout CLI",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Finds companies with\nyc/gh/bird; pushes to\n/api/import",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Prospect data sources\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Apollo, Exa, YC, GitHub, HN,\ncompany sites\n(SSRF-guarded)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "X (x.com) (external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "bird search source; DM\ncompose the owner sends by\nhand",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "API route handlers",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "cron, import (bearer); auth,\nGmail OAuth, login screen",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "C1 gh/yc: YC + GitHub data\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "C1 bird: X post search (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "C2 POST /api/import, bearer (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient,\nresponse included. Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives;\nunnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Local-only logins",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "bird needs the owner's X cookies and gh/yc the owner's logins, so this\nsourcing runs only from the laptop.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: scripts/scout.ts, lib/sources/x.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Continues in machine routes",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "C3–C4 (persona lookup, ingest) are in the machine-routes view.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/api/import/route.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "How do Google and LinkedIn sign-in work?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Google sign-in + Gmail grant; LinkedIn sign-in inside the worker's browser from Settings",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa,\nLinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vercel project (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus Vercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Fly threadline-browser\n(self-run)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner-run Chromium worker in sjc,\n/data",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Today, Find, People, Pipeline,\nCampaigns, Settings screens",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Google OAuth + Gmail\n(external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Owner sign-in; gmail.send +\nreadonly for sends/replies",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "API route handlers",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "cron, import (bearer); auth,\nGmail OAuth, login screen",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Pages + server actions",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "requireOwner pages;\nassertOwner-gated\nmutations",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "LinkedIn browser worker",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Runs queued LinkedIn jobs\none at a time; gates on\nhome route",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "S1 redirect: Google consent\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "S2 callback: code → sealed\ntokens (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "L1 actions: /login start, input\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "L2 GET /login/screen frame (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient, response included. Solid = sync\nrequest; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives; unnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "LinkedIn sign-in in the worker",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Settings polls JPEG frames and relays input; session stays in the worker profile. No worker\nURL → 503; closed view → 409.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/api/linkedin/login/screen/route.ts, lib/linkedin.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Callback failure",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Bad OAuth state or code exchange redirects to Settings with gmail=error; a non-owner gets\n401.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: app/api/integrations/gmail/callback/route.ts",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "How is an X DM sent when X has no API?",
+      "renderedSize": 20.902272727272727
+    },
+    {
+      "text": "Engineers onboarding to Outbound (repo threadline) · Workflow A, X channel: browser opens compose, then Send records it",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Owner's laptop",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Owner's browser tab and local\nscout CLI",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vendor SaaS",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Google, OpenRouter, Apollo, Exa,\nLinkedIn, X",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Vercel project (vendor-managed)",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "Next.js functions in sfo1 plus Vercel Cron",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Outbound web UI",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Today, Find, People, Pipeline,\nCampaigns, Settings screens",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "X (x.com) (external)",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "bird search source; DM\ncompose the owner sends by\nhand",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Pages + server actions",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "requireOwner pages;\nassertOwner-gated\nmutations",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Outbound engine",
+      "renderedSize": 17.21363636363636
+    },
+    {
+      "text": "Decides research, enroll,\ndraft, send, refresh; with\ningest.ts",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "X1 open prefilled compose\n(sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "X2 server action: Send (sync)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "X3 sendMessage records sent\n(local)",
+      "renderedSize": 14.754545454545454
+    },
+    {
+      "text": "Interaction view · columns = actors; frames = trust/deployment boundaries; vertical lines identify actors, not calls. Read labeled arrows caller → recipient,\nresponse included. Solid = sync request; dashed = async delivery; dotted = local I/O. Numbered stages define order; equal stages are alternatives;\nunnumbered calls are independent.",
+      "renderedSize": 13.524999999999999
+    },
+    {
+      "text": "Manual and untracked",
+      "renderedSize": 15.369318181818182
+    },
+    {
+      "text": "The owner presses send inside X. sendMessage skips the daily limit for x_dm and can't confirm delivery.",
+      "renderedSize": 14.139772727272726
+    },
+    {
+      "text": "Source: lib/engine.ts, components/today.tsx",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Other workflows: Diagram view selector. Excluded: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI not drawn.",
+      "renderedSize": 12.910227272727273
+    },
+    {
+      "text": "Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified",
+      "renderedSize": 12.910227272727273
+    }
+  ],
+  "overflows": [],
+  "captures": [
+    {
+      "title": "Who hands work to the Outbound engine, and what does it drive?",
+      "filename": "view-1.png",
+      "camera": {
+        "x": 121.996303142329,
+        "y": 136.21866913123836,
+        "z": 0.7213333333333334
+      }
+    },
+    {
+      "title": "What happens when the owner clicks Send on an email draft?",
+      "filename": "view-2.png",
+      "camera": {
+        "x": -3121.0720887245843,
+        "y": 234.76404805914973,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How does a LinkedIn send run in the browser worker?",
+      "filename": "view-3.png",
+      "camera": {
+        "x": -7121.072088724584,
+        "y": 169.28904805914976,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "What do the machine routes /api/cron and /api/import run?",
+      "filename": "view-4.png",
+      "camera": {
+        "x": -11121.072088724584,
+        "y": 239.66404805914982,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "Which external systems does refresh reach?",
+      "filename": "view-5.png",
+      "camera": {
+        "x": -15121.072088724584,
+        "y": 217.8890480591498,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How does the scout CLI find companies on the laptop?",
+      "filename": "view-6.png",
+      "camera": {
+        "x": -19156.85767097967,
+        "y": 151.0062384473198,
+        "z": 0.6147727272727272
+      }
+    },
+    {
+      "title": "How do Google and LinkedIn sign-in work?",
+      "filename": "view-7.png",
+      "camera": {
+        "x": -22681.072088724584,
+        "y": 231.88904805914973,
+        "z": 0.4918181818181818
+      }
+    },
+    {
+      "title": "How is an X DM sent when X has no API?",
+      "filename": "view-8.png",
+      "camera": {
+        "x": -26716.85767097967,
+        "y": 170.58123844731972,
+        "z": 0.6147727272727272
+      }
+    }
+  ],
+  "errors": []
+}

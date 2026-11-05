@@ -1,0 +1,76 @@
+{
+  "project": "libra",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:32:01.698Z",
+  "revision": "9f2c0394c",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view opens with a one-line question as its title (e.g. 'A: How does a PR become an advisory Libra check?', 'C: How is a Slack thread reply answered?') plus an audience/scope line ('Engineers onboarding to the Libra product…'). The level of detail (protocols, HMAC, table names) suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes are consistently runtime actors and stores (API process, in-process scheduler, SQLite, ClickHouse, microVM, worker, SaaS). Workflow views zoom in from the overview without mixing in code-level or team boxes. Showing the scheduler as a separate box inside the libra-api container is a legitimate in-process zoom."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The flows are well chosen. Unmet condition: no visible omissions note, so readers can't tell that Libra Issues, PR-maker, Self, billing and the dashboard internals were left out on purpose (that list exists only in the JSON). View 4 also has no link back to the incident_candidates/signal_incidents write, so the 'decide to page' story jumps from evidence reads straight to Slack without showing the decision being persisted."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Most arrows are directed, numbered and labeled with protocol, payload and sync/async. Deductions: (1) In view 1 the async webhook and Events API labels overprint the 'Checks API'/'postMessage' labels and can't be read. (2) View 5 reuses the edge label 'A2/C2 SQL: gate audit, run rows, reply jobs', which is wrong for the Slack flow. (3) View 4 draws the unnumbered AWS/PostHog evidence reads below B5/B6 even though evidence comes before the verdict. View 3 likewise draws 'boot starts job loops' last. Readers can misread the order."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Views 2-6 have labeled containers that separate Exla-run Fly apps (libra-api, worker apps, libra-clickhouse), the customer side, managed SaaS, and the isolated Logs stack. Deductions: the overview (view 1) has no containers, only subtitles. 'Customer AWS' sits inside 'Third-party SaaS (managed)', which blurs a customer-owned account with vendor SaaS. That matters because the trust boundary for AWS is assume-role access to customer resources."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Views 2-6 are clean sequence diagrams: left-to-right lifelines, top-to-bottom order, no crossings. Deductions: in view 1 the edge labels collide into unreadable text, and its labels and the container subtitles in view 3 render at very small sizes on a 1194x834 screen. The note panel takes up the lower third of every view."
+    },
+    {
+      "id": "notation",
+      "score": 3,
+      "evidence": "Views 2-6 carry a legend: header = boundary, faint guide = actor lifeline, cylinder = store, dashed = async, dotted = local I/O, solid = sync, caller→recipient includes the response. Names are real (otel_spans, sendSlack, /v1/traces). Deduction: the entry view (view 1) has only a prose context line and no line-style legend, and its async edges are illegible, so the first conventions a reader sees are undocumented on screen."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "These failure behaviours are visible: B2 'await ack else 503'; notes on 429/503 with Retry-After; HMAC callbacks; read-only sandbox writes; budget-exhaustion fallback to deterministic copy; sendSlack claim gates; delivery_unknown never resent; and the credentialless worker. Missing: the single-process risk (a slow downstream wedges the shared event loop and login breaks, which per-call timeouts guard against), and any visible marking of failure points on the paths themselves rather than in side notes."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Each view shows 'Source review 2026-11-05 · 9f2c0394c · Owner: Viraat · Live runtime NOT verified'. The names match the code (api/src/index.ts mounts /v1 otelRoutes, so /v1/traces is real; the sandbox git-fetches with GITHUB_TOKEN). The score is capped at 3 because the running system wasn't verified, and the Logs ingest path detail is slightly off."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain the three core flows and the separate Logs product from views 2-6. The overview's garbled labels, the misleading A2/C2 label in the Slack view, and the out-of-order evidence arrows in view 4 would likely need a short verbal correction to avoid misreading."
+    }
+  ],
+  "coldRead": "Libra is one Hono/Node process (libra-api on Fly, with a SQLite volume as the source of truth) that everything talks to: the Vercel dashboard, the Claude Code plugin/CLI over MCP, GitHub webhooks and Slack events. Flow A: a GitHub pull_request webhook (HMAC-checked) is gate-audited into SQLite. The API then starts a run-once Fly microVM, which fetches base/head source from GitHub, builds, tests and replays traffic with no LLM, and posts evidence back to an HMAC-protected /internal callback. The API then writes an advisory Check Run plus line comments. Flow B: customer OTEL exporters send spans to /v1/traces. The API waits for ClickHouse to confirm the insert and returns 503 if it doesn't. An in-process priority scheduler reduces spans into incident candidates in SQLite, reads extra evidence from customer AWS and PostHog, asks OpenAI for a Scout verdict, and posts to Slack through sendSlack's evidence and claim gates. Flow C: a signed Slack thread event becomes a durable reply job. Production answers it in-process with the stateless responder (OpenAI Responses API plus tools) and posts one terminal reply. A credentialless Codex worker can do the same by leasing the job, and an ambiguous send is never resent. Separately, Libra Logs is its own card-gated product with its own server and ClickHouse, and it doesn't feed core PR review.",
+  "inaccuracies": [
+    "View 5 (Slack conversation) labels the API→SQLite edge 'A2/C2 SQL: gate audit, run rows, reply jobs'. Gate audits and sandbox run rows belong to the PR flow (api/src/routes/webhooks.ts, api/src/services/pr-sandbox.ts), not to Slack reply-job persistence.",
+    "View 6 shows 'Customer OTEL exporters' calling 'HTTPS POST /v1/ingest'. In libra-logs the routes are mounted under /logs/api (libra-logs/apps/server/test/flag.test.ts lists /logs/api/v1/ingest and /logs/api/otlp/v1/logs). Also, /v1/ingest is a JSON endpoint, while OTEL exporters would use the OTLP /otlp/v1/logs path (e2e.test.ts lines 232 and 263).",
+    "View 4 groups 'Customer AWS' inside the 'Third-party SaaS (managed)' container. It is a customer-owned account that Libra reads through assume-role credentials, not vendor SaaS."
+  ],
+  "improvements": [
+    "Fix the overview (view 1): give the webhook/Events API arrows and the Checks/postMessage arrows separate, non-overlapping paths and labels. Add the line-style legend and Exla-run vs managed containers, so the entry view can be read on its own.",
+    "Correct the ordering and labels in the workflow views: in view 4, number the AWS/PostHog evidence reads and draw them before B5/B6, and show the candidate/signal_incidents write that gates the page. In view 5, replace the reused A2/C2 label with a Slack-specific 'C2 SQL: general_question reply job'. In view 3, move the boot edge first.",
+    "Put the deliberate omissions (Issues, PR-maker, Self, billing, dashboard internals) and the single-process failure mode (a slow downstream wedges the event loop, guarded by per-call timeouts) in the visible notes, and fix the Logs ingest path to the mounted OTLP/JSON routes."
+  ],
+  "total": 32,
+  "verdict": "Good"
+}

@@ -1,0 +1,19 @@
+{
+  "curatedAt": "2026-11-05T03:41:51.097381+00:00",
+  "base": "../project-samples-revision1/threadline",
+  "kind": "source-checked human-directed corrections after Opus screenshot review",
+  "changes": [
+    "Narrow overview question to the selected coordination paths",
+    "Name engine and ingestion as app logic with distinct source owners",
+    "Show browser-to-OAuth-callback hop separately from code exchange",
+    "Show owner action initiating LinkedIn login",
+    "Document both supported import bearer credentials"
+  ],
+  "sources": [
+    "app/api/import/route.ts:16-52",
+    "app/api/integrations/gmail/callback/route.ts",
+    "lib/gmail.ts",
+    "lib/engine.ts"
+  ],
+  "productionVerified": false
+}

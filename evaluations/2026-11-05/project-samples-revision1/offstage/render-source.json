@@ -1,0 +1,14 @@
+{
+  "src/core/map-presentation.ts": "098d80fe3b9889241c62721b4016c677fcd1b738cd23398290730178ee75b2dc",
+  "src/shared/map-font.ts": "184b2443e0c1953cfead571a7c7986b2b1612a72ac23b187e5c938e402d47aca",
+  "src/shared/canvas.ts": "68f935ad4d654ece29312e75959a39c8d27e891a2823299967ad4c482417c31c",
+  "web/src/ui/Chrome.tsx": "7ac6b3c9a9c02dc0885d22b4b6538031c1661ed370853a4ceb8b9c211e75d8b7",
+  "web/src/App.tsx": "c6f258bf6a0eceef382567ac046b7dceca5b93f0c824bffd98201e42fd475f0e",
+  "web/src/canvas/Board.tsx": "dd00e6d90355d2c53758f031ce11db3205ed2c37ddb13e0a262308b8a43cdcde",
+  "web/src/canvas/png.ts": "0424e9ddf003fe7f811db1a8105198fd70ac65a6b585f2a541f4c1f941511ccf",
+  "web/src/canvas/editor.ts": "c2bba5ac8b3d6a75b7e781d94bfe584fcf708abac2a9a6853401ce52ea634555",
+  "web/src/styles.css": "89e7fbb536261ed8528adb29aeb5056af53a92db47cffe6998abe220e4ba7051",
+  "web/src/main.tsx": "829304441ef65bccd0873d5f2564599bc8435b6f8d6135ae00941d88a3f655e4",
+  "web/src/fonts/DejaVuSans.ttf": "abdc775b21b1bc470d50c97e790d276f2054b7504e56e5bd3e64f48d68582322",
+  "package-lock.json": "b6a0da76fbc8ceb33caa0fe366e0e259f5041e374a7d011f4c53f48bb8282fb8"
+}

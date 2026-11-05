@@ -1,0 +1,75 @@
+{
+  "project": "threadline",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:46:14.604Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Each of the 8 views has a visible one-line question as its title (e.g. 'What happens when the owner clicks Send on an email draft?'), plus a subtitle naming the audience ('Engineers onboarding to Outbound') and the scope. The level of detail (route paths, function names, bearer secrets) suits that audience."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes stay at one level throughout: deployable/runtime components (UI, pages+actions, route handlers, app logic, cron, worker, volume, exit node) and external services. The views are scoped zoom-ins into the send, cron/import, refresh, scout and sign-in paths, and they share the same actors. One small conflation: 'Outbound app logic' covers both lib/engine.ts and lib/ingest.ts, but its description says 'import ingestion' and a note explains the split."
+    },
+    {
+      "id": "focus",
+      "score": 4,
+      "evidence": "Every view shows only the actors its question needs. Omissions are stated on every view ('Not shown: Hourly Fly machine config isn't in repo; ranking math, schema columns, per-page UI'), and the scope lines point to sibling views (e.g. 'email, sourcing, sign-in and manual X sends have their own views'; 'C3–C4 … are in the machine-routes view')."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Arrows are directed caller→recipient, and the legend says responses are included. Every arrow has a label saying what flows, and each label is tagged (sync) or (local), matching the solid/dotted styles. Steps are numbered A0–A7, B1–B7, C1–C4, S1–S3, L0–L2 and X1–X3, and the legend explains that 'Equal stages = alternatives; unnumbered calls are independent'. The asynchronous LinkedIn run is shown as separate POST /runs (A4) and poll (A7) calls, and the later resolution by refresh is noted."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "Labelled containers separate Owner's laptop, Vercel app (managed), AWS RDS (vendor-managed), Fly threadline-browser (self-run), Fly scheduled machine, Owner home network (owner-run Tailscale exit node) and Vendor SaaS. External nodes are marked '(external)'. Trust gates (CRON_SECRET, IMPORT_TOKEN/bearer, assertOwner) appear in edge labels and notes."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "Every view is a clean sequence-style layout: actors left to right, calls top to bottom, no crossings, aligned lifelines. The main text is readable at 1194x834. However, the container descriptions and the audience/scope subtitle lines render at about 9–10px, and the notes panel takes up roughly a quarter of the screen, so the secondary text is hard to read at the actual viewing size."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "The visible legend on every view explains caller→recipient (response included), headers = boundaries, faint guides = actors, cylinders = stores, solid = sync request and dotted = local I/O. Line style and shape carry the meaning without relying on colour, and names match the code (sendMessage, refresh, /api/cron, /runs/{id}, browser_data, threadline-hourly-sync)."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "Failure behaviour and state are explicit: the conditional row claim prevents double send; in-touch lookup failure blocks the send while reply-check errors don't; limits and stage checks lead to skipped/failed; an unfinished LinkedIn run stays 'sending' after the 75s poll until refresh; runs wait for the home route with a 24h TTL; cron gets 401 without its secret, maxDuration 300s and a 230s fill deadline, and failed checks become health problems; import returns 400 on bad input; a missing worker returns 503; scraped text is untrusted and site fetches are SSRF-guarded."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows 'Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified'. Names and behaviour match the code: vercel.json cron is '0 15 * * *'; cron/route.ts uses refresh({inboxWaitMs:120_000, fill:true}); sendMessage skips the limit for x_dm and uses resolveLinkedinSend(…,75_000); worker.py has QUEUE_TTL_S = 24*3600 and the /runs and /login routes. The score is capped at 3 because nothing was checked against production and two small simplifications exist (see inaccuracies)."
+    },
+    {
+      "id": "comprehension",
+      "score": 4,
+      "evidence": "Read in order, the views let a newcomer explain the system correctly: the owner clicks Send → server action → sendMessage claims the row → Gmail, the LinkedIn worker via the home exit node, or a hand-sent X DM. Cron and the hourly Fly machine call /api/cron → refresh, which checks replies and fills the pipeline but never sends. The scout CLI pushes to /api/import. Sign-in runs through Google OAuth and the worker's login screen proxy. The notes cover the main pitfalls."
+    }
+  ],
+  "coldRead": "Outbound (repo threadline) is a private, owner-only outbound sales tool hosted as a Next.js app on Vercel, with a Postgres CRM on AWS RDS. Nothing is sent automatically. The owner clicks Send on the Today screen, and a server action (gated by assertOwner) calls sendMessage in lib/engine.ts. sendMessage first claims the draft row in Postgres so a double click sends only once, then checks the stage, 24h limits, earlier replies and whether the owner is already in touch (if the in-touch lookup fails, nothing is sent). The send then goes one of three ways:\n- **Email:** sent through the Gmail API, threaded with earlier messages.\n- **LinkedIn:** queued as a run on a self-run Fly Chromium worker. The worker reaches LinkedIn through a Tailscale exit node on the owner's home network so LinkedIn sees a home IP. Outbound polls the run for up to 75s; if it hasn't finished, the next refresh resolves it.\n- **X:** has no API. The UI opens a prefilled DM, the owner sends it by hand inside X, and Send only records it.\n\nSeparately, Vercel Cron (daily) and a Fly scheduled machine (hourly) call /api/cron with CRON_SECRET. That runs refresh(), which:\n- reads Gmail for replies and bounces;\n- asks the worker to read the LinkedIn inbox and recent posts;\n- uses OpenRouter LLMs to score fit, write drafts and label replies;\n- sources prospects from Apollo, Exa, YC and company sites;\n- writes CRM updates, drafts and runtime health back to Postgres. It never sends.\n\nOn the owner's laptop, the scout CLI uses the owner's own gh, yc and bird (X) logins and POSTs what it finds to /api/import with a bearer token; that route resolves the project and persona and ingests the results. Gmail is connected through a Google OAuth callback that stores sealed tokens. LinkedIn sign-in happens inside the worker's browser, with the Settings page polling a screen-frame proxy.",
+  "inaccuracies": [
+    "View 7 (sign-in), step S1 draws the browser going straight to Google consent. In the code, the browser first calls app/api/integrations/gmail/connect/route.ts, which checks the owner session, creates the authorization URL, sets the GMAIL_STATE_COOKIE nonce, and then redirects. That route handler hop, which creates the state the callback later checks, is missing from the drawing.",
+    "Views 1 and 4 draw the import ingestion call (C4 'ingest(FindResult)') ending at 'Outbound app logic', whose node path is lib/engine.ts. app/api/import/route.ts imports and calls ingest from lib/ingest.ts, not engine. The note text says so, but the arrow's target node is a conflation."
+  ],
+  "improvements": [
+    "Make the container descriptions and the audience/scope subtitle larger (they are about 9–10px now), or shrink the notes panel, so the secondary text is readable at 1194x834.",
+    "Split 'Outbound app logic' into engine (lib/engine.ts) and ingest (lib/ingest.ts), or relabel it, so the import arrow C4 lands on the module that actually handles it. In the sign-in view, add the /api/integrations/gmail/connect redirect (where the state cookie is set) before Google consent.",
+    "Add an owner/maintainer and a production verification stamp (e.g. a confirmed Vercel cron and the Fly hourly machine schedule) to raise freshness beyond source-only review, and consider showing the refresh() resolution of 'sending' LinkedIn runs as an explicit later step in the LinkedIn view."
+  ],
+  "total": 38,
+  "verdict": "Excellent"
+}

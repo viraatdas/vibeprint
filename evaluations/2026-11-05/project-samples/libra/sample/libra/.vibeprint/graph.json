@@ -1,0 +1,727 @@
+{
+  "version": 2,
+  "sketchSeq": 1,
+  "interpretedBy": "claude",
+  "updatedAt": "2026-11-05T03:46:41.014Z",
+  "nodes": [
+    {
+      "id": "n_libra_dashboard",
+      "label": "Libra dashboard",
+      "kind": "client",
+      "tags": [
+        "Next.js",
+        "React",
+        "src/app/"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapfcae2f6a70fd273a",
+        "shape:map03eb986678c8c46b",
+        "shape:map89132a9d9865e547",
+        "shape:mapc5494baeae050cc5"
+      ],
+      "bounds": {
+        "x": 466,
+        "y": 236.1,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Monitor, PR mirror, Scout, settings and onboarding screens",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_claude_plugin_and_cli",
+      "label": "Claude plugin and CLI",
+      "kind": "client",
+      "tags": [
+        "MCP",
+        "hooks",
+        "libra-claude-code/"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mape401a8c57f9a9599",
+        "shape:map49831d8c1c95463e",
+        "shape:map062128b54fc6ff0a",
+        "shape:map715610c19ddd01b7"
+      ],
+      "bounds": {
+        "x": 906,
+        "y": 236.1,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Sends session events; reads prod risks and PR reviews",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_customer_otel_exporters",
+      "label": "Customer OTEL exporters",
+      "kind": "external",
+      "tags": [
+        "OTLP"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map66656aa6008a58b1",
+        "shape:map70c189c599fa7695",
+        "shape:mapbb3f545620245e80",
+        "shape:map3ec33b0b6acd4846",
+        "shape:map54730d435a957561",
+        "shape:map64b8080280f09e74",
+        "shape:map8e9e7f5e3d5b8ec7",
+        "shape:mapfa62d4252cd5144b"
+      ],
+      "bounds": {
+        "x": 7586,
+        "y": 236.1,
+        "w": 15748,
+        "h": 632
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Customer apps exporting spans and logs with ingest keys",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_customer_aws_account",
+      "label": "Customer AWS account",
+      "kind": "external",
+      "tags": [
+        "AWS SDK",
+        "assume-role"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map0e93a6bebde0a962",
+        "shape:map8221bc0d7e552521",
+        "shape:map30e7fdfae2428bdb",
+        "shape:map3896473c1214307e"
+      ],
+      "bounds": {
+        "x": 12466,
+        "y": 236.1,
+        "w": 388,
+        "h": 599.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "CloudWatch Logs, ECS events, ALB logs in S3, read-only",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_libra_api_hono",
+      "label": "libra-api (Hono)",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Node",
+        "api/src/index.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map7ddf2ddb4a303974",
+        "shape:map6796eecd8a82581a",
+        "shape:map641b0f783f336626",
+        "shape:map283e715f6e1021f8",
+        "shape:mapdb97e11c18312527",
+        "shape:mapc5923afad0eb6db3",
+        "shape:map78762a5a465eeb5d",
+        "shape:mapf29c455d4c7a5d2a",
+        "shape:map80a516b05a564caa",
+        "shape:mapcb50848490a3d4d9",
+        "shape:map3295b34788c693da",
+        "shape:map9f92ef78e8513db1",
+        "shape:mapa26613c0bb954ac4",
+        "shape:map26cbd6c413b08f7f",
+        "shape:mapbaa88bd872bfd73f",
+        "shape:mapc99a9437a4004cf7"
+      ],
+      "bounds": {
+        "x": 26,
+        "y": 236.1,
+        "w": 20128,
+        "h": 654.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Auth, webhooks, OTLP ingest, MCP, PR plan/dispatch, replies",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_priority_scheduler",
+      "label": "Priority scheduler",
+      "kind": "worker",
+      "tags": [
+        "in-process",
+        "api/src/scheduler.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mape6aa3f0cffa89958",
+        "shape:mapc19c473841331da6",
+        "shape:mapc3ec4852b29af008",
+        "shape:map84377a932cccab07",
+        "shape:mapa720b8b77b6e3f68",
+        "shape:map9fa6861e50577ef1",
+        "shape:map58128e8feaa2d297",
+        "shape:map89c9ef5681f0d324",
+        "shape:map2a789d3a1ee474d3",
+        "shape:mapfa4354b7b8f79ca3",
+        "shape:map585fdafefb869349",
+        "shape:map9c6157c5dcea3f70"
+      ],
+      "bounds": {
+        "x": 8466,
+        "y": 236.1,
+        "w": 7568,
+        "h": 632
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Gated, timed jobs: Scout, PostHog watch, intents, hunters",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_sqlite_libra_db",
+      "label": "SQLite libra.db",
+      "kind": "database",
+      "tags": [
+        "better-sqlite3",
+        "api/src/db.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map7715c2940d097b30",
+        "shape:mape0dac6f67ec8c328",
+        "shape:map332d811e1b18549a",
+        "shape:map226c7631c19c0096",
+        "shape:mapd24d7957e6c8c493",
+        "shape:mapb504566e021e3d33",
+        "shape:map921d2745b703c998",
+        "shape:map81cf236bf61c0c03",
+        "shape:mapb3e8e3c3ada6a3b6",
+        "shape:map8ed1c143d033726b",
+        "shape:map48db09a6887a25a4",
+        "shape:mapa0c5fe643c041443",
+        "shape:mapc9b003319a0a518f",
+        "shape:mapd53ec1210b237b07",
+        "shape:mapc3546cc84da77e25",
+        "shape:mapd43ed732e1777fcd",
+        "shape:map6a0b7eb80339c590",
+        "shape:mapc67aaf2726d747e4",
+        "shape:mapb7a83332138fd2fc",
+        "shape:mapb75328b934103aa4"
+      ],
+      "bounds": {
+        "x": 4906,
+        "y": 236.1,
+        "w": 15688,
+        "h": 654.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Source of truth: runs, jobs, candidates, incidents, ledgers",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_clickhouse_otel_spans",
+      "label": "ClickHouse otel_spans",
+      "kind": "database",
+      "tags": [
+        "ClickHouse",
+        "api/src/clickhouse.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapf9d40ad7a1326255",
+        "shape:mapc706a371ec93358a",
+        "shape:map35c78a44b5185f63",
+        "shape:map5783aff8e2b991d5"
+      ],
+      "bounds": {
+        "x": 9346,
+        "y": 236.1,
+        "w": 388,
+        "h": 632
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Sole prod span store for analytics and trace replay",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_pr_replay_microvm",
+      "label": "PR replay microVM",
+      "kind": "worker",
+      "tags": [
+        "Fly Machines",
+        "agent-sandbox/pr-replay-entrypoint.mjs"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapb044e33d7feeb0b2",
+        "shape:map59bbb741156fc91a",
+        "shape:map0585f6ed4829249f",
+        "shape:map06067df037d8a27f"
+      ],
+      "bounds": {
+        "x": 5346,
+        "y": 236.1,
+        "w": 388,
+        "h": 654.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Builds base/head, runs tests, replays traffic; no LLM",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_conversation_agent",
+      "label": "Conversation agent",
+      "kind": "worker",
+      "tags": [
+        "Codex",
+        "MCP",
+        "conversation-agent/src/worker.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map8bef5051b7bf0a20",
+        "shape:map45a32f5df2bb4343",
+        "shape:map3576f1436c698026",
+        "shape:mapf05ef90bfb4140b4"
+      ],
+      "bounds": {
+        "x": 20646,
+        "y": 236.1,
+        "w": 388,
+        "h": 622.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Alternate Slack responder: leased job, no Slack/DB creds",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_github_app",
+      "label": "GitHub App",
+      "kind": "external",
+      "tags": [
+        "REST",
+        "webhooks"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map6f3e85bb3cdab81b",
+        "shape:mapc1fa7f073f7fb377",
+        "shape:mape6d2f7a8ee303590",
+        "shape:mapfe18402e60f8dfa5",
+        "shape:map260965be3a000d19",
+        "shape:map30fb98c374176254",
+        "shape:mapd91ffca02c21b2ce",
+        "shape:mapa973cc639844aff2"
+      ],
+      "bounds": {
+        "x": 1346,
+        "y": 236.1,
+        "w": 3068,
+        "h": 654.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "PR events, source, Check Runs and review comments",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_slack",
+      "label": "Slack",
+      "kind": "external",
+      "tags": [
+        "Events API"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapaab6bffa12053350",
+        "shape:mapa3012f53ab8597f8",
+        "shape:mapf45416d6958d6625",
+        "shape:mapf53b5e84aa50a4ea",
+        "shape:mapfa7ee1f55078627b",
+        "shape:map0726cdcfbb3ef116",
+        "shape:map0aea4b72c053dd2e",
+        "shape:map6ce1533283ad11d3",
+        "shape:map7401699491ec27a6",
+        "shape:map1452ca630a7ec6dc",
+        "shape:mapf2e95d21360f3c44",
+        "shape:mapfa13f4e8eb5c68ff"
+      ],
+      "bounds": {
+        "x": 1786,
+        "y": 236.1,
+        "w": 17488,
+        "h": 622.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Customer channels: alert parents, threads, buttons",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_posthog",
+      "label": "PostHog",
+      "kind": "external",
+      "tags": [
+        "HogQL",
+        "OAuth"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map5fdb6ba135417188",
+        "shape:map7bd346649844931a",
+        "shape:map83423de575566d86",
+        "shape:map283db01595e50feb"
+      ],
+      "bounds": {
+        "x": 16586,
+        "y": 267.2,
+        "w": 448,
+        "h": 315.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Customer product analytics read with 3 read scopes",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_openai",
+      "label": "OpenAI",
+      "kind": "external",
+      "tags": [
+        "Responses API"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map49b9593e3eedf56a",
+        "shape:map413581d057a23cfc",
+        "shape:mapefbbb310672e9be6",
+        "shape:map50a52cd10264d69c",
+        "shape:mapb0cf58f82e81692c",
+        "shape:map51ef042d0621519b",
+        "shape:map075dda73273f7390",
+        "shape:map80457d5fdb31489c"
+      ],
+      "bounds": {
+        "x": 12906,
+        "y": 236.1,
+        "w": 6808,
+        "h": 622.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "All inference via services/llm.ts, Platform or Codex",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_libra_logs_server",
+      "label": "Libra Logs server",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Next.js",
+        "libra-logs/apps/server/src/app.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map38d5e059798056c2",
+        "shape:map28f252407f692790",
+        "shape:map4870132d08a2cceb",
+        "shape:mapa4ad7cd6860f5a73"
+      ],
+      "bounds": {
+        "x": 23386,
+        "y": 267.2,
+        "w": 448,
+        "h": 386
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Card-gated log ingest, patterns, query, MCP; web at /logs",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_logs_clickhouse",
+      "label": "Logs ClickHouse",
+      "kind": "database",
+      "tags": [
+        "ClickHouse",
+        "libra-logs/packages/storage"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map090d32058404f8d6",
+        "shape:map64a384e7c97e55bc",
+        "shape:mapfc5efdaebdc3a93f",
+        "shape:map7339d2b2e924cddc"
+      ],
+      "bounds": {
+        "x": 23886,
+        "y": 267.2,
+        "w": 448,
+        "h": 386
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Tenant log events and spans from Logs writers",
+      "statusDetail": "in the code"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_github_app__libra_api_hono",
+      "from": "n_github_app",
+      "to": "n_libra_api_hono",
+      "label": "A1 webhook: pull_request (HMAC-verified)",
+      "shapeIds": [
+        "shape:mapc51c629579925384",
+        "shape:mapbd5122985967cbbd"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__sqlite_libra_db",
+      "from": "n_libra_api_hono",
+      "to": "n_sqlite_libra_db",
+      "label": "A2 SQL: gate audit + sandbox run row",
+      "shapeIds": [
+        "shape:map145893bcf2da4921"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__pr_replay_microvm",
+      "from": "n_libra_api_hono",
+      "to": "n_pr_replay_microvm",
+      "label": "A3 Fly Machines API: start run-once VM",
+      "shapeIds": [
+        "shape:map4cce7085cfb2b7d2"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pr_replay_microvm__github_app",
+      "from": "n_pr_replay_microvm",
+      "to": "n_github_app",
+      "label": "A4 git fetch: base and head revisions",
+      "shapeIds": [
+        "shape:map69e8cf5cc2b8736e"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_pr_replay_microvm__libra_api_hono",
+      "from": "n_pr_replay_microvm",
+      "to": "n_libra_api_hono",
+      "label": "A5 HTTPS callback: evidence (HMAC)",
+      "shapeIds": [
+        "shape:map09d55f1b48c7aa9c"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__github_app",
+      "from": "n_libra_api_hono",
+      "to": "n_github_app",
+      "label": "A6 Checks API: Check Run + line comments",
+      "shapeIds": [
+        "shape:map2fd98b3ae9fa0e36"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__priority_scheduler",
+      "from": "n_libra_api_hono",
+      "to": "n_priority_scheduler",
+      "label": "B1 in-process: boot starts gated loops",
+      "shapeIds": [
+        "shape:map6929dadb2f86488b"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_customer_otel_exporters__libra_api_hono",
+      "from": "n_customer_otel_exporters",
+      "to": "n_libra_api_hono",
+      "label": "B2 OTLP /v1/traces: spans, per-key auth",
+      "shapeIds": [
+        "shape:map887346fed7efd990"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__clickhouse_otel_spans",
+      "from": "n_libra_api_hono",
+      "to": "n_clickhouse_otel_spans",
+      "label": "B3 insert spans; no ack → 503 Retry-After",
+      "shapeIds": [
+        "shape:mapb34c52aa9b6b5da9"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__clickhouse_otel_spans",
+      "from": "n_priority_scheduler",
+      "to": "n_clickhouse_otel_spans",
+      "label": "B4 SQL: span reducer, error families",
+      "shapeIds": [
+        "shape:map76f0f66966e74dec"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__sqlite_libra_db",
+      "from": "n_priority_scheduler",
+      "to": "n_sqlite_libra_db",
+      "label": "B5 SQL: upsert incident_candidates",
+      "shapeIds": [
+        "shape:map5c3918d5be77ffe1",
+        "shape:map462881d712a1022f"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__posthog",
+      "from": "n_priority_scheduler",
+      "to": "n_posthog",
+      "label": "P1 HogQL: rage clicks, exception spikes",
+      "shapeIds": [
+        "shape:mapa2250bd94586e738"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__customer_aws_account",
+      "from": "n_priority_scheduler",
+      "to": "n_customer_aws_account",
+      "label": "B6 AWS SDK: Logs Insights, ECS, ALB S3",
+      "shapeIds": [
+        "shape:map6c9862db494fb50a"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__openai",
+      "from": "n_priority_scheduler",
+      "to": "n_openai",
+      "label": "B7 Responses API: Scout verdict JSON",
+      "shapeIds": [
+        "shape:map668a10ec061b58e9"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_priority_scheduler__slack",
+      "from": "n_priority_scheduler",
+      "to": "n_slack",
+      "label": "B9 chat.postMessage via sendSlack gates",
+      "shapeIds": [
+        "shape:mape72e9d0c612408bd"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_slack__libra_api_hono",
+      "from": "n_slack",
+      "to": "n_libra_api_hono",
+      "label": "C1 Events API: thread reply (signed)",
+      "shapeIds": [
+        "shape:map3bbb50c2a4e2cd4a",
+        "shape:map69f0d667524717e6"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__openai",
+      "from": "n_libra_api_hono",
+      "to": "n_openai",
+      "label": "C3 Responses API: stateless turn + tools",
+      "shapeIds": [
+        "shape:map64e0ca687f56de53"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_api_hono__slack",
+      "from": "n_libra_api_hono",
+      "to": "n_slack",
+      "label": "C4 chat.postMessage: one terminal reply",
+      "shapeIds": [
+        "shape:map50efbd716716139f"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_conversation_agent__libra_api_hono",
+      "from": "n_conversation_agent",
+      "to": "n_libra_api_hono",
+      "label": "C3b HTTPS: lease job, scoped tools, terminal",
+      "shapeIds": [
+        "shape:map2b93a193792d7459"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_conversation_agent__openai",
+      "from": "n_conversation_agent",
+      "to": "n_openai",
+      "label": "C3b codex exec: resume thread turn",
+      "shapeIds": [
+        "shape:mapf1ec24ff536c972c"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_dashboard__libra_api_hono",
+      "from": "n_libra_dashboard",
+      "to": "n_libra_api_hono",
+      "label": "HTTPS JSON (Better Auth): dashboard reads",
+      "shapeIds": [
+        "shape:map62be4c83ed99722b"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_claude_plugin_and_cli__libra_api_hono",
+      "from": "n_claude_plugin_and_cli",
+      "to": "n_libra_api_hono",
+      "label": "HTTPS /mcp tools + session events",
+      "shapeIds": [
+        "shape:map0e1a975cb58b73ad"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_customer_otel_exporters__libra_logs_server",
+      "from": "n_customer_otel_exporters",
+      "to": "n_libra_logs_server",
+      "label": "L1 OTLP /logs/api/otlp/v1/logs, ingest key",
+      "shapeIds": [
+        "shape:mapf2c7ea5ce5cda1d1"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_libra_logs_server__logs_clickhouse",
+      "from": "n_libra_logs_server",
+      "to": "n_logs_clickhouse",
+      "label": "L2 HTTP: insert log events and spans",
+      "shapeIds": [
+        "shape:mape7d7da46ed362118"
+      ],
+      "origin": "ink"
+    }
+  ]
+}

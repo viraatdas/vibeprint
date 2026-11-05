@@ -1,0 +1,76 @@
+{
+  "project": "threadline",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:39:12.743Z",
+  "revision": "f467a33",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view has a one-line title phrased as a question (e.g. 'What happens when the owner clicks Send on an email draft?'). A subtitle names the audience ('Engineers onboarding to Outbound') and the scope. The detail level (route names, guards, step numbers) suits engineers who are onboarding."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes stay at the same level throughout: deployable services, modules, stores and vendor systems. The overview (view 1/8) zooms into seven scoped workflow views, and the dropdown and 'View n of 8' make them navigable. No code-level or team boxes are mixed in."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "The omissions are deliberate and noted ('Not shown: Hourly Fly machine config…'). Two gaps remain. First, the overview asks 'what does it drive?' but shows only Postgres and the worker. Gmail, OpenRouter and the data sources only appear in view 5, so the entry view under-answers its own question. Second, the sign-in view leaves out the browser's hop to the OAuth callback route and the Settings UI that starts the LinkedIn login."
+    },
+    {
+      "id": "flow",
+      "score": 3,
+      "evidence": "Arrows are directed, labelled with what flows and numbered (A1–A7, B1–B7, C1–C4, S/L/X), and each is marked sync or local. Cross-view continuations are noted ('after A3', 'C3–C4 are in the machine-routes view'). Deductions: in view 7, 'S2 callback: code → sealed tokens' points from the route handlers to Google. That merges two separate steps: Google redirecting the browser to the callback, and the route exchanging the code. L1 and L2 also start mid-flow without showing the UI that triggers them."
+    },
+    {
+      "id": "boundaries",
+      "score": 4,
+      "evidence": "The workflow views have labelled containers: Owner's laptop, Vercel project (vendor-managed), AWS RDS (vendor-managed), Fly threadline-browser (self-run), Owner home network, and Vendor SaaS with nodes tagged '(external)'. These clearly separate managed from self-run and internal from external. The overview states each box's boundary in its subtitle."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence layouts run left to right and top to bottom, with aligned lifelines and almost no crossings. However, views 2, 3, 4, 5 and 7 render node descriptions, container subtitles and arrow labels at roughly 9–11px at 1194x834. They are readable, but strain to read on an iPad. Views 1, 6 and 8 are comfortable."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a visible legend: 'Caller → recipient; response included', headers mean boundaries, cylinders mean stores, solid means sync request and dotted means local. Shape and line style carry the meaning without relying on colour, and names are real (sendMessage, /runs, CRON_SECRET, threadline-hourly-sync). Minor point: 'Local I/O' is used for in-process function calls."
+    },
+    {
+      "id": "operations",
+      "score": 4,
+      "evidence": "The visible notes cover the relevant failure behaviour. The in-touch check fails closed, while a reply-check error is ignored. The draft claim prevents double sends, and 24h limits apply. An unfinished LinkedIn run stays 'sending' after the 75s poll until the next refresh(). Runs wait on the exit node, with a 24h queue TTL. Cron returns 401 without CRON_SECRET, with maxDuration 300s and a 230s fill deadline. Import returns 400 on bad input, and LinkedIn login returns 503 or 409. Self-run vs vendor-managed dependencies are explicit. I checked these against lib/engine.ts:1339-1467, app/api/cron/route.ts and browser/worker.py:68,450-478."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "The footer shows 'Source review 2026-11-05 · f467a33 + local edits · Owner: Unassigned · Live runtime NOT verified'. The names match the code: vercel.json schedule '0 15 * * *' in sfo1, refresh({inboxWaitMs:120_000, fill:true}), worker routes /runs, /login/screen and /login/input, QUEUE_TTL_S=24h, and the BROWSER_MODEL OpenRouter call. Capped at 3 because production was not verified and no owner is assigned."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can explain the owner-only send path, the cron refresh, scout import and the LinkedIn worker egress correctly from these views. Two things still need a walkthrough: the sign-in view's OAuth hops, and the fact that the overview hides most of the engine's external dependencies."
+    }
+  ],
+  "coldRead": "Outbound (repo threadline) is an owner-only outreach tool. The owner's browser tab calls Next.js pages and server actions on Vercel, which pass work to lib/engine.ts, the component that makes all the decisions. The engine keeps all state in a Postgres CRM on AWS RDS. Nothing is sent unless the owner clicks Send. That click calls sendMessage, which first claims the draft row (so a double click sends only once), then checks stage, 24h limits, replies and earlier contact (the in-touch check). It then sends in one of three ways. Email goes through the Gmail API in the same thread. LinkedIn goes as a job POSTed to a self-run Fly Chromium worker, which keeps its LinkedIn session on a Fly volume, reaches LinkedIn through the owner's home Tailscale exit node, and is polled for up to 75s. An X DM is sent by hand in X and then only recorded. Separately, Vercel Cron (daily) and a Fly scheduled machine (hourly) call /api/cron with a bearer secret. That runs refresh, which checks Gmail and the LinkedIn inbox for replies, uses OpenRouter LLMs to score, draft and label, sources prospects from Apollo, Exa, YC and company sites, and upserts the CRM and a health record. The scout CLI on the laptop uses the owner's gh/yc/bird logins and POSTs its results to /api/import, which resolves the persona and runs ingest. Google sign-in and LinkedIn sign-in (inside the worker's browser) have their own view.",
+  "inaccuracies": [
+    "View 7 'S2 callback: code → sealed tokens' is drawn from the API route handlers to Google. In reality, Google redirects the owner's browser to app/api/integrations/gmail/callback/route.ts, and that route then exchanges the code. The browser → callback-route hop is missing, and labelling the route→Google request 'callback' blurs who starts it.",
+    "Views 4 and 6 imply that only IMPORT_TOKEN authorises /api/import. app/api/import/route.ts:17 also accepts CRON_SECRET (hasBearer(request, IMPORT_TOKEN, CRON_SECRET)). This is a minor omission, not a wrong claim.",
+    "View 4 'C4 ingest(FindResult)' points at the Outbound engine (lib/engine.ts). The import route actually calls ingest from lib/ingest.ts directly (route.ts:7,51). The engine node's description mentions ingest.ts, so this is a small naming imprecision."
+  ],
+  "improvements": [
+    "Make the overview answer 'what does it drive?' by adding Gmail, OpenRouter, Prospect data sources and X as external nodes. Collapse each into a single edge, e.g. 'send/replies', 'LLM drafts', 'sourcing'.",
+    "Redraw the sign-in view as explicit hops. For Google: browser → Google consent, Google → browser redirect to /api/integrations/gmail/callback, then route → Google code exchange → sealed tokens in Postgres. For LinkedIn: Settings UI → server actions → worker /login, and Settings UI polling /api/linkedin/login/screen → worker.",
+    "Increase the font size of node descriptions, container subtitles and arrow labels in the dense views (2, 3, 4, 5, 7) to match views 6 and 8, for example by trimming container subtitles, so they are comfortable to read at 1194x834."
+  ],
+  "total": 35,
+  "verdict": "Good"
+}

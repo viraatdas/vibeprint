@@ -1,0 +1,613 @@
+{
+  "title": "How does offstage route a GUI command locally, and run cloud work on fleet Macs?",
+  "audience": "Engineers onboarding to offstage and offstage cloud",
+  "scope": "Local lane routing or refusal; cloud tasks, sandbox ops, agent runs, GitHub Actions jobs on fleet slots; console sign-in",
+  "omissions": [
+    "Billing/mail/admin, container internals, slot RFB seeding, marketing and benchmarks"
+  ],
+  "owner": "Unassigned",
+  "groups": [
+    {
+      "id": "dev",
+      "label": "Developer host",
+      "description": "CLI and local lane adapters"
+    },
+    {
+      "id": "helper",
+      "label": "Same Mac \u00b7 helper account",
+      "description": "Separate uid and logged-in GUI session"
+    },
+    {
+      "id": "customer",
+      "label": "Customer-owned",
+      "description": "Client browser or application"
+    },
+    {
+      "id": "fly",
+      "label": "Fly control plane",
+      "description": "One offstage-api machine; /data volume"
+    },
+    {
+      "id": "fleetop",
+      "label": "Fleet Mac \u00b7 operator",
+      "description": "Same Mac as slots; fleetd process"
+    },
+    {
+      "id": "slots",
+      "label": "Same Fleet Mac \u00b7 slot accounts",
+      "description": "Separate uid per slot; shared kernel/disk"
+    },
+    {
+      "id": "saas",
+      "label": "External SaaS",
+      "description": "Clerk, Anthropic and GitHub; managed"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "cli",
+      "label": "offstage CLI / MCP",
+      "kind": "client",
+      "tags": [
+        "CLI",
+        "MCP stdio"
+      ],
+      "path": "src/cli/index.ts",
+      "description": "Classifies/refuses argv; dispatches local or cloud work",
+      "group": "dev"
+    },
+    {
+      "id": "router",
+      "label": "Session lane adapter",
+      "kind": "module",
+      "tags": [
+        "in-process"
+      ],
+      "path": "src/lanes/session/index.ts",
+      "description": "Checks helper access; dispatches session RPC",
+      "group": "dev"
+    },
+    {
+      "id": "headless",
+      "label": "Headless lane",
+      "kind": "worker",
+      "tags": [
+        "child_process"
+      ],
+      "path": "src/lanes/headless/runner.ts",
+      "description": "Runs a command that opens no window in place",
+      "group": "dev"
+    },
+    {
+      "id": "container",
+      "label": "Container lane (Xvfb)",
+      "kind": "worker",
+      "tags": [
+        "docker/podman"
+      ],
+      "path": "src/lanes/container/index.ts",
+      "description": "Runs headed browser work in a Linux container on Xvfb",
+      "group": "dev"
+    },
+    {
+      "id": "helperd",
+      "label": "Helper sessiond",
+      "kind": "worker",
+      "tags": [
+        "Swift",
+        "Unix socket"
+      ],
+      "path": "native/sessiond/Server.swift",
+      "description": "Launches, captures, injects input in helper's session",
+      "group": "helper"
+    },
+    {
+      "id": "console",
+      "label": "Web console SPA",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite"
+      ],
+      "path": "console/src/App.tsx",
+      "description": "Sign-in, teams, API keys, CI, task and recording views",
+      "group": "customer"
+    },
+    {
+      "id": "sdk",
+      "label": "Customer SDK",
+      "kind": "client",
+      "tags": [
+        "TypeScript",
+        "HTTPS"
+      ],
+      "path": "sdk/src/index.ts",
+      "description": "Submits tasks, drives sandboxes, starts agent runs",
+      "group": "customer"
+    },
+    {
+      "id": "plane",
+      "label": "Control plane API",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Node"
+      ],
+      "path": "cloud/src/api/app.ts",
+      "description": "Auth, quotas, fair claims, reaping; holds client requests",
+      "group": "fly"
+    },
+    {
+      "id": "store",
+      "label": "Plane snapshot + artifacts",
+      "kind": "storage",
+      "tags": [
+        "JSON file",
+        "Fly volume"
+      ],
+      "path": "cloud/src/core/persist.ts",
+      "description": "Whole-plane JSON state; per-run logs and artifacts",
+      "group": "fly"
+    },
+    {
+      "id": "fleetd",
+      "label": "fleetd runner",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "LaunchDaemon"
+      ],
+      "path": "src/fleet/runner.ts",
+      "description": "Claim loop per slot, heartbeats, reports, resets slots",
+      "group": "fleetop"
+    },
+    {
+      "id": "slot",
+      "label": "Slot sessiond / agent",
+      "kind": "worker",
+      "tags": [
+        "Swift",
+        "Node"
+      ],
+      "path": "src/fleet/slot-executor.ts",
+      "description": "Runs builds, ops, gui agent, GH runner as the slot user",
+      "group": "slots"
+    },
+    {
+      "id": "clerk",
+      "label": "Clerk",
+      "kind": "external",
+      "tags": [
+        "OAuth"
+      ],
+      "path": "",
+      "description": "GitHub/Google social sign-in; verifies session tokens",
+      "group": "saas"
+    },
+    {
+      "id": "anthropic",
+      "label": "Anthropic API",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "path": "",
+      "description": "Model behind computer-use agent runs",
+      "group": "saas"
+    },
+    {
+      "id": "github",
+      "label": "GitHub App / Actions",
+      "kind": "external",
+      "tags": [
+        "webhook",
+        "REST"
+      ],
+      "path": "",
+      "description": "Sends workflow_job events; mints JIT runner configs",
+      "group": "saas"
+    }
+  ],
+  "edges": [
+    {
+      "from": "cli",
+      "to": "router",
+      "label": "A2c local: dispatch session lane",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "headless",
+      "label": "A2a spawn in place \u2192 exit code, output",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "container",
+      "label": "A2b docker run on Xvfb \u2192 exit, files",
+      "mode": "local"
+    },
+    {
+      "from": "router",
+      "to": "helperd",
+      "label": "A3 Unix socket: run/screenshot/input",
+      "mode": "local"
+    },
+    {
+      "from": "cli",
+      "to": "plane",
+      "label": "HTTPS+API key: sandbox create/exec/kill",
+      "mode": "sync"
+    },
+    {
+      "from": "console",
+      "to": "clerk",
+      "label": "F1 Clerk JS: GitHub/Google sign-in \u2192 token",
+      "mode": "sync"
+    },
+    {
+      "from": "console",
+      "to": "plane",
+      "label": "F2 HTTPS session: keys, tasks, recordings",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "clerk",
+      "label": "F3 HTTPS: verify session token, fetch user",
+      "mode": "sync"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "B1 POST /v1/tasks: submit \u2192 task id",
+      "mode": "sync"
+    },
+    {
+      "from": "fleetd",
+      "to": "plane",
+      "label": "B3 POST claim long-poll \u226425s \u2192 task|204",
+      "mode": "sync"
+    },
+    {
+      "from": "fleetd",
+      "to": "slot",
+      "label": "B4 sessiond / sudo -u: execute in slot",
+      "mode": "local"
+    },
+    {
+      "from": "fleetd",
+      "to": "plane",
+      "label": "B5 HTTPS: report logs, exit, artifacts",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "store",
+      "label": "File: whole-plane snapshot every 2s",
+      "mode": "local"
+    },
+    {
+      "from": "fleetd",
+      "to": "slot",
+      "label": "Reset: recreate dirty slot account",
+      "mode": "local"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "C1 HTTPS exec/files/screenshot (held open)",
+      "mode": "sync"
+    },
+    {
+      "from": "fleetd",
+      "to": "plane",
+      "label": "C2 ops long-poll \u226425s \u2192 op; POST answer",
+      "mode": "sync"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "D1 POST /v1/sandboxes/:id/agent goal+key",
+      "mode": "sync"
+    },
+    {
+      "from": "fleetd",
+      "to": "slot",
+      "label": "D3 sessiond: launch gui agent, run token",
+      "mode": "local"
+    },
+    {
+      "from": "slot",
+      "to": "plane",
+      "label": "D4 POST /v1/model/messages, run token",
+      "mode": "sync"
+    },
+    {
+      "from": "plane",
+      "to": "anthropic",
+      "label": "D5 HTTPS Messages API, customer's key",
+      "mode": "sync"
+    },
+    {
+      "from": "github",
+      "to": "plane",
+      "label": "E1 webhook: workflow_job queued",
+      "mode": "async"
+    },
+    {
+      "from": "plane",
+      "to": "github",
+      "label": "E2 REST generate-jitconfig \u2192 JIT config",
+      "mode": "sync"
+    },
+    {
+      "from": "slot",
+      "to": "github",
+      "label": "E5 Actions runner: run job, report result",
+      "mode": "sync"
+    },
+    {
+      "from": "sdk",
+      "to": "plane",
+      "label": "B2 GET /v1/tasks/:id?wait=: hold for result",
+      "mode": "sync"
+    }
+  ],
+  "notes": [
+    {
+      "title": "Two places decide where work runs",
+      "text": "Locally, classify() picks headless, container or session; any refusing signal (installer, .dmg/.pkg, hdiutil) beats all three. In the cloud, boxes pull: the queue hands the fairest team's task to a slot whose offer covers its session (headless or gui).",
+      "source": "src/router/index.ts, cloud/src/core/queue.ts"
+    },
+    {
+      "title": "State is in memory, snapshotted to /data",
+      "text": "Tasks, sandboxes, boxes, accounts and ledger live in memory on one Fly machine and are written to DATA_FILE every 2 s when changed and on SIGTERM; a failed write is only logged. JIT runner configs and agent keys are memory-only.",
+      "source": "cloud/src/server.ts, cloud/src/core/persist.ts, cloud/src/core/runners.ts"
+    },
+    {
+      "title": "Failure, isolation and retry",
+      "text": "A claim not started within CLAIM_ACK_MS (20 s) is requeued, up to MAX_ATTEMPTS (3). A box unheard for BOX_LOST_MS (2 min) loses its work. A dirty slot is reset before its next claim, with backoff. Local lanes never fall back to the real screen.",
+      "source": "cloud/src/core/store.ts, src/fleet/runner.ts, src/contract/index.ts"
+    }
+  ],
+  "views": [
+    {
+      "kind": "overview",
+      "title": "Which customer clients call the cloud API?",
+      "scope": "CLI, SDK and console entry points. Fleet polling, slot model proxy and GitHub webhooks are shown in later views.",
+      "nodeIds": [
+        "plane",
+        "cli",
+        "sdk",
+        "console"
+      ],
+      "edgeIndices": [
+        4,
+        8,
+        6
+      ],
+      "edgeLabels": [
+        "HTTPS+key: sandbox tools",
+        "HTTPS: submit task \u2192 id",
+        "HTTPS session: console data"
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Other callers have their own views",
+          "text": "Fleet polling is in task/ops views; slot model proxy and GitHub webhooks are in agent and Actions views. No inbound fleet ports.",
+          "source": "src/fleet/runner.ts, cloud/src/core/sandboxes.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a local command get routed away from the real screen?",
+      "scope": "CLI classifies or refuses, then selects headless, Docker or a session adapter on the developer host.",
+      "nodeIds": [
+        "cli",
+        "router",
+        "headless",
+        "container",
+        "helperd"
+      ],
+      "edgeIndices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Same Mac, separate GUI account",
+          "text": "The session adapter checks access and talks to helper sessiond on the same Mac. No lane falls back to the real screen.",
+          "source": "src/lanes/session/index.ts, src/router/index.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a submitted task reach a slot and return its result?",
+      "scope": "Workflow B: submit, queue, claim long-poll, run in the slot, report events",
+      "nodeIds": [
+        "sdk",
+        "plane",
+        "fleetd",
+        "slot"
+      ],
+      "edgeIndices": [
+        8,
+        9,
+        10,
+        11,
+        23
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Acked claims and fair queues",
+          "text": "The API queues by team. No started ack within 20s requeues up to 3 attempts, then fails never-started. Wait is a separate GET.",
+          "source": "cloud/src/core/queue.ts, sdk/src/task.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "What persists, and how is a slot cleaned between customers?",
+      "scope": "Plane snapshot and archive; per-slot reset after work",
+      "nodeIds": [
+        "plane",
+        "store",
+        "fleetd",
+        "slot"
+      ],
+      "edgeIndices": [
+        12,
+        13
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Up to 2 s of state at risk",
+          "text": "Snapshot every 2 s on one machine; a crash loses unsaved changes, a failed write is only logged.",
+          "source": "cloud/src/server.ts, cloud/src/core/persist.ts"
+        },
+        {
+          "title": "Reset before next claim",
+          "text": "A slot that ran work is marked dirty; a failed reset keeps the mark and retries with backoff.",
+          "source": "src/fleet/runner.ts, src/fleet/reset-marks.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a sandbox op reach a slot?",
+      "scope": "Workflow C: client op held open on the plane, fleetd ops long-poll, op runs in the slot",
+      "nodeIds": [
+        "sdk",
+        "plane",
+        "fleetd",
+        "slot"
+      ],
+      "edgeIndices": [
+        14,
+        15,
+        10
+      ],
+      "edgeLabels": [
+        "C1 HTTPS exec/files/screenshot (held)",
+        "C2 ops long-poll \u2192 op; POST answer",
+        "C3 run op as the slot user"
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Held request, idempotent answer",
+          "text": "The plane keeps C1 open until fleetd answers or the op times out; a retried answer gets 200, not 409.",
+          "source": "cloud/src/core/sandboxes.ts, cloud/src/api/sandbox-routes.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a computer-use agent run reach the model?",
+      "scope": "Workflow D: agent op via fleetd, loop in the slot, model calls via the plane's proxy",
+      "nodeIds": [
+        "sdk",
+        "plane",
+        "fleetd",
+        "slot",
+        "anthropic"
+      ],
+      "edgeIndices": [
+        16,
+        15,
+        17,
+        18,
+        19
+      ],
+      "edgeLabels": [
+        "D1 POST /v1/sandboxes/:id/agent",
+        "D2 ops poll \u2192 agent op + run token",
+        "D3 launch gui agent in slot",
+        "D4 POST /v1/model/messages, token",
+        "D5 Messages API, customer key"
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Key stays on the plane",
+          "text": "x-anthropic-api-key is held in memory for the run; the slot gets an omt_ token that dies with it. Headless sandbox \u2192 409.",
+          "source": "cloud/src/api/agent-routes.ts, cloud/src/core/agent-runs.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a GitHub Actions job run on a fleet slot?",
+      "scope": "Workflow E: webhook, JIT runner config, claim through fleetd, runner in a slot",
+      "nodeIds": [
+        "github",
+        "plane",
+        "fleetd",
+        "slot"
+      ],
+      "edgeIndices": [
+        20,
+        21,
+        9,
+        10,
+        22
+      ],
+      "edgeLabels": [
+        "E1 webhook: workflow_job queued",
+        "E2 REST generate-jitconfig",
+        "E3 claim \u2192 runner task + jitConfig",
+        "E4 start runner as slot user",
+        "E5 runner: run job, report result"
+      ],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Config lost \u2192 not claimable",
+          "text": "jitConfig is memory-only; a runner task without one after a restart is not handed to a box.",
+          "source": "cloud/src/core/runners.ts"
+        }
+      ]
+    },
+    {
+      "kind": "workflow",
+      "title": "How does a console user sign in?",
+      "scope": "Workflow F: Clerk sign-in in the browser, server-side token check",
+      "nodeIds": [
+        "console",
+        "clerk",
+        "plane"
+      ],
+      "edgeIndices": [
+        5,
+        6,
+        7
+      ],
+      "edgeLabels": [],
+      "noteIndices": [],
+      "notes": [
+        {
+          "title": "Checked server-side",
+          "text": "The plane verifies each Clerk token; unreachable Clerk \u2192 502, bad token \u2192 401.",
+          "source": "cloud/src/core/clerk.ts"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "at": "2026-11-05T03:37:08.390Z",
+    "revision": "57eeabc",
+    "dirty": true
+  }
+}

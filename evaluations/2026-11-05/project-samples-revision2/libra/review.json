@@ -1,0 +1,72 @@
+{
+  "project": "libra",
+  "round": 1,
+  "model": "claude-opus-5-5",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "reviewedAt": "2026-11-05T03:42:41.802Z",
+  "revision": "9f2c0394c",
+  "sourceOnly": true,
+  "scores": [
+    {
+      "id": "purpose",
+      "score": 4,
+      "evidence": "Every view has a one-line question as its title (e.g. 'A: How does a PR become an advisory Libra check?', 'C: How is a Slack thread reply answered?'), plus a visible audience line ('Engineers onboarding to the Libra product…') and a scope sentence. The amount of detail suits onboarding engineers."
+    },
+    {
+      "id": "abstraction",
+      "score": 4,
+      "evidence": "Boxes are consistently runtime components, stores or external services. The scheduler is shown as an in-process component inside the libra-api container, which matches index.ts:574-577. The overview does the zooming out and views A, B, B-cont, P, C and L zoom in. No code-level or team boxes are mixed in."
+    },
+    {
+      "id": "focus",
+      "score": 3,
+      "evidence": "Omissions are deliberate and stated on every view ('Not shown: Libra Issues, PR-maker, Libra Self, billing…'). Gaps: the overview shows only 4 of the ~16 components, so no single view shows the sandbox, ClickHouse, AWS or OpenAI together. In B (cont.) Scout never reads the candidates it is judging from SQLite (it only writes the B8 page claim), so the B5→B6 handoff is implicit."
+    },
+    {
+      "id": "flow",
+      "score": 4,
+      "evidence": "Every arrow is labelled with a stage number, a protocol and what flows (e.g. 'B3 insert spans; no ack → 503 Retry-After (sync)'). Solid, dashed and dotted lines mark sync, async and local, and the legend says 'Caller → recipient; response included'. The sequence layout makes ordering clear, and C3 vs C3b is explained in a note as alternative responders."
+    },
+    {
+      "id": "boundaries",
+      "score": 3,
+      "evidence": "Workflow views use labelled containers (Vendor SaaS (managed), Fly app libra-api, Fly worker apps, Fly app libra-clickhouse, Customer-owned infra, Libra Logs stack) that separate Exla-run from customer and vendor. The overview (view 1) has no containers, only subtitle text under each box. The Libra Logs stack container does not say where it is deployed or who manages it."
+    },
+    {
+      "id": "layout",
+      "score": 3,
+      "evidence": "The sequence views have a clean top-to-bottom flow with no crossings. At 1194x834, though, arrow labels in view 1 (~9px) and the subtitles in views 3 and 4 are very small. The note panel covers the lower canvas, and in view 5 the 'Source review…Owner' footer line is clipped."
+    },
+    {
+      "id": "notation",
+      "score": 4,
+      "evidence": "Each view has a legend for line styles, plus 'Headers = boundaries; faint guides = actors; cylinders = stores' and 'Equal stages = alternatives'. Cylinders are used consistently for stores. External systems are named '(external)' in text rather than only by colour. Real names (otel_spans, incident_candidates, general_question) match the code."
+    },
+    {
+      "id": "operations",
+      "score": 3,
+      "evidence": "The visible notes cover real failure behaviour: the OTLP 503/429 Retry-After truthful ack (otel.ts:902,1038,1048), page-claim rollback on a failed Slack send, behaviour under budget exhaustion, PostHog cursor-after-enqueue and dead-lettering, and delivery_unknown with no resend. The diagram does not show the single-process event-loop wedge risk, per-call timeouts, or the fact that sandboxes get no customer secrets. Those appear only in map JSON notes that are never rendered."
+    },
+    {
+      "id": "freshness",
+      "score": 3,
+      "evidence": "Each view shows 'Source review 2026-11-05 · 9f2c0394c · Owner: Viraat… · Live runtime NOT verified'. Spot checks hold: the scheduler starts in-process (index.ts:577), OTLP returns 503 (routes/otel.ts), and Logs routes mount under API_BASE with /healthz (libra-logs/apps/server/src/app.ts:15,22). Without production verification the score is capped at 3."
+    },
+    {
+      "id": "comprehension",
+      "score": 3,
+      "evidence": "A newcomer can follow each numbered flow alone. But the overview does not show the whole system, so they must page through all 7 views to piece together where the sandbox, ClickHouse and the AWS/OpenAI dependencies fit. The 'Equal stages = alternatives' rule and C3 vs C3b need a careful read."
+    }
+  ],
+  "coldRead": "Libra has one Node/Hono API (libra-api) on Fly, with an in-process priority scheduler and a SQLite source of truth on a volume. Clients reach it four ways: the Vercel dashboard (HTTPS JSON), the Claude plugin and CLI (MCP plus session events), GitHub webhooks, and Slack Events. (A) For a PR, GitHub sends a pull_request webhook. The API records the gate audit and a run row in SQLite and starts a run-once Fly microVM. The VM fetches base and head from GitHub, replays tests and traffic, and calls back with HMAC-signed evidence. The API then writes a Check Run and line comments; the verdict is advisory and never blocks merge. (B) Customer OTEL exporters send spans to /v1/traces. The API inserts them into ClickHouse and returns 503 if the insert is not acknowledged. Scheduler jobs reduce the spans into incident_candidates in SQLite. Scout then pulls AWS evidence and asks OpenAI for a verdict. It records a signal_incident page claim and posts to Slack through the sendSlack gates, and the claim rolls back if the send fails. (P) The scheduler polls PostHog with HogQL and stores triage jobs, findings and candidates. (C) A Slack thread reply is enqueued as a general_question job. The in-process stateless responder calls OpenAI with tools and posts one terminal reply. An alternate Codex worker can lease the job instead, and it holds no Slack or DB credentials. (L) Libra Logs is a separate product with its own server, keys and ClickHouse; customer OTLP logs go there and do not feed core PR review.",
+  "inaccuracies": [],
+  "improvements": [
+    "Make the overview a full system context map: draw all components inside their boundary containers (Fly libra-api, Fly workers, Fly ClickHouse, Customer, Vendor SaaS, Logs stack) with links to each workflow view, instead of four floating entry boxes with no containers.",
+    "Show the single-process risk visibly: put the 'unbounded downstream wedges the event loop / every call has a timeout' and 'sandbox gets no customer secrets' notes on the relevant views (they exist in the map but are not rendered). Mark timeouts on the scheduler's external edges (B6, B7, P1).",
+    "Raise the minimum label and subtitle font size (view 1 arrow labels, view 3/4 subtitles) and keep the note panel from clipping the footer and covering the canvas at 1194x834. In B (cont.), add the scheduler's claim/read of incident_candidates from SQLite so the Scout loop's input is explicit."
+  ],
+  "total": 34,
+  "verdict": "Good"
+}

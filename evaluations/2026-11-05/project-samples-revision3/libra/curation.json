@@ -1,0 +1,21 @@
+{
+  "curatedAt": "2026-11-05T03:45:10.807901+00:00",
+  "base": "../project-samples-revision1/libra",
+  "kind": "source-checked human-directed corrections after Opus screenshot review",
+  "changes": [
+    "Narrow overview to its four named entry paths and explicitly link omitted OTLP and internal ingress views",
+    "Correct note to distinguish separate Libra Logs ingress from core API ingress",
+    "Render the entry paths with explicit deployment containers and actor columns",
+    "Show candidate claim before evidence and verdict",
+    "Expose shared-process/volume risk and budget/delivery fallbacks",
+    "State credential-free PR replay and isolated writes"
+  ],
+  "sources": [
+    "api/src/index.ts",
+    "api/src/routes/otel.ts",
+    "libra-logs/apps/server/src/app.ts",
+    "api/src/services/incident-scout/candidates.ts:279",
+    "api/src/services/incident-scout/investigator.ts:1160"
+  ],
+  "productionVerified": false
+}

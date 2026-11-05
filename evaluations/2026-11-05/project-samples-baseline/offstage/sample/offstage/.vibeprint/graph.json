@@ -1,0 +1,640 @@
+{
+  "version": 2,
+  "sketchSeq": 1,
+  "interpretedBy": "claude",
+  "updatedAt": "2026-11-05T03:32:57.892Z",
+  "nodes": [
+    {
+      "id": "n_offstage_cli_mcp",
+      "label": "offstage CLI / MCP",
+      "kind": "client",
+      "tags": [
+        "CLI",
+        "MCP stdio",
+        "src/cli/index.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapae74cb30b0744053",
+        "shape:map7bd1e5fc73eb6886",
+        "shape:mapcd413904cc028174",
+        "shape:mapa6d89955b2884ca6",
+        "shape:map2943b695cc9fcf17",
+        "shape:map017b7bdf45a3f752",
+        "shape:map832f21a6f08c866d"
+      ],
+      "bounds": {
+        "x": 0,
+        "y": 148,
+        "w": 3714,
+        "h": 586.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "doctor/route/run/probe, session verbs and cloud sandbox tools",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_route_classifier",
+      "label": "Route classifier",
+      "kind": "module",
+      "tags": [
+        "in-process",
+        "src/router/index.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map51df4db34a655853",
+        "shape:map1af18b9433f6df61",
+        "shape:map3f19dece1b9d3540",
+        "shape:map9c3d87a06e8bdf0a"
+      ],
+      "bounds": {
+        "x": 3766,
+        "y": 265.8,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Picks a lane from argv/configs, or refuses installers/.dmg/.pkg",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_headless_lane",
+      "label": "Headless lane",
+      "kind": "worker",
+      "tags": [
+        "child_process",
+        "src/lanes/headless/runner.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapc22dce3b982069d3",
+        "shape:map7a552ef2f598e95a",
+        "shape:map32dfc7d2dfd600e8",
+        "shape:map1fd5f0d38245497b"
+      ],
+      "bounds": {
+        "x": 4206,
+        "y": 265.8,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Runs a command that opens no window in place",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_container_lane_xvfb",
+      "label": "Container lane (Xvfb)",
+      "kind": "worker",
+      "tags": [
+        "docker/podman",
+        "src/lanes/container/index.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map804ea5d9c89df1fc",
+        "shape:map9b19e6d8ad58d09a",
+        "shape:mapeea79a3a7691ecb3",
+        "shape:map2d1940d5103bb39d"
+      ],
+      "bounds": {
+        "x": 4646,
+        "y": 265.8,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Runs headed browser work in a Linux container on Xvfb",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_helper_sessiond",
+      "label": "Helper sessiond",
+      "kind": "worker",
+      "tags": [
+        "Swift",
+        "Unix socket",
+        "native/sessiond/Server.swift"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map2fe3eec27f4db4a0",
+        "shape:map11a7d19035f47f2a",
+        "shape:map2cf8a7dd171e3ac6",
+        "shape:map2ca2523bd44bca62"
+      ],
+      "bounds": {
+        "x": 5086,
+        "y": 265.8,
+        "w": 388,
+        "h": 469
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Launches, captures and injects input in the helper's session",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_web_console_spa",
+      "label": "Web console SPA",
+      "kind": "client",
+      "tags": [
+        "React",
+        "Vite",
+        "console/src/App.tsx"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map176904e605f3f926",
+        "shape:mapc803dde6d5c3c6f4",
+        "shape:map3d1cb482f212b48d",
+        "shape:map4fe7e0eefa71f134"
+      ],
+      "bounds": {
+        "x": 18886,
+        "y": 265.8,
+        "w": 388,
+        "h": 660
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Sign-in, teams, API keys, task and recording views",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_customer_sdk",
+      "label": "Customer SDK",
+      "kind": "client",
+      "tags": [
+        "TypeScript",
+        "HTTPS",
+        "sdk/src/index.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map19ce2c04f8d5d70b",
+        "shape:mapd41c3e5194f5b498",
+        "shape:map8bbc6caefec56eec",
+        "shape:mapd57510159abb20fe",
+        "shape:map16852a4b16b249af",
+        "shape:mapfd294c5a9e09dcc2",
+        "shape:map74c419b61c01e4cd",
+        "shape:mapfa28491a46e5199b",
+        "shape:mapc481eedd824e587c",
+        "shape:mapcecfa91f9dc726bf",
+        "shape:mapccc202fa52147c3c"
+      ],
+      "bounds": {
+        "x": 0,
+        "y": 265.8,
+        "w": 15274,
+        "h": 724.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Submits tasks, drives sandboxes, starts agent runs",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_control_plane_api",
+      "label": "Control plane API",
+      "kind": "service",
+      "tags": [
+        "Hono",
+        "Node",
+        "cloud/src/api/app.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapab5bcae70c35d70a",
+        "shape:mapd8bbbb96ae6000f7",
+        "shape:mapb51a4051363fde17",
+        "shape:map48bfc20c929918b1",
+        "shape:map4f3b99cfb3ec7bed",
+        "shape:map4502c5867ceef906",
+        "shape:map8ea64d70e60889a5",
+        "shape:map59dbdd6fec7722fd",
+        "shape:mapd6b1a36deedf3d2c",
+        "shape:map5187707d4b988b72",
+        "shape:map1da5bd3a36ac55bc",
+        "shape:map2490d20bff1fcaae",
+        "shape:map6ac788693d0f84dd",
+        "shape:map76903090a4b6b22b",
+        "shape:map224d091ce032b039"
+      ],
+      "bounds": {
+        "x": 610,
+        "y": 265.8,
+        "w": 19984,
+        "h": 724.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Auth, quotas, GUI policy; holds client requests open for boxes",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_task_queue_sandbox_ops",
+      "label": "Task queue + sandbox ops",
+      "kind": "queue",
+      "tags": [
+        "in-memory",
+        "cloud/src/core/queue.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapf43ffe90f57d3bd6",
+        "shape:map7195e8df966743e5",
+        "shape:map8e7c29e2e9c7bbde",
+        "shape:map0ff6228869193dcc",
+        "shape:mapedf1b2aa5bf1e1a2",
+        "shape:map8ab96dc647020354",
+        "shape:map399f1604337b23df",
+        "shape:map9dfa656c6174d3a6"
+      ],
+      "bounds": {
+        "x": 8206,
+        "y": 265.8,
+        "w": 3508,
+        "h": 724.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Fair claims across teams, ack/lost/timeout reaping, op hand-off",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_plane_snapshot_artifacts",
+      "label": "Plane snapshot + artifacts",
+      "kind": "storage",
+      "tags": [
+        "JSON file",
+        "Fly volume",
+        "cloud/src/core/persist.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapeefd41e9a9f135ed",
+        "shape:mapa6ae020539566733",
+        "shape:mapd35eb0524a517b1b",
+        "shape:mapbdeb1c390776b4bf"
+      ],
+      "bounds": {
+        "x": 11766,
+        "y": 265.8,
+        "w": 388,
+        "h": 418.4
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Accounts, keys, ledger, tasks, boxes; artifacts and log archive",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_fleetd_runner",
+      "label": "fleetd runner",
+      "kind": "worker",
+      "tags": [
+        "Node",
+        "LaunchDaemon",
+        "src/fleet/runner.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map2952743837778700",
+        "shape:map853902ad1cd0aaef",
+        "shape:map32d67a6a4da91575",
+        "shape:map1f61a3b77a54111c",
+        "shape:mapbf5f694614435c73",
+        "shape:map8cedf99e30284421",
+        "shape:map1b2f8d55807a7038",
+        "shape:mapccfb24ebea748cd5",
+        "shape:mapb59060db6bf806f0",
+        "shape:map7859c88c0d6ae855",
+        "shape:mapbc6e1c05c0984119",
+        "shape:map9842c0aa07a79e24",
+        "shape:mapf140fd0791d03df6",
+        "shape:map24eed96e70d956db",
+        "shape:map7d6b1d3852ac1628"
+      ],
+      "bounds": {
+        "x": 0,
+        "y": 265.8,
+        "w": 16154,
+        "h": 724.8
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "One claim loop per slot, heartbeats, reports, resets dirty slots",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_slot_sessiond_agent",
+      "label": "Slot sessiond / agent",
+      "kind": "worker",
+      "tags": [
+        "Swift",
+        "Node",
+        "src/fleet/slot-executor.ts"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapff28c9d49b2cb632",
+        "shape:mapbd81a87f28dcc89a",
+        "shape:map03a010e04a91c21d",
+        "shape:mape9057a62df4eb51b",
+        "shape:map4045712791dc156f",
+        "shape:map3cec0a3dfa9ee02d",
+        "shape:map761c4fe847b8a422",
+        "shape:map59ee2070adac0bfd",
+        "shape:map26ae2e80d7c43d5a",
+        "shape:map9f8d31404f564600",
+        "shape:map493e61b71cc3c3e5",
+        "shape:map91dda9405c0ca9c0",
+        "shape:map0244e525ac0120cf",
+        "shape:map3a382db58dab7ec8",
+        "shape:map7baaa1e0386d0693",
+        "shape:mapd7ebf309c2e19fe5",
+        "shape:mapeac1aa4d8e5eed6f",
+        "shape:mapa5886c7a05172a64",
+        "shape:mapb2aacfe10338b6b8"
+      ],
+      "bounds": {
+        "x": 1220,
+        "y": 148,
+        "w": 19814,
+        "h": 842.6
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Runs builds, ops, gui agent and GH runner as the slot user",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_clerk",
+      "label": "Clerk",
+      "kind": "external",
+      "tags": [
+        "OAuth"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:map52133302910a9c67",
+        "shape:mapbe9fa11da1a55d57",
+        "shape:map689fdff3884017b0",
+        "shape:map49324b22b5e5e54e"
+      ],
+      "bounds": {
+        "x": 19326,
+        "y": 265.8,
+        "w": 388,
+        "h": 660
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "GitHub/Google social sign-in; verifies session tokens",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_anthropic_api",
+      "label": "Anthropic API",
+      "kind": "external",
+      "tags": [
+        "HTTPS"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapcdbe6a82004f73ac",
+        "shape:map89f2deb3d8214136",
+        "shape:map5dc5af9dacc17752",
+        "shape:map4d9d73b61dccfc28"
+      ],
+      "bounds": {
+        "x": 16646,
+        "y": 265.8,
+        "w": 388,
+        "h": 594.2
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "The model behind computer-use agent runs",
+      "statusDetail": "in the code"
+    },
+    {
+      "id": "n_github_app_actions",
+      "label": "GitHub App / Actions",
+      "kind": "external",
+      "tags": [
+        "webhook",
+        "REST"
+      ],
+      "fromCode": true,
+      "shapeIds": [
+        "shape:mapc7938ba866161fdf",
+        "shape:map2fb29da542e51545",
+        "shape:map6a54237b34c55074",
+        "shape:map4062d162809405ff"
+      ],
+      "bounds": {
+        "x": 19766,
+        "y": 265.8,
+        "w": 388,
+        "h": 660
+      },
+      "origin": "ink",
+      "status": "done",
+      "description": "Sends workflow_job events and issues JIT runner configs",
+      "statusDetail": "in the code"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_offstage_cli_mcp__route_classifier",
+      "from": "n_offstage_cli_mcp",
+      "to": "n_route_classifier",
+      "label": "A1 classify argv → lane, or refuse",
+      "shapeIds": [
+        "shape:mapcfa4c567d63bc9b6"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_offstage_cli_mcp__headless_lane",
+      "from": "n_offstage_cli_mcp",
+      "to": "n_headless_lane",
+      "label": "A2 spawn in place → exit code, output",
+      "shapeIds": [
+        "shape:map7da0670cf9cd5d03"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_offstage_cli_mcp__container_lane_xvfb",
+      "from": "n_offstage_cli_mcp",
+      "to": "n_container_lane_xvfb",
+      "label": "A2 docker run under Xvfb → exit, files",
+      "shapeIds": [
+        "shape:mapd07902f9fdb83f40"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_offstage_cli_mcp__helper_sessiond",
+      "from": "n_offstage_cli_mcp",
+      "to": "n_helper_sessiond",
+      "label": "A2 Unix socket: run/screenshot/input",
+      "shapeIds": [
+        "shape:map2221a81bf8eb1a22"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_offstage_cli_mcp__control_plane_api",
+      "from": "n_offstage_cli_mcp",
+      "to": "n_control_plane_api",
+      "label": "HTTPS+API key: sandbox create/run/kill",
+      "shapeIds": [
+        "shape:map5c55558bd37cbbcb"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_web_console_spa__clerk",
+      "from": "n_web_console_spa",
+      "to": "n_clerk",
+      "label": "Clerk JS: GitHub/Google sign-in → token",
+      "shapeIds": [
+        "shape:mapdce26c2cabc7515c"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_web_console_spa__control_plane_api",
+      "from": "n_web_console_spa",
+      "to": "n_control_plane_api",
+      "label": "HTTPS cookie: keys, tasks, recordings",
+      "shapeIds": [
+        "shape:mapff9473389857f588"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_customer_sdk__control_plane_api",
+      "from": "n_customer_sdk",
+      "to": "n_control_plane_api",
+      "label": "B1 POST /v1/tasks → id; GET ?wait= result",
+      "shapeIds": [
+        "shape:map78be10ef731c4fa7",
+        "shape:map6fd3268b906534be"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_control_plane_api__task_queue_sandbox_ops",
+      "from": "n_control_plane_api",
+      "to": "n_task_queue_sandbox_ops",
+      "label": "B2 submit: quota check → queued or 429",
+      "shapeIds": [
+        "shape:map7875edc65215a2fc"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_fleetd_runner__control_plane_api",
+      "from": "n_fleetd_runner",
+      "to": "n_control_plane_api",
+      "label": "B3 POST claim long-poll ≤25s → task|204",
+      "shapeIds": [
+        "shape:map1ff4b8eaaa25613b",
+        "shape:map0f7f62f6220fcaa3"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_fleetd_runner__slot_sessiond_agent",
+      "from": "n_fleetd_runner",
+      "to": "n_slot_sessiond_agent",
+      "label": "B4 sessiond socket (gui) / sudo -u (headless)",
+      "shapeIds": [
+        "shape:map708f598c4f3530a3",
+        "shape:map10641b1faaf0318c"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_task_queue_sandbox_ops__plane_snapshot_artifacts",
+      "from": "n_task_queue_sandbox_ops",
+      "to": "n_plane_snapshot_artifacts",
+      "label": "File: JSON snapshot every 2s; logs, artifacts",
+      "shapeIds": [
+        "shape:map9472568e2240b8a7"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_slot_sessiond_agent__control_plane_api",
+      "from": "n_slot_sessiond_agent",
+      "to": "n_control_plane_api",
+      "label": "D2 POST /v1/model/messages with run token",
+      "shapeIds": [
+        "shape:mapebef00b97360e580"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_control_plane_api__anthropic_api",
+      "from": "n_control_plane_api",
+      "to": "n_anthropic_api",
+      "label": "D3 HTTPS Messages API, customer's key",
+      "shapeIds": [
+        "shape:map87dcd21a83b016d6"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_github_app_actions__control_plane_api",
+      "from": "n_github_app_actions",
+      "to": "n_control_plane_api",
+      "label": "E1 webhook: workflow_job queued",
+      "shapeIds": [
+        "shape:mapdc4639b1a731e3e1"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_control_plane_api__github_app_actions",
+      "from": "n_control_plane_api",
+      "to": "n_github_app_actions",
+      "label": "E2 REST: generate-jitconfig for runner",
+      "shapeIds": [
+        "shape:map2901afad817f8bb8"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_slot_sessiond_agent__github_app_actions",
+      "from": "n_slot_sessiond_agent",
+      "to": "n_github_app_actions",
+      "label": "E3 Actions runner: run job, report results",
+      "shapeIds": [
+        "shape:mapaebf29d7ed3b6759"
+      ],
+      "origin": "ink"
+    },
+    {
+      "id": "e_control_plane_api__clerk",
+      "from": "n_control_plane_api",
+      "to": "n_clerk",
+      "label": "HTTPS: verify session token, fetch user",
+      "shapeIds": [
+        "shape:mapd86753e7fceb7c1a"
+      ],
+      "origin": "ink"
+    }
+  ]
+}
