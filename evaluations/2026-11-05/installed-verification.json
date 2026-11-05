@@ -1,11 +1,11 @@
 {
-  "verifiedAt": "2026-11-05T01:12:34.101Z",
+  "verifiedAt": "2026-11-05T01:20:06.093Z",
   "version": "0.9.0",
-  "cli": "/workspace/code/vibeprint/dist/cli.js",
+  "cli": "/workspace/vp-verify-090/node_modules/vibeprint/dist/cli.js",
   "trial": "detailed-15",
   "viewCount": 7,
   "checks": [
-    "Published CLI starts isolated daemon; health version matches 0.9.0",
+    "Packaged CLI starts isolated daemon; health version matches 0.9.0",
     "All view selections restore view-specific notes at 14px",
     "Previous/next controls navigate correctly",
     "All views retains export annotations and hides reading panel",

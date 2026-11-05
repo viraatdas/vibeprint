@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "kind": "release",
+  "status": "verified",
+  "target": "GitHub release vibeprint v0.9.0; npm:vibeprint@0.9.0 (registry propagation pending); Vercel production vibeprint.viraat.dev",
+  "url": "https://vibeprint.viraat.dev/evaluations/2026-11-05/",
+  "revision": "ab4728537a3eab8c9d72d65d430f77d462317f4d",
+  "deploymentId": "dpl_CUZ6QeLLDKjqi3XMHEHByxNJXiNx",
+  "version": "0.9.0",
+  "verifiedAt": "2026-11-05T01:21:11.911922+00:00",
+  "checks": [
+    "137/137 tests, typecheck and production build pass locally; GitHub publish workflow 41947556431 also passed required checks",
+    "Release source ab4728537a3eab8c9d72d65d430f77d462317f4d verified on origin/main; no force push",
+    "GitHub release v0.9.0 downloaded and installed in a clean prefix; SHA256 a40e116c6472076d646e6216fec17d7ad51d49f3592a45a2b7647cb05bfd49d4; SHA512 matches npm 0.9.0 version document integrity",
+    "Installed 0.9.0 daemon health, seven view selections, source-note matching, previous/next, full-canvas annotations and phone layout verified; no browser errors",
+    "Public Vercel production landing page and latest gallery return HTTP 200 without authentication; seven full-resolution screenshots load; no phone horizontal overflow",
+    "Actual Claude Code claude-opus-5-5 screenshot review of detailed-15: 33/40 Good; Excellent threshold not met",
+    "npm accepted publish with latest tag; version document confirms 0.9.0 and source revision. Cached latest metadata still reports 0.8.1 and direct npm tarball remains 404 during propagation; verified GitHub release install is available immediately"
+  ]
+}

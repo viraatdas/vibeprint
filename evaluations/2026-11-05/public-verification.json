@@ -1,0 +1,13 @@
+{
+  "url": "https://vibeprint.viraat.dev/evaluations/2026-11-05/",
+  "verifiedAt": "2026-11-05T01:18:49.960Z",
+  "status": 200,
+  "score": 33,
+  "images": 7,
+  "checks": [
+    "Public report and landing page accessible without authentication",
+    "Seven actual iPad screenshots load at full resolution",
+    "Landing footer links latest report",
+    "No phone horizontal overflow or browser page errors"
+  ]
+}
