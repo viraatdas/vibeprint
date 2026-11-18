@@ -9,9 +9,10 @@ import { AgentLayer } from './agent/AgentLayer'
 import { PacingDriver } from './agent/pacing'
 import { BatchStrip, EmptyStart, MapViews, SubmitButton, Toast, Toolbar, TopBar } from './ui/Chrome'
 import { SidePanel } from './ui/SidePanel'
+import { withToken } from './auth'
 
 function canvasUri() {
-  return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/canvas`
+  return withToken(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/api/canvas`)
 }
 
 function Canvas({ config }: { config: ClientConfig }) {

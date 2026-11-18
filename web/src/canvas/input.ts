@@ -17,6 +17,7 @@ import {
 import type { Point, Rect } from '@shared/types'
 import { strokePath } from './ink'
 import { uid, type Editor, type ToolId } from './editor'
+import { assetUrl } from '../auth'
 
 // Screen-pixel tolerances.
 const TAP_SLOP = 6
@@ -89,7 +90,7 @@ function imageSize(src: string): Promise<{ w: number; h: number }> {
     const img = new Image()
     img.onload = () => resolve({ w: img.naturalWidth || 400, h: img.naturalHeight || 300 })
     img.onerror = () => resolve({ w: 400, h: 300 })
-    img.src = src
+    img.src = assetUrl(src)
   })
 }
 

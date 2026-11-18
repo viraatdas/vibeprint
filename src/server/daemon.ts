@@ -20,6 +20,7 @@ import { CanvasRoom, shapeSchema } from './canvas.js'
 import { cleanupWithModel } from '../interpret/cleanup.js'
 import { architectureFingerprint, canvasFingerprint, cleanupPlan, finishCleanupBackup, latestCleanup, restoreCleanup, saveCleanupBackup } from '../core/cleanup.js'
 import { GitCheckpointer } from './git.js'
+import { makeBrief } from '../core/brief.js'
 import { connectRelay, type RelayClient } from './relay.js'
 import { interpretHeuristic } from '../interpret/heuristic.js'
 import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/claude.js'
@@ -42,6 +43,13 @@ export interface DaemonOptions {
   mapper?: Mapper | null
   /** Hosted relay base URL (e.g. https://live.vibeprint.viraat.dev) so the iPad works on any network. Off when unset. */
   relay?: string | null
+  /**
+   * Keep state in this directory instead of `<root>/.vibeprint`. The repo is then only read:
+   * nothing is written into it and nothing is committed (`vibeprint serve --state`).
+   */
+  state?: string
+  /** Origins allowed to show the canvas in a frame, e.g. the Rudder app (`--embed-origin`). */
+  embedOrigins?: string[]
 }
 
 export interface Daemon {
@@ -150,7 +158,8 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     if (!opts.quiet) process.stderr.write(`[vibeprint] ${msg}\n`)
   }
 
-  const existing = readDaemonInfo(root)
+  const stateDir = opts.state ? path.resolve(opts.state) : path.join(root, VIBEPRINT_DIR)
+  const existing = readDaemonInfo(stateDir)
   if (existing && existing.pid !== process.pid) {
     let alive = false
     try {
@@ -167,7 +176,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     }
   }
 
-  const core = VibeprintCore.open(root, { autosave: true })
+  const core = VibeprintCore.open(root, { autosave: true, dir: stateDir })
   core.ensureDir()
   const claude = opts.claude ?? claudeConfig()
   core.setInterpreter(claude.available ? { mode: 'claude-api', model: claude.model, active: false } : { mode: 'heuristic', active: false })
@@ -184,8 +193,9 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     fs.writeFileSync(tokenFile, token + '\n', { mode: 0o600 })
   }
   const canvas = new CanvasRoom(core, log)
+  // State kept outside the repo has no place in its history.
   const gitCp = new GitCheckpointer(root, VIBEPRINT_DIR, {
-    enabled: opts.commit !== false,
+    enabled: opts.commit !== false && !opts.state,
     log,
     beforeCommit: () => {
       core.flush()
@@ -451,7 +461,10 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     inkColor: INK_COLOR,
   }
 
+  // Only this page itself, and the origins named with --embed-origin, may show it in a frame.
+  const frameAncestors = ["'self'", ...(opts.embedOrigins ?? [])].join(' ')
   const serveStatic = (res: http.ServerResponse, pathname: string) => {
+    res.setHeader('content-security-policy', `frame-ancestors ${frameAncestors}`)
     if (!fs.existsSync(webDir)) {
       return send(res, 503, 'The web app is not built. Run `npm run build` in the vibeprint package (or use `npm run dev`).')
     }
@@ -506,7 +519,8 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
 
     // Signing in: /?t=TOKEN sets a cookie and drops the token from the URL.
     const t = url.searchParams.get('t')
-    if (t && method === 'GET' && !p.startsWith('/api/')) {
+    // Pages only: an image or API call carrying ?t= (a framed canvas has no cookie) is just authorized.
+    if (t && method === 'GET' && !p.startsWith('/api/') && !p.startsWith('/files/')) {
       if (t === token) {
         url.searchParams.delete('t')
         res.writeHead(302, {
@@ -553,6 +567,8 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
       }
       case 'GET /api/architecture':
         return send(res, 200, core.architecture())
+      case 'GET /api/brief':
+        return send(res, 200, makeBrief(core.architecture(), url.searchParams.get('since') || undefined))
       case 'GET /api/node':
         return send(res, 200, core.nodeDetail(url.searchParams.get('ref') ?? ''))
       case 'GET /api/sketch':
@@ -792,7 +808,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     wss.close()
     await new Promise<void>((r) => server.close(() => r()))
     server.closeAllConnections?.()
-    const cur = readDaemonInfo(root)
+    const cur = readDaemonInfo(core.dir)
     if (cur?.pid === process.pid) fs.rmSync(core.file(FILES.daemon), { force: true })
   }
 
@@ -851,7 +867,7 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
   const m = d.core.mapper
   out(`  map         ${m.mode === 'none' ? 'quick scan (install Claude Code or Codex, or set ANTHROPIC_API_KEY, to have the code read)' : `quick scan, then ${m.label} reads the code`}`)
   out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
-  out(`  state       ${path.join(VIBEPRINT_DIR)}/ ${d.git.enabled ? '(committed at checkpoints)' : '(not committed)'}`)
+  out(`  state       ${opts.state ? d.core.dir : `${VIBEPRINT_DIR}/`} ${d.git.enabled ? '(committed at checkpoints)' : opts.state ? '(outside the repo, not committed)' : '(not committed)'}`)
   // Started from npx's cache, or installed with npm -g.
   const command = /[\\/]_npx[\\/]/.test(process.argv[1] ?? '') ? 'npx vibeprint@latest' : 'npm install -g vibeprint@latest'
   const tellUpdate = (latest: string) => {

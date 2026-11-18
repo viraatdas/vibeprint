@@ -131,6 +131,8 @@ The canvas commits `.vibeprint/` (and nothing else) after a submit, an interpret
 | --- | --- |
 | `vibeprint serve --port 4747 --host 0.0.0.0` | Where the canvas listens. Use `--host 127.0.0.1` to keep it off the network. |
 | `--no-commit` | Write `.vibeprint/` but never commit. |
+| `--state <dir>` | Keep the canvas in `<dir>` instead of `.vibeprint/`. The repo is then only read: nothing is written into it or committed, so coding agents working there never see it. This is how [Rudder](https://rudder.exla.ai) runs vibeprint beside its agents. |
+| `--embed-origin <origin>` | Let these sites (comma-separated) show the canvas in a frame. Frames get no cookies, so the frame's link carries the access token in its fragment (`/#t=…`) and the page sends it with every request. |
 | `--no-relay`, `VIBEPRINT_RELAY` | Turn off the hosted relay, or point it at your own (`VIBEPRINT_RELAY=https://relay.example.com`). |
 | `ANTHROPIC_API_KEY` | Enables Claude for the first interpretation pass and the chat panel. |
 | `VIBEPRINT_MODEL` | Model for interpretation and chat (default `claude-opus-5-5`). |

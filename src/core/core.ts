@@ -75,6 +75,8 @@ const isoNow = () => new Date().toISOString()
 export interface CoreOptions {
   /** Write files on a short debounce after each change (daemon). Otherwise call flush(). */
   autosave?: boolean
+  /** Keep state here instead of `<root>/.vibeprint` (`vibeprint serve --state`). */
+  dir?: string
 }
 
 /**
@@ -102,7 +104,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
   constructor(root: string, opts: CoreOptions = {}) {
     super()
     this.root = path.resolve(root)
-    this.dir = path.join(this.root, VIBEPRINT_DIR)
+    this.dir = opts.dir ? path.resolve(opts.dir) : path.join(this.root, VIBEPRINT_DIR)
     this.autosave = opts.autosave ?? false
   }
 

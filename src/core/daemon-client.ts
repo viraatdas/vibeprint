@@ -4,8 +4,9 @@ import { TOKEN_HEADER, type DaemonInfo, type MapResult, type WaitResult } from '
 import type { ArchitectureView, Batch, ChatMessage, Decision, Graph, InterpretationResult, Mark, MarkInput, RepoMap, Sketch, VibeprintState } from '../shared/types.js'
 import { FILES, VIBEPRINT_DIR, VibeprintError } from './core.js'
 
-export function readDaemonInfo(root: string): DaemonInfo | null {
-  const p = path.join(root, VIBEPRINT_DIR, FILES.daemon)
+/** The running daemon recorded in a state directory (`<repo>/.vibeprint`, or `serve --state`). */
+export function readDaemonInfo(dir: string): DaemonInfo | null {
+  const p = path.join(dir, FILES.daemon)
   if (!fs.existsSync(p)) return null
   try {
     return JSON.parse(fs.readFileSync(p, 'utf8')) as DaemonInfo
@@ -25,7 +26,7 @@ function pidAlive(pid: number): boolean {
 
 /** Find a running daemon for this repo, or null. */
 export async function findDaemon(root: string, timeoutMs = 800): Promise<DaemonClient | null> {
-  const info = readDaemonInfo(root)
+  const info = readDaemonInfo(path.join(root, VIBEPRINT_DIR))
   if (!info || !pidAlive(info.pid)) return null
   const client = new DaemonClient(`http://127.0.0.1:${info.port}`, info.token)
   try {

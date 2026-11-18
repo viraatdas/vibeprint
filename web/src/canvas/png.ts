@@ -1,6 +1,7 @@
 import { MAP_FLOW_SIZE, MAP_FLOW_LINE } from '@shared/map-font'
 import { AGENT_COLOR, arrowLabelPoint, arrowPoints, docBounds, sortedShapes, TEXT_LINE, TEXT_SIZE, type Doc } from '@shared/canvas'
 import { ARROW_LABEL_SIZE, arrowPaths, ARROW_WIDTH, drawShapePath } from './ink'
+import { assetUrl } from '../auth'
 
 const PAD = 32
 
@@ -9,7 +10,7 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
     const img = new Image()
     img.onload = () => resolve(img)
     img.onerror = () => resolve(null)
-    img.src = src
+    img.src = assetUrl(src)
   })
 }
 

@@ -5,6 +5,7 @@ import type { Point, Rect } from '@shared/types'
 import { attachInput } from './input'
 import { ARROW_LABEL_SIZE, arrowPaths, drawShapePath } from './ink'
 import { uid, type Editor } from './editor'
+import { assetUrl, authHeaders } from '../auth'
 
 const EditorContext = createContext<Editor | null>(null)
 const ContainerContext = createContext<HTMLElement | null>(null)
@@ -30,7 +31,7 @@ export function useContainer(): HTMLElement | null {
 async function upload(file: File): Promise<string> {
   const ext = (file.name.split('.').pop() || file.type.split('/')[1] || 'bin').replace(/[^a-z0-9]/gi, '').slice(0, 8) || 'bin'
   const name = `${uid('').slice(0, 16)}.${ext}`
-  const res = await fetch(`/files/${name}`, { method: 'PUT', body: file, credentials: 'same-origin' })
+  const res = await fetch(`/files/${name}`, { method: 'PUT', body: file, credentials: 'same-origin', headers: authHeaders })
   if (!res.ok) throw new Error(`upload failed (${res.status})`)
   return `/files/${name}`
 }
@@ -164,7 +165,7 @@ const Picture = memo(function Picture({ shape, faded }: { shape: ImageShape; fad
     <image
       className={`vp-shape${faded ? ' is-erasing' : ''}`}
       data-shape-id={shape.id} data-author={shape.author}
-      href={shape.src}
+      href={assetUrl(shape.src)}
       x={shape.x}
       y={shape.y}
       width={shape.w}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ClientConfig, MapResult } from '@shared/api'
 import type { Decision, VibeprintState } from '@shared/types'
 import type { Shape } from '@shared/canvas'
+import { authHeaders, withToken } from './auth'
 
 export class ApiError extends Error {
   constructor(
@@ -16,7 +17,7 @@ async function call<T>(method: string, url: string, body?: unknown): Promise<T> 
   const res = await fetch(url, {
     method,
     credentials: 'same-origin',
-    headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+    headers: body === undefined ? authHeaders : { 'content-type': 'application/json', ...authHeaders },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
   const text = await res.text()
@@ -51,7 +52,7 @@ export function useVibeprintState(enabled: boolean): { state: VibeprintState | n
   const [connection, setConnection] = useState<Connection>('connecting')
   useEffect(() => {
     if (!enabled) return
-    const es = new EventSource('/api/events', { withCredentials: true })
+    const es = new EventSource(withToken('/api/events'), { withCredentials: true })
     es.addEventListener('state', (e) => {
       setState(JSON.parse((e as MessageEvent).data))
       setConnection('live')
