@@ -133,7 +133,7 @@ export const INTERPRETATION_SCHEMA = {
   },
 } as const
 
-const INTERPRET_SYSTEM = `You interpret hand-drawn software architecture sketches for Vibeprint. The user draws on an iPad canvas with an Apple Pencil (or a finger or mouse) and hits Submit; you turn the drawing into a graph of components (nodes) and connections (edges). Coding agents build the software from this graph, so stay faithful to what was drawn.
+export const INTERPRET_SYSTEM = `You interpret hand-drawn software architecture sketches for Vibeprint. The user draws on an iPad canvas with an Apple Pencil (or a finger or mouse) and hits Submit; you turn the drawing into a graph of components (nodes) and connections (edges). Coding agents build the software from this graph, so stay faithful to what was drawn.
 
 You get a PNG of the canvas, a list of every shape on it (page coordinates, x grows right, y grows down), the graph from the previous submit, and any open question notes Vibeprint placed on the canvas.
 

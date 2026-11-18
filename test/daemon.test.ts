@@ -44,7 +44,7 @@ after(async () => {
 })
 
 test('daemon starts, advertises itself, and serves state', async () => {
-  d = await startDaemon({ root, port: 0, host: '0.0.0.0', quiet: true, claude: { available: false, model: 'none' } })
+  d = await startDaemon({ root, port: 0, host: '0.0.0.0', quiet: true, claude: { available: false, model: 'none' }, mapper: null })
   const health = await get<{ ok: boolean; root: string }>('/api/health')
   assert.equal(health.ok, true)
   assert.equal(fs.realpathSync(health.root), fs.realpathSync(root))
@@ -128,7 +128,7 @@ test('closing removes the runtime file so agents fall back to files', async () =
   assert.equal(fs.existsSync(path.join(root, '.vibeprint/runtime/daemon.json')), false)
   assert.equal(await findDaemon(root), null)
   // Restarting reloads the saved graph.
-  d = await startDaemon({ root, port: 0, quiet: true, commit: false, claude: { available: false, model: 'none' } })
+  d = await startDaemon({ root, port: 0, quiet: true, commit: false, claude: { available: false, model: 'none' }, mapper: null })
   const state = await get<VibeprintState>('/api/state')
   assert.ok(state.graph.nodes.some((n) => n.label === 'Redis'))
 })

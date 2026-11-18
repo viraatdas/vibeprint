@@ -10,6 +10,7 @@ import { setCollapsed, toast, ui, useUi } from '../store'
 import { computeLayout } from '../agent/layout'
 import { useFocusMark } from './MarkPopover'
 import { CleanupActions } from './CleanupActions'
+import type { VibeprintState } from '@shared/types'
 
 const I = {
   draw: <path d="M4 20c2.5-.4 4-1.6 5.6-3.4L19 7.2a2 2 0 0 0-2.8-2.8l-9.4 9.4C5 15.6 4.4 17.2 4 20z M14.5 6l3 3" />,
@@ -33,6 +34,7 @@ const I = {
     </>
   ),
   map: <path d="M9 3.5h6v4.5H9zM3.5 16h6v4.5h-6zM14.5 16h6v4.5h-6zM12 8v4M6.5 16v-1.5a2.5 2.5 0 0 1 2.5-2.5h6a2.5 2.5 0 0 1 2.5 2.5V16" />,
+  track: <path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4M8.5 12.5l2.5 2.5 4.5-5" />,
 }
 
 function Icon({ name }: { name: keyof typeof I }) {
@@ -151,7 +153,7 @@ export function SubmitButton() {
       const ink = getComputedStyle(document.documentElement).getPropertyValue('--vp-ink').trim() || '#2e5bff'
       const image = await exportSketchPng(editor.doc, ink, getComputedStyle(document.documentElement).getPropertyValue('--vp-agent').trim() || undefined)
       const res = await api.submit({ shapes, image })
-      toast(`Sent sketch #${res.seq} to your agent.`)
+      toast(res.interpreter === 'heuristic' ? `Sent sketch #${res.seq} to your agent.` : `Sent sketch #${res.seq}. Reading it…`)
     } catch (err) {
       toast(`Couldn't submit: ${(err as Error).message}`)
     } finally {
@@ -252,12 +254,28 @@ export function TopBar() {
   const reader = vp?.mapper
   const reading = !!reader?.active
   const cleaning = !!vp?.cleanup?.active
+  const tracking = reading && reader?.task === 'track'
+  const drawn = !!vp?.graph.nodes.some((n) => !n.removed)
+  const updateFromCode = async () => {
+    try {
+      const res = await api.updateFromCode()
+      toast(`${res.reading} is checking the code against the canvas…`)
+    } catch (err) {
+      toast(`Couldn't update from the code: ${(err as Error).message}`)
+    }
+  }
   // Say how the reading ended, once.
   const [wasReading, setWasReading] = useState(false)
   useEffect(() => {
     if (reading) return setWasReading(true)
     if (!wasReading || !reader) return
     setWasReading(false)
+    if (reader.task === 'track') {
+      const whose = reader.author ? `${reader.author}'s changes` : 'the code'
+      if (reader.outcome === 'tracked') toast(reader.count ? `${reader.label} checked ${whose} against the canvas. The chat says what changed.` : `${reader.label} checked ${whose}: the canvas already matches.`, 5000)
+      else if (reader.outcome === 'failed') toast(`Couldn't check ${whose} with ${reader.label}: ${reader.lastError ?? 'it failed'}.`)
+      return
+    }
     if (reader.task === 'schema') {
       if (reader.outcome === 'tables') toast(`${reader.label} drew ${reader.count === 1 ? 'a table' : `${reader.count} tables`} from the code. The rows are examples.`, 5000)
       else if (reader.outcome === 'none') toast(`${reader.label} found no tables in the code. Its note is in the chat.`)
@@ -295,10 +313,19 @@ export function TopBar() {
           className={`vp-pill vp-map-action${reading ? ' is-reading' : ''}`}
           onClick={mapRepo}
           disabled={mapping || reading || cleaning}
-          title={reading ? `${reader?.label} is reading the code${reader?.task === 'schema' ? ' for the tables' : ' to redraw the map'}` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
+          title={reading ? `${reader?.label} is ${readingFor(reader)}` : `Draw the components of the code in ${vp?.project.root ?? 'this repo'} and how they connect`}
         >
           <Icon name="map" />
           <span className="vp-pill-label">{mapping ? 'Mapping…' : reading ? 'Reading the code…' : 'Map this repo'}</span>
+        </button>
+        <button
+          className={`vp-pill${tracking ? ' is-reading' : ''}`}
+          onClick={updateFromCode}
+          disabled={mapping || reading || cleaning || !drawn}
+          title={reading ? `${reader?.label} is ${readingFor(reader)}` : drawn ? 'Check the code against the canvas: mark what is built and propose what changed' : 'Draw or map the architecture first'}
+        >
+          <Icon name="track" />
+          <span className="vp-pill-label">{tracking ? 'Checking the code…' : 'Update from code'}</span>
         </button>
         <CleanupActions />
         <button className={`vp-pill${collapsed ? '' : ' is-on'}`} onClick={() => setCollapsed(!collapsed)} aria-pressed={!collapsed} title="Show or hide everything the agent drew">
@@ -311,6 +338,13 @@ export function TopBar() {
       </div>
     </header>
   )
+}
+
+/** The Map button's tooltip while the model reads: what it is reading for. */
+function readingFor(reader: VibeprintState['mapper'] | undefined): string {
+  if (reader?.task === 'schema') return 'reading the code for the tables'
+  if (reader?.task === 'track') return reader.author ? `checking ${reader.author}'s changes against the canvas` : 'checking the code against the canvas'
+  return 'reading the code to redraw the map'
 }
 
 /** A newer release is out: one tap copies the command that restarts on it. */

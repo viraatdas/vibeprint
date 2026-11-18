@@ -36,7 +36,7 @@ let cookie = ''
 before(async () => {
   relay = createRelay({ domain: DOMAIN, scheme: 'http', licenseKey: 'relay-license' })
   relayPort = await relay.listen(0, '127.0.0.1')
-  d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, relay: `http://127.0.0.1:${relayPort}` })
+  d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, mapper: null, relay: `http://127.0.0.1:${relayPort}` })
   const url = await d.relay!.waitReady(5000)
   assert.ok(url, 'daemon connected to the relay')
   host = new URL(url!).host
@@ -160,7 +160,7 @@ test('a session id held by another secret is never shared: the newcomer picks a 
 test('the daemon keeps its relay address across restarts', async () => {
   const before = host
   await d.close()
-  d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, relay: `http://127.0.0.1:${relayPort}` })
+  d = await startDaemon({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, mapper: null, relay: `http://127.0.0.1:${relayPort}` })
   const url = await d.relay!.waitReady(5000)
   assert.equal(new URL(url!).host, before)
   assert.equal((await viaRelay('GET', '/api/state', { headers: { cookie } })).status, 200, 'the same cookie still works')

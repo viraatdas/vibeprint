@@ -128,7 +128,7 @@ describe('reading 0.1/0.2 canvases (tldraw format)', () => {
 describe('canvas sync through the daemon', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vp-canvas-'))
   let d: Daemon
-  const opts = () => ({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, relay: null })
+  const opts = () => ({ root, port: 0, host: '127.0.0.1', quiet: true, commit: false, claude: { available: false, model: 'none' }, mapper: null, relay: null })
   type Client = { ws: WebSocket; next: (t: string) => Promise<any>; send: (m: unknown) => void }
   const connect = (): Promise<Client> =>
     new Promise((resolve, reject) => {

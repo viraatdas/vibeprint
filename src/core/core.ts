@@ -264,7 +264,7 @@ export class VibeprintCore extends EventEmitter<CoreEvents> {
       rule: AGENT_RULE,
       ...(this.sketch?.source === 'map' && g.interpretedBy === 'vibeprint'
         ? {
-            mapNote: this.mapper.active && this.mapper.task !== 'schema'
+            mapNote: this.mapper.active && this.mapper.task === 'map'
               ? `This map is a quick scan of folders and imports; ${this.mapper.label} is reading the code and will redraw it in a minute.`
               : 'This map came from a quick scan of folder names and imports, not from reading the code. If it is wrong, read the code and redraw it with map_architecture.',
           }

@@ -42,6 +42,8 @@ export const api = {
   cleanUp: (source: Shape[], image: string) => call<{ started: boolean }>('POST', '/api/cleanup', { source, image }),
   undoCleanup: (id: string) => call('POST', '/api/cleanup/undo', { id }),
   showSchema: (target?: string) => call<{ reading: string; target?: string }>('POST', '/api/schema', target ? { target } : {}),
+  /** Check the code against the canvas: build statuses, and proposals where it has moved on. */
+  updateFromCode: () => call<{ reading: string }>('POST', '/api/track', {}),
 }
 
 export type Connection = 'connecting' | 'live' | 'offline'

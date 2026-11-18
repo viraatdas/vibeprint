@@ -353,8 +353,11 @@ export interface InterpretInput {
 // ---------------------------------------------------------------------------
 
 export interface InterpreterInfo {
-  /** Which interpreter runs on submit. */
-  mode: 'claude-api' | 'heuristic'
+  /**
+   * Which interpreter runs on submit: the Claude API, the coding agent installed on this
+   * machine (headless, read-only), or the heuristic (the connected agent reads it over MCP).
+   */
+  mode: 'claude-api' | 'claude-code' | 'codex' | 'heuristic'
   model?: string
   active: boolean
   startedAt?: string
@@ -368,15 +371,18 @@ export interface MapperInfo {
   /** "Claude", "Claude Code", "Codex". */
   label?: string
   active: boolean
-  /** What it is reading for: the map (the default) or a database's tables. */
-  task?: 'map' | 'schema'
+  /** What it is reading for: the map (the default), a database's tables, or build progress. */
+  task?: 'map' | 'schema' | 'track'
+  /** track: whose changes it is checking; absent when it reads the checkout. */
+  author?: string
   startedAt?: string
   finishedAt?: string
   /**
    * How the last reading ended. Map: redrawn, kept (the user had edited the map) or failed.
    * Schema: tables (drawn `count` of them), none (the code defines no tables) or failed.
+   * Track: tracked (`count` statuses and proposals landed) or failed.
    */
-  outcome?: 'redrawn' | 'kept' | 'failed' | 'tables' | 'none'
+  outcome?: 'redrawn' | 'kept' | 'failed' | 'tables' | 'none' | 'tracked'
   count?: number
   lastError?: string
 }

@@ -14,6 +14,8 @@ import { describeMark } from '../shared/marks.js'
 import type { InterpretationResult, MarkStatus, RepoMap, SketchShape } from '../shared/types.js'
 import { mapCode, mapState } from '../core/map.js'
 import { detectMapper, mapWithModel, schemaWithModel, type Mapper } from '../interpret/code-map.js'
+import { trackMarks, trackWithModel, type TrackChange } from '../interpret/track.js'
+import { interpretWithModel } from '../interpret/sketch-read.js'
 import { nodeLabel } from '../shared/graph.js'
 import { scanRepo } from '../core/repo-scan.js'
 import { CanvasRoom, shapeSchema } from './canvas.js'
@@ -287,6 +289,18 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         result = interpretHeuristic(input)
         by = 'vibeprint'
       }
+    } else if (mapper && mapper.kind !== 'api' && input.image?.length) {
+      // No API key: the coding agent on this machine reads the picture, read-only.
+      core.setInterpreter({ active: true, startedAt: new Date().toISOString(), lastError: undefined })
+      try {
+        result = await interpretWithModel(root, input, mapper, { signal: ctrl.signal, model: claude.model })
+      } catch (err) {
+        if (ctrl.signal.aborted) return
+        const msg = ((err as Error).message ?? String(err)).slice(0, 300)
+        log(`interpretation by ${mapper.label} failed, falling back to heuristic: ${msg}`)
+        core.setInterpreter({ lastError: msg })
+        result = interpretHeuristic(input)
+      }
     } else {
       result = interpretHeuristic(input)
     }
@@ -299,6 +313,7 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
   // ---- mapping the code ---------------------------------------------------------
   const mapper = opts.mapper === undefined ? detectMapper() : opts.mapper
   core.setMapper({ mode: mapper?.kind ?? 'none', label: mapper?.label })
+  if (!claude.available && mapper && mapper.kind !== 'api') core.setInterpreter({ mode: mapper.kind, active: false })
   let reading: AbortController | null = null
   let cleaning: AbortController | null = null
   core.setCleanup({ undoId: latestCleanup(core) })
@@ -424,6 +439,53 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
     })()
     return { reading: mapper.label, ...(node ? { target: node.id } : {}) }
   }
+  // ---- build tracking: check the code against the canvas, set statuses, propose changes --
+  /** Start one tracking pass: an agent's turn (its diff) or, with no change, the checkout. */
+  const trackCode = (change: TrackChange | null): { reading: string } => {
+    if (!mapper) throw new VibeprintError('Nothing on this machine can read the code: install Claude Code or Codex, or set ANTHROPIC_API_KEY.', 422)
+    if (core.mapper.active || core.cleanup.active) throw new VibeprintError(`${mapper.label} is already reading the code. Try again when it's done.`, 409)
+    if (!core.graph.nodes.some((n) => !n.removed)) throw new VibeprintError('Nothing is on the canvas yet to check the code against.', 409)
+    const ctrl = new AbortController()
+    reading = ctrl
+    const now = () => new Date().toISOString()
+    core.setMapper({ active: true, task: 'track', author: change?.author, startedAt: now(), finishedAt: undefined, outcome: undefined, count: undefined, lastError: undefined })
+    void (async () => {
+      try {
+        const reply = await trackWithModel(root, core.architecture(), change, mapper, { signal: ctrl.signal, model: claude.model })
+        if (ctrl.signal.aborted) return
+        // Against the drawing as it is now: components removed while the model read are skipped.
+        const { statuses, proposals } = trackMarks(core.architecture(), reply)
+        if (statuses.length) core.addMarks(mapper.author, statuses)
+        let proposed = 0
+        if (proposals.length) {
+          try {
+            core.finishOpenBatch(mapper.author)
+            proposed = core.addMarks(mapper.author, proposals, { ...(reply.message.trim() ? { message: reply.message.trim() } : {}), finish: true }).marks.length
+          } catch (err) {
+            log(`track: dropped ${proposals.length} proposals: ${(err as Error).message}`)
+          }
+        }
+        const whose = change ? `${change.author}'s changes` : 'the code'
+        if (statuses.length || proposed) {
+          core.addChat('agent', mapper.author, `Checked ${whose} against the canvas. ${reply.summary}${proposed ? ` ${proposed === 1 ? 'One change' : `${proposed} changes`} to review.` : ''}`.trim())
+        }
+        core.checkpoint('vibeprint: build progress from the code')
+        core.setMapper({ outcome: 'tracked', count: statuses.length + proposed })
+      } catch (err) {
+        if (ctrl.signal.aborted) return
+        const msg = ((err as Error).message ?? String(err)).slice(0, 300)
+        log(`track: ${mapper.label} could not check the code: ${msg}`)
+        core.setMapper({ outcome: 'failed', lastError: msg })
+      } finally {
+        if (reading === ctrl) {
+          reading = null
+          core.setMapper({ active: false, finishedAt: now() })
+        }
+      }
+    })()
+    return { reading: mapper.label }
+  }
+
   // "show me the schema", "what do the tables look like", "draw the data model"
   const asksForSchema = (text: string) => /\b(schema|tables?|data ?model|columns)\b/i.test(text) && /\b(show|see|what|draw|how|look|give)\b/i.test(text)
 
@@ -625,6 +687,18 @@ export async function startDaemon(opts: DaemonOptions): Promise<Daemon> {
         if (core.cleanup.active) throw new VibeprintError('AI is cleaning up the canvas. Wait for it to finish.', 409)
         const body = await readJson<{ target?: string }>(req)
         return send(res, 200, showSchema(body.target || undefined))
+      }
+      case 'POST /api/track': {
+        // No body: update from the checkout. With a diff: one agent's turn, from its workspace.
+        const checked = z.object({
+          author: z.string().trim().min(1).max(80),
+          task: z.string().max(8000).optional(),
+          diff: z.string().min(1).max(2 * 1024 * 1024),
+        }).partial().safeParse(await readJson(req))
+        if (!checked.success) throw new VibeprintError('Tracking takes an author, a task and a diff (up to 2 MB), or nothing to read the checkout.', 422)
+        const { author, task, diff } = checked.data
+        if (!!author !== !!diff) throw new VibeprintError('Send both author and diff, or neither.', 422)
+        return send(res, 202, trackCode(author && diff ? { author, diff, ...(task ? { task } : {}) } : null))
       }
       case 'POST /api/cleanup': {
         if (core.cleanup.active || core.mapper.active || core.interpreter.active) throw new VibeprintError('Wait for the current AI task to finish, then clean up.', 409)
@@ -866,7 +940,8 @@ export async function runDaemon(opts: DaemonOptions): Promise<void> {
   }
   const m = d.core.mapper
   out(`  map         ${m.mode === 'none' ? 'quick scan (install Claude Code or Codex, or set ANTHROPIC_API_KEY, to have the code read)' : `quick scan, then ${m.label} reads the code`}`)
-  out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
+  const reader = d.core.interpreter.mode === 'claude-code' || d.core.interpreter.mode === 'codex' ? m.label : null
+  out(`  interpret   ${claude.available ? `Claude API (${claude.model})` : reader ? `${reader} reads each submitted sketch` : 'heuristic + your coding agent (set ANTHROPIC_API_KEY for handwriting)'}`)
   out(`  state       ${opts.state ? d.core.dir : `${VIBEPRINT_DIR}/`} ${d.git.enabled ? '(committed at checkpoints)' : opts.state ? '(outside the repo, not committed)' : '(not committed)'}`)
   // Started from npx's cache, or installed with npm -g.
   const command = /[\\/]_npx[\\/]/.test(process.argv[1] ?? '') ? 'npx vibeprint@latest' : 'npm install -g vibeprint@latest'
