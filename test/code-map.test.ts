@@ -61,7 +61,8 @@ function fakeClaude(opts: { delayMs?: number; fail?: boolean; expectedModel?: st
 const args = process.argv.slice(2)
 const at = (f) => args[args.indexOf(f) + 1]
 if (${JSON.stringify(opts.expectedModel)} && at('--model') !== ${JSON.stringify(opts.expectedModel)}) {console.error('wrong model');process.exit(2)}
-if (at('--tools') !== 'Read,Grep,Glob' || !args.includes('--json-schema') || !at('-p').includes('automatic scan')) {
+// The first read gets the quick scan; the source audit gets the draft instead.
+if (at('--tools') !== 'Read,Grep,Glob' || at('--effort') !== 'medium' || !args.includes('--json-schema') || !(at('-p').includes('automatic scan') || at('-p').includes('SOURCE AUDIT:'))) {
   console.error('unexpected args: ' + args.join(' ')); process.exit(2)
 }
 setTimeout(() => {
@@ -83,7 +84,7 @@ function fakeCodex(): string {
     `#!/usr/bin/env node
 const args = process.argv.slice(2)
 const at = (f) => args[args.indexOf(f) + 1]
-if (args[0] !== 'exec' || at('--sandbox') !== 'read-only' || !require('fs').existsSync(at('--output-schema'))) { console.error('bad args'); process.exit(2) }
+if (args[0] !== 'exec' || at('--sandbox') !== 'read-only' || at('-c') !== 'model_reasoning_effort="medium"' || !require('fs').existsSync(at('--output-schema'))) { console.error('bad args'); process.exit(2) }
 require('fs').writeFileSync(at('-o'), '\`\`\`json\\n' + ${JSON.stringify(JSON.stringify(READ))} + '\\n\`\`\`')
 `,
   )
@@ -129,6 +130,8 @@ describe('reading the code', () => {
     assert.equal(queries[1].what, 'map source audit')
     assert.match(queries[1].prompt, /SOURCE AUDIT/)
     assert.match(queries[1].prompt, /Draft:/)
+    // The audit checks the draft against what it cites; it does not start over from the scan.
+    assert.doesNotMatch(queries[1].prompt, /automatic scan|READ AND TRACE/)
   })
 
   test('Codex runs in a read-only sandbox and its last message is the map', async () => {
@@ -141,12 +144,12 @@ describe('reading the code', () => {
   })
 
   test('the Claude API gets the scan and a digest of the code', async () => {
-    let prompt = ''
+    const prompts: string[] = []
     const client = {
       beta: {
         messages: {
           create: async (body: any) => {
-            prompt = body.messages[0].content[0].text
+            prompts.push(body.messages[0].content[0].text)
             return { stop_reason: 'end_turn', content: [{ type: 'text', text: JSON.stringify(READ) }] } as any
           },
         },
@@ -156,10 +159,14 @@ describe('reading the code', () => {
     const { verification, ...content } = map
     assert.deepEqual(content, READ)
     assert.equal(verification?.revision, 'unknown')
-    assert.match(prompt, /"label":"Web"/, 'the quick scan is the starting point')
-    assert.match(prompt, /A storefront with an orders API/, 'the README is in the digest')
-    assert.match(prompt, /--- server\/index\.ts \(start\) ---/, 'entry points are in the digest')
-    assert.match(prompt, /"dependencies": \[/, 'manifests are summarized')
+    const [first, audit] = prompts
+    assert.match(first, /"label":"Web"/, 'the quick scan is the starting point')
+    assert.match(audit, /SOURCE AUDIT/)
+    for (const prompt of prompts) {
+      assert.match(prompt, /A storefront with an orders API/, 'the README is in the digest')
+      assert.match(prompt, /--- server\/index\.ts \(start\) ---/, 'entry points are in the digest')
+      assert.match(prompt, /"dependencies": \[/, 'manifests are summarized')
+    }
   })
 })
 

@@ -2,6 +2,11 @@
 
 Shared, agent-authored log of cross-cutting decisions the fleet must honor. The conductor records plan/rebase/steer decisions here; workers record interface contracts + adjustments. Each entry is a `##` heading with **What / Why / By** so it scans. Read entries relevant to this task; revisit when a relevant topic changes or before integration. jj records conflicts on fan-in.
 
+## Model map reads fit their budgets
+- **What:** Claude Code (`--effort medium`) and Codex (`model_reasoning_effort="medium"`) read at the same medium effort as the API path, whatever the user's interactive default. The source audit checks the draft against the files it cites and Greps for each edge instead of re-running the full exploration prompt. A headless read stops after 15 minutes (was 6), the audit after 6 (was 2), and a timeout says so.
+- **Why:** At the user's default (high) effort the first read of exla-ai-rudder passed the 6-minute limit and failed, leaving the quick scan up for good; on Offstage it took 5m45s and the audit ran out at 2 minutes, labeling every view "Source audit incomplete". After: Rudder 3m10s + 1m54s audit, Offstage 4m11s + 1m23s, both audits complete.
+- **By:** vibeprint 0.11.0 · 2026-11-19
+
 ## Project-specific facts and dated activity observations
 - **What:** RepoMap has optional source-linked `facts` and `metrics`. Mapping models supply metric definitions only. Actual readings enter via `map_architecture.metrics` or a bounded `.vibeprint/observations.json` aggregate snapshot, with value, timestamp, window, scope and evidence source. Matching snapshots keep their own definitions. Facts/activity render as editable, navigable canvas views and source-panel details; missing readings display “Not measured.” No automatic collector or live refresh is added.
 - **Why:** Offstage's fleet login budget, attempted-UID counter and console sign-ins are different concepts. Defaults, historical incidents and session records cannot establish current production login totals. Keep runtime provenance explicit and avoid a generic metric template or invented counts.
