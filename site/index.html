@@ -162,6 +162,11 @@ h1 { font-size: clamp(50px, 9.4vw, 120px); line-height: 0.92; letter-spacing: -0
 .strip button.primary { background: var(--agent); border-color: var(--agent); color: #fff; }
 .strip button.primary:hover { background: #2049e0; }
 
+.shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(20px, 3vw, 40px); padding-top: clamp(56px, 8vw, 104px); }
+.shots figure { margin: 0; }
+.shots img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; object-position: top; border-radius: 14px; border: 1px solid var(--line); background: var(--screen); }
+.shots figcaption { margin-top: 12px; color: var(--muted); font-size: 16px; }
+.shots b { color: var(--ink); font-weight: 600; }
 .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 4vw, 56px); padding-top: clamp(56px, 8vw, 104px); }
 .facts h2 { font-size: 21px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 650; margin: 0 0 8px; }
 .facts p { margin: 0; color: var(--muted); font-size: 16.5px; }
@@ -178,7 +183,7 @@ footer a { text-underline-offset: 3px; }
   .strip button { flex: 1; }
   .play .strip { translate: 0 10px; }
   @keyframes rise { to { opacity: 1; translate: 0 0; } }
-  .facts { grid-template-columns: minmax(0, 1fr); }
+  .facts, .shots { grid-template-columns: minmax(0, 1fr); }
   .cmd { font-size: 15.5px; }
 }
 </style>
@@ -247,6 +252,11 @@ vibeprint</a>
         <button type="button" id="replay" hidden>Replay</button>
       </div>
     </div>
+  </section>
+
+  <section class="wrap shots" aria-label="Screenshots of the canvas">
+    <figure><img src="/images/tables.png" width="2732" height="2048" loading="lazy" alt="A sketch after the build: Web app, API and Postgres checked off, a job queue marked building, and the users and orders tables drawn under Postgres."><figcaption>As code lands, boxes get a check. Ask what's in a database and its tables appear beside it.</figcaption></figure>
+    <figure><img src="/images/map.png" width="2732" height="1470" loading="lazy" alt="The architecture map vibeprint draws of its own repo."><figcaption><b>Map this repo</b> draws the architecture you already have, read from the code, so you can sketch changes on top.</figcaption></figure>
   </section>
 
   <section class="wrap facts">
