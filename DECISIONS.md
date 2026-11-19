@@ -252,3 +252,8 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
 - **Interfaces:** `scripts/screenshots.ts sketch|review|tables|map` regenerates `docs/images/` (map needs a mapper and `MAP_REPO`; its state goes to a temp dir). `scripts/build-site.mjs` copies `docs/images/` to `site/images/` (git-ignored). README images use raw.githubusercontent URLs so they render on npm too.
 - **Delivery:** verified; GitHub release v0.11.1 (CI printed `+ vibeprint@0.11.1`); vibeprint.viraat.dev serves the new section and images. Rudder's worker stays pinned to 0.11.0, which has the same code.
 - **By:** main-branch-hrvu7 · 2026-11-19
+
+## main-branch-hrvu7: vibeprint 1.0.0
+- **Did:** Released 1.0.0 with the same code as 0.11.1. The full loop works (sketch, proposals, build tracking, repo maps, tables), Rudder runs it, and the MCP tools and `.vibeprint/` files have been stable across recent releases.
+- **Interfaces:** From here, a breaking change to the MCP tools, the HTTP API Rudder uses (`/api/track`, `--state`, `--embed-origin`) or the `.vibeprint/` files means a new major version.
+- **By:** main-branch-hrvu7 · 2026-11-19

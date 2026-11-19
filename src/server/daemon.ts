@@ -29,7 +29,7 @@ import { chatWithClaude, claudeConfig, interpretWithClaude } from '../interpret/
 
 import { AGENT_COLOR, INK_COLOR, extractSketch, type Shape } from '../shared/canvas.js'
 export { AGENT_COLOR, INK_COLOR }
-const VERSION = '0.11.1'
+const VERSION = '1.0.0'
 
 export interface DaemonOptions {
   root: string
