@@ -246,3 +246,9 @@ Shared, agent-authored log of cross-cutting decisions the fleet must honor. The 
   - Carry new view metadata through AI cleanup; verify real iPad and independent readers — Cleanup retains the simpler reconciliation layout. Browser checks use Chromium at iPad/phone dimensions; scores are model-assisted, not human or production verification.
 - **By:** main-branch-o9bcj · 2026-11-05T01:21:31.899Z
 
+
+## main-branch-hrvu7: README with screenshots, site screenshots, 0.11.1
+- **Did:** Rewrote the README around four real screenshots (sketch, agent proposals, build status with tables, the model map of vibeprint's own repo) and added an "In Rudder" section. The site gains a two-image section. 0.11.1 has no code changes; it exists so the npm page shows the new README.
+- **Interfaces:** `scripts/screenshots.ts sketch|review|tables|map` regenerates `docs/images/` (map needs a mapper and `MAP_REPO`; its state goes to a temp dir). `scripts/build-site.mjs` copies `docs/images/` to `site/images/` (git-ignored). README images use raw.githubusercontent URLs so they render on npm too.
+- **Delivery:** verified; GitHub release v0.11.1 (CI printed `+ vibeprint@0.11.1`); vibeprint.viraat.dev serves the new section and images. Rudder's worker stays pinned to 0.11.0, which has the same code.
+- **By:** main-branch-hrvu7 · 2026-11-19
